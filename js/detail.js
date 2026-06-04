@@ -467,7 +467,7 @@ function openViewer(data, container) {
       <div style="display:flex;align-items:center;justify-content:space-between;padding:52px 22px 12px;position:relative;z-index:2">
         <button id="vw-close" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
         <span style="font-family:var(--font-display);font-size:20px;color:#fff;text-transform:capitalize;text-shadow:0 2px 8px rgba(0,0,0,.4)">${data.name}</span>
-        <button id="vw-shiny" style="display:flex;align-items:center;gap:6px;background:${shiny?'rgba(255,217,61,.2)':'rgba(255,255,255,.08)'};border:1.5px solid ${shiny?'#ffd93d':'rgba(255,255,255,.18)'};border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;color:${shiny?'#ffd93d':'rgba(255,255,255,.55)'};cursor:pointer;transition:all .2s;${shiny?'box-shadow:0 0 14px rgba(255,217,61,.3)':''}">&#10024; Shiny</button>
+        <button id="vw-shiny" style="display:flex;align-items:center;gap:6px;background:${mode==='anim'?'rgba(255,255,255,.18)':'rgba(255,255,255,.08)'};border:1.5px solid ${mode==='anim'?'rgba(255,255,255,.5)':'rgba(255,255,255,.18)'};border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;color:${mode==='anim'?'#fff':'rgba(255,255,255,.55)'};cursor:pointer;transition:all .2s">&#10024; Shiny</button>
       </div>
       <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;padding-top:10px">
         <div id="vw-sparkles" style="position:absolute;inset:0;pointer-events:none;display:${shiny?'block':'none'}">
@@ -487,8 +487,8 @@ function openViewer(data, container) {
         <button id="vw-home" style="flex:1;height:46px;border-radius:999px;border:2px solid ${mode==='home'?'rgba(255,255,255,.5)':'rgba(255,255,255,.15)'};background:${mode==='home'?'rgba(255,255,255,.18)':'rgba(255,255,255,.06)'};color:${mode==='home'?'#fff':'rgba(255,255,255,.5)'};font-family:var(--font-body);font-size:14px;font-weight:800;cursor:pointer">
           🔮 3D
         </button>
-        <button id="vw-anim" style="flex:1;height:46px;border-radius:999px;border:2px solid ${mode==='anim'?'rgba(255,255,255,.5)':'rgba(255,255,255,.15)'};background:${mode==='anim'?'rgba(255,255,255,.18)':'rgba(255,255,255,.06)'};color:${mode==='anim'?'#fff':'rgba(255,255,255,.5)'};font-family:var(--font-body);font-size:14px;font-weight:800;cursor:pointer">
-          &#127902; Animato
+        <button id="vw-anim" style="flex:1;height:46px;border-radius:999px;border:2px solid ${shiny?'rgba(255,217,61,.6)':'rgba(255,255,255,.15)'};background:${shiny?'rgba(255,217,61,.2)':'rgba(255,255,255,.06)'};color:${shiny?'#ffd93d':'rgba(255,255,255,.5)'};font-family:var(--font-body);font-size:14px;font-weight:800;cursor:pointer">
+          &#10024; Shiny
         </button>
       </div>
       <div style="padding:8px 22px 36px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2">
@@ -509,10 +509,10 @@ function openViewer(data, container) {
       if (currentAudio) { currentAudio.pause(); currentAudio = null; }
     };
 
-    document.getElementById('vw-shiny').onclick = () => { shiny = !shiny; render(); };
+    document.getElementById('vw-shiny').onclick = () => { mode = mode==='anim' ? 'home' : 'anim'; render(); };
 
     document.getElementById('vw-home').onclick = () => { mode = 'home'; render(); };
-    document.getElementById('vw-anim').onclick = () => { mode = 'anim'; render(); };
+    document.getElementById('vw-anim').onclick = () => { shiny = !shiny; render(); };
 
     document.getElementById('vw-sound').onclick = () => {
       if (currentAudio) { currentAudio.pause(); currentAudio = null; }
