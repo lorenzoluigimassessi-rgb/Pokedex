@@ -276,10 +276,22 @@
         evo,
         stone,
         branch: branch || null,
-        stage: stage + 1, // 1-based for rarityFromStage
+        stage: stage + 1,
         isLegendary: sp.is_legendary,
         isMythical: sp.is_mythical,
         name: sp.names.find(n => n.language.name === 'en')?.name || `Pokémon #${id}`,
+        height: p.height,
+        weight: p.weight,
+        moves: p.moves
+          .filter(m => m.version_group_details.some(v => v.move_learn_method.name === 'level-up' && v.level_learned_at > 0))
+          .sort((a, b) => {
+            const lvOf = m => Math.min(...m.version_group_details
+              .filter(v => v.move_learn_method.name === 'level-up' && v.level_learned_at > 0)
+              .map(v => v.level_learned_at));
+            return lvOf(a) - lvOf(b);
+          })
+          .slice(0, 4)
+          .map(m => m.move.name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())),
       };
 
       cache[id] = out;
