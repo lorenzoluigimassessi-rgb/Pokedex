@@ -410,6 +410,20 @@ function addSwipeToDismiss(card, overlay) {
   }, { passive: true });
 }
 
+function closeDetail(overlay) {
+  const card = overlay.querySelector('.pdx-detail-card');
+  const backdrop = overlay.querySelector('.pdx-detail-backdrop');
+  if (card) {
+    card.style.transition = 'transform 0.3s cubic-bezier(0.32,0,0.67,0)';
+    card.style.transform = 'translateY(110%)';
+  }
+  if (backdrop) {
+    backdrop.style.transition = 'opacity 0.3s ease';
+    backdrop.style.opacity = '0';
+  }
+  setTimeout(() => overlay.remove(), 300);
+}
+
 function openViewer(data, container) {
   const tc = (data.types && data.types[0]) ? ({
     normal:'#a8a878',fire:'#f08030',water:'#6890f0',grass:'#78c850',
