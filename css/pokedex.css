@@ -463,7 +463,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  max-height: 92vh;
+  height: 88vh;
+  max-height: 88vh;
   background: var(--bg-pokedex);
   border-radius: 28px 28px 0 0;
   animation: sheet-up 0.32s ease;
@@ -762,5 +763,5 @@
 
 @media (min-width: 768px) {
   .pdx-grid.grid { grid-template-columns: repeat(6, 1fr); }
-  .pdx-detail-card { max-width: 520px; left: 50%; right: auto; transform: translateX(-50%); border-radius: 28px; }
+  .pdx-detail-card { height: auto; max-height: 90vh; max-width: 520px; left: 50%; right: auto; transform: translateX(-50%); border-radius: 28px; }
 }
