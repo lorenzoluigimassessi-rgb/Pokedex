@@ -28,6 +28,7 @@ export async function showDetail(container, pokemonId, caught) {
 
   try {
     const data = await api.getFullPokemon(pokemonId);
+    data._slug = typeof pokemonId === 'string' && isNaN(pokemonId) ? pokemonId : null;
     renderDetail(overlay, data, caught);
   } catch {
     overlay.querySelector('.pdx-detail-card').innerHTML = `<div class="pdx-detail-content"><p style="text-align:center;padding:40px;color:var(--text-muted)">Impossibile caricare i dati.</p></div>`;
@@ -142,8 +143,15 @@ function renderDetail(overlay, data, caught) {
   }
 
   render();
-  loadEvoChain(data, overlay);
-  loadSpecialForms(data, overlay);
+  if (data.isForm) {
+    // special form — hide evo chain, show sibling forms from same base
+    const chainEl = document.getElementById('detail-evo-chain');
+    if (chainEl) chainEl.closest('.pdx-section').style.display = 'none';
+    loadSiblingForms(data, overlay);
+  } else {
+    loadEvoChain(data, overlay);
+    loadSpecialForms(data, overlay);
+  }
 }
 
 async function loadEvoChain(data, overlay) {
@@ -246,6 +254,69 @@ function formatStatName(name) {
     'special-attack': 'Att. Sp.', 'special-defense': 'Dif. Sp.', 'speed': 'Velocità'
   };
   return map[name] || name;
+}
+
+async function loadSiblingForms(data, overlay) {
+  // find the base pokemon id from forms map
+  let baseId = null;
+  let currentSlug = data._slug || data.id;
+  for (const [bid, forms] of Object.entries(FORMS_BY_BASE)) {
+    if (forms.some(f => f.slug === currentSlug)) { baseId = parseInt(bid); break; }
+  }
+  if (!baseId) return;
+
+  const siblings = (FORMS_BY_BASE[baseId] || []).filter(f => f.slug !== currentSlug);
+  const formsSection = document.getElementById('detail-forms-section');
+  const formsChain = document.getElementById('detail-forms-chain');
+  if (!formsSection || !formsChain) return;
+
+  // show base pokemon link
+  const baseRow = document.createElement('div');
+  baseRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:14px;cursor:pointer;';
+  const baseSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png`;
+  baseRow.innerHTML = `
+    <div class="pdx-evo-circle" style="width:52px;height:52px">
+      <img src="${baseSpriteUrl}" style="width:40px;height:40px;object-fit:contain;image-rendering:pixelated">
+    </div>
+    <span style="font-size:13px;font-weight:800;color:var(--text-primary)">Forma base</span>
+    <span style="font-size:12px;color:var(--text-muted);margin-left:auto">›</span>`;
+  baseRow.addEventListener('click', () => {
+    closeDetail(overlay);
+    const container = overlay.parentElement;
+    setTimeout(() => showDetail(container, baseId), 320);
+  });
+  formsChain.appendChild(baseRow);
+
+  if (siblings.length > 0) {
+    const sibLabel = document.createElement('div');
+    sibLabel.className = 'pdx-forms-mechanic-label';
+    sibLabel.textContent = 'Altre forme';
+    formsChain.appendChild(sibLabel);
+
+    const nodesEl = document.createElement('div');
+    nodesEl.className = 'pdx-forms-nodes';
+    siblings.forEach(form => {
+      const node = document.createElement('div');
+      node.className = 'pdx-evo-node pdx-form-node';
+      node.style.cursor = 'pointer';
+      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.slug}.png`;
+      node.innerHTML = `
+        <div class="pdx-evo-circle">
+          <img src="${spriteUrl}" onerror="this.src='${baseSpriteUrl}'" alt="${form.name}">
+        </div>
+        <span class="pdx-evo-label" style="text-align:center;line-height:1.2;max-width:72px;white-space:normal">${form.name}</span>`;
+      node.addEventListener('click', () => {
+        closeDetail(overlay);
+        const container = overlay.parentElement;
+        setTimeout(() => showDetail(container, form.slug), 320);
+      });
+      nodesEl.appendChild(node);
+    });
+    formsChain.appendChild(nodesEl);
+  }
+
+  formsSection.style.display = 'block';
+  formsSection.querySelector('.pdx-section-title').textContent = 'Forme collegate';
 }
 
 async function loadSpecialForms(data, overlay) {
