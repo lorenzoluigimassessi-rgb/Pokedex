@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>PokéCatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="pc/styles.css"/>
+<template id="__bundler_thumbnail" data-bg-color="#1a1a2e">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#1a1a2e"/>
+    <circle cx="50" cy="50" r="26" fill="#f5f5f5" stroke="#222" stroke-width="3"/>
+    <path d="M24 50 a26 26 0 0 1 52 0 Z" fill="#ff6b6b" stroke="#222" stroke-width="3"/>
+    <rect x="22" y="46" width="56" height="8" fill="#222"/>
+    <circle cx="50" cy="50" r="8" fill="#fff" stroke="#222" stroke-width="3"/>
+  </svg>
+</template>
+</head>
+<body>
+  <div id="stage" data-skin="classic">
+    <div id="root"></div>
+  </div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="pc/data.js"></script>
+  <script type="text/babel" src="pc/components.jsx"></script>
+  <script type="text/babel" src="pc/fte.jsx"></script>
+  <script type="text/babel" src="pc/pokedex.jsx"></script>
+  <script type="text/babel" src="pc/overlays.jsx"></script>
+  <script type="text/babel" src="pc/app.jsx"></script>
+</body>
+</html>
