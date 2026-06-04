@@ -18,7 +18,7 @@ const REGION_PDX_IMG = {
   kanto:  'assets/pokedex/Kanto Pokedex.png',
   johto:  'assets/pokedex/Johto Pokedex.webp',
   hoenn:  'assets/pokedex/Hoenn Pokedex.webp',
-  sinnoh: 'assets/pokedex/Sinnoh Pokedex.jpeg',
+  sinnoh: 'assets/pokedex/Sinnoh Pokedex.png',
   unova:  'assets/pokedex/Unova pokedex.png',
   kalos:  'assets/pokedex/Kalos Pokedex.png',
   alola:  'assets/pokedex/Alola pokedex.png',
