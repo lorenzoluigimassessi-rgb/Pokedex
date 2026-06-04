@@ -424,6 +424,13 @@ function closeDetail(overlay) {
   setTimeout(() => overlay.remove(), 300);
 }
 
+function renderTypeBadges(types) {
+  const TC = {normal:'#a8a878',fire:'#f08030',water:'#6890f0',grass:'#78c850',electric:'#f8d030',ice:'#98d8d8',fighting:'#c03028',poison:'#a040a0',ground:'#e0c068',flying:'#a890f0',psychic:'#f85888',bug:'#a8b820',rock:'#b8a038',ghost:'#705898',dragon:'#7038f8',dark:'#705848',steel:'#b8b8d0',fairy:'#ee99ac'};
+  const TI = {normal:'Normale',fire:'Fuoco',water:'Acqua',grass:'Erba',electric:'Elettro',ice:'Ghiaccio',fighting:'Lotta',poison:'Veleno',ground:'Terra',flying:'Volante',psychic:'Psico',bug:'Coleottero',rock:'Roccia',ghost:'Spettro',dragon:'Drago',dark:'Buio',steel:'Acciaio',fairy:'Folletto'};
+  return types.map(t => '<span style="padding:5px 12px;border-radius:999px;font-size:12px;font-weight:800;color:#fff;background:' + (TC[t]||'#888') + '">' + (TI[t]||t) + '</span>').join('');
+}
+
+
 function openViewer(data, container) {
   const tc = (data.types && data.types[0]) ? ({
     normal:'#a8a878',fire:'#f08030',water:'#6890f0',grass:'#78c850',
@@ -492,7 +499,7 @@ function openViewer(data, container) {
           <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.4);margin-top:3px">#${String(data.id).padStart(3,'0')}</div>
         </div>
         <div style="display:flex;gap:6px">
-          ${(data.types||[]).map(t => `<span style="padding:5px 12px;border-radius:999px;font-size:12px;font-weight:800;color:#fff;background:${({'normal':'#a8a878','fire':'#f08030','water':'#6890f0','grass':'#78c850','electric':'#f8d030','ice':'#98d8d8','fighting':'#c03028','poison':'#a040a0','ground':'#e0c068','flying':'#a890f0','psychic':'#f85888','bug':'#a8b820','rock':'#b8a038','ghost':'#705898','dragon':'#7038f8','dark':'#705848','steel':'#b8b8d0','fairy':'#ee99ac'})[t]||'#888'}">${({'normal':'Normale','fire':'Fuoco','water':'Acqua','grass':'Erba','electric':'Elettro','ice':'Ghiaccio','fighting':'Lotta','poison':'Veleno','ground':'Terra','flying':'Volante','psychic':'Psico','bug':'Coleottero','rock':'Roccia','ghost':'Spettro','dragon':'Drago','dark':'Buio','steel':'Acciaio','fairy':'Folletto'})[t]||t}</span>`).join('')}
+          ${renderTypeBadges(data.types||[])}
         </div>
       </div>
     `;
