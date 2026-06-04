@@ -144,9 +144,17 @@ function renderDetail(overlay, data, caught) {
 
   render();
   if (data.isForm) {
-    // special form — hide evo chain, show sibling forms from same base
-    const chainEl = document.getElementById('detail-evo-chain');
-    if (chainEl) chainEl.closest('.pdx-section').style.display = 'none';
+    // load evo chain from base pokemon, then show sibling forms
+    const baseId = Object.keys(FORMS_BY_BASE).find(bid =>
+      (FORMS_BY_BASE[bid] || []).some(f => f.slug === data._slug)
+    );
+    if (baseId) {
+      api.getSpecies(parseInt(baseId)).then(species => {
+        if (species && species.evolutionChainUrl) {
+          loadEvoChain({ ...data, evolutionChainUrl: species.evolutionChainUrl }, overlay);
+        }
+      });
+    }
     loadSiblingForms(data, overlay);
   } else {
     loadEvoChain(data, overlay);
