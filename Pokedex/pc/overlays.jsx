@@ -2,76 +2,67 @@
 
 function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenCatch }) {
   const isCaught = !!info;
-  const feat = PC.FEATURE[id];
-  const types = feat ? feat.types : ['normal'];
+  const [data, setData] = useState(() => PC.getDataSync(id));
+  const [loading, setLoading] = useState(!PC.getDataSync(id));
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!data) {
+      setLoading(true);
+      PC.fetchFullData(id).then(d => {
+        if (!cancelled) { setData(d); setLoading(false); }
+      });
+    }
+    return () => { cancelled = true; };
+  }, [id]);
+
+  const types = data ? data.types : ['normal'];
   const mainType = types[0];
   const tc = PC.typeColor(mainType);
-  const name = PC.nameOf(id);
+  const name = data ? (data.name || PC.nameOf(id)) : PC.nameOf(id);
+  const flavor = data ? data.flavor : '';
 
-  // ── NON-FEATURE Pokémon (not in the game yet) ──
-  if (!feat) {
+  // loading state
+  if (loading) {
     return (
       <div style={{ position:'absolute', inset:0, zIndex:30, animation:'fade-in .2s ease' }}>
         <div onClick={onClose} style={{ position:'absolute', inset:0, background:'rgba(10,8,20,.5)', backdropFilter:'blur(2px)' }}/>
-        <div style={{ position:'absolute', left:0, right:0, bottom:0, height:'70%',
+        <div style={{ position:'absolute', left:0, right:0, bottom:0, height:'50%',
           background:'var(--bg-pokedex)', borderTopLeftRadius:26, borderTopRightRadius:26,
-          animation:'sheet-up .32s ease', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          <div style={{ borderTop:'4px solid var(--skin)', paddingTop:8, flexShrink:0 }}>
-            <div onClick={onClose} style={{ width:44, height:5, borderRadius:99, background:'rgba(0,0,0,.18)', margin:'2px auto 6px', cursor:'pointer' }}/>
-          </div>
-          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'0 28px 28px', gap:12 }}>
-            {/* silhouette */}
-            <div style={{ filter:'brightness(0) saturate(0)', opacity:.45 }}>
-              <Sprite id={id} art size={130}/>
-            </div>
-            <div style={{ textAlign:'center' }}>
-              <div style={{ fontSize:12, fontWeight:800, color:'var(--text-muted)' }}>#{String(id).padStart(3,'0')}</div>
-              <h2 className="fredoka" style={{ fontSize:26, margin:'4px 0 6px', color:'var(--text-muted)', letterSpacing:3 }}>???</h2>
-              <div style={{ fontSize:13, fontWeight:700, color:'var(--text-muted)' }}>Non ancora disponibile</div>
-            </div>
-            <div style={{ background:'rgba(0,0,0,.04)', border:'1.5px solid rgba(0,0,0,.08)',
-              borderRadius:14, padding:'12px 16px', width:'100%', textAlign:'center' }}>
-              <div style={{ fontSize:12, fontWeight:800, color:'var(--text-primary)', marginBottom:4 }}>Questo Pokémon</div>
-              <div style={{ fontSize:12, color:'var(--text-muted)', fontWeight:700, lineHeight:1.5 }}>
-                non fa ancora parte del gioco.<br/>Continua a catturare per espandere il Pokédex!
-              </div>
-            </div>
-            <button className="btn-primary" style={{ maxWidth:240, margin:'0 auto' }} onClick={onClose}>
-              Torna al Pokédex
-            </button>
-          </div>
+          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12 }}>
+          <div className="skel" style={{ width:80, height:80, borderRadius:'50%' }}/>
+          <div style={{ fontSize:13, fontWeight:700, color:'var(--text-muted)' }}>Caricamento…</div>
         </div>
       </div>
     );
   }
 
-  // --- evolution options ---
-  // 3-stage: need 5× current form; 2-stage: need 10×
+  // --- evolution options from data (works for both hardcoded + API) ---
   function evoThreshold(fromId) {
-    const f = PC.FEATURE[fromId];
-    if (!f || !f.evo) return 5;
-    return f.evo.length === 2 ? 10 : 5;
+    const d = PC.getDataSync(fromId);
+    if (!d || !d.evo) return 5;
+    return d.evo.length === 2 ? 10 : 5;
   }
 
   const stoneOpts = [];
   const evolveOpts = [];
-  if (isCaught && feat) {
-    if (feat.branch) {
+  if (isCaught && data) {
+    if (data.branch) {
       const threshold = evoThreshold(id);
       const cnt = info.count;
-      feat.branch.forEach(([toId, sk]) => {
-        const hasStone = (stonesInv[sk] || 0) > 0;
+      data.branch.forEach(([toId, sk]) => {
+        const hasStone = sk ? (stonesInv[sk] || 0) > 0 : false;
         stoneOpts.push({ toId, sk, threshold, cnt, canEvo: cnt >= threshold && hasStone });
       });
-    } else if (feat.evo && feat.evo.length > 1) {
-      const idx = feat.evo.indexOf(id);
-      if (idx > -1 && idx < feat.evo.length - 1) {
-        const toId = feat.evo[idx + 1];
+    } else if (data.evo && data.evo.length > 1) {
+      const idx = data.evo.indexOf(id);
+      if (idx > -1 && idx < data.evo.length - 1) {
+        const toId = data.evo[idx + 1];
         const threshold = evoThreshold(id);
         const cnt = info.count;
-        if (feat.stone) {
-          const hasStone = (stonesInv[feat.stone] || 0) > 0;
-          stoneOpts.push({ toId, sk: feat.stone, threshold, cnt, canEvo: cnt >= threshold && hasStone });
+        if (data.stone) {
+          const hasStone = (stonesInv[data.stone] || 0) > 0;
+          stoneOpts.push({ toId, sk: data.stone, threshold, cnt, canEvo: cnt >= threshold && hasStone });
         } else {
           evolveOpts.push({ toId, threshold, cnt, canEvo: cnt >= threshold });
         }
@@ -118,23 +109,21 @@ function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenC
             )}
           </div>
 
-          {/* ── UNCAUGHT STATE ── */}
+          {/* uncaught state */}
           {!isCaught ? (
             <div style={{ marginTop:20 }}>
-              {/* how to unlock box */}
               <div style={{ background:'rgba(255,107,107,.07)', border:'1.5px solid rgba(255,107,107,.25)',
                 borderRadius:14, padding:'14px 16px', marginBottom:16 }}>
                 <div style={{ fontFamily:'var(--font-display)', fontSize:14, color:'var(--accent)', marginBottom:10 }}>
-                  Come ottenere {name === '???' ? 'questo Pokémon' : name}
+                  Come ottenere {name}
                 </div>
-                {feat && feat.evo && feat.evo.length > 1 && feat.evo.indexOf(id) > 0 ? (() => {
-                  const prevId = feat.evo[feat.evo.indexOf(id) - 1];
+                {data && data.evo && data.evo.length > 1 && data.evo.indexOf(id) > 0 ? (() => {
+                  const prevId = data.evo[data.evo.indexOf(id) - 1];
                   const threshold = evoThreshold(prevId);
                   const prevCnt = caught[prevId] ? caught[prevId].count : 0;
-                  const prevName = PC.nameOf(prevId);
+                  const prevName = PC.getDataSync(prevId)?.name || PC.nameOf(prevId);
                   return (
                     <>
-                      {/* evolve path */}
                       <div style={{ display:'flex', alignItems:'flex-start', gap:10, marginBottom:10 }}>
                         <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(255,107,107,.15)',
                           display:'grid', placeItems:'center', flexShrink:0, fontSize:13 }}>◆</div>
@@ -145,20 +134,17 @@ function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenC
                           </div>
                           <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:5 }}>
                             <div style={{ flex:1, height:5, borderRadius:999, background:'rgba(0,0,0,.1)', overflow:'hidden' }}>
-                              <div style={{ width:`${Math.min(100,(prevCnt/threshold)*100)}%`, height:'100%',
-                                borderRadius:999, background:'var(--accent)' }}/>
+                              <div style={{ width:`${Math.min(100,(prevCnt/threshold)*100)}%`, height:'100%', borderRadius:999, background:'var(--accent)' }}/>
                             </div>
                             <span style={{ fontSize:10, fontWeight:800, color:'var(--accent)' }}>{prevCnt}/{threshold}</span>
                           </div>
                         </div>
                       </div>
-                      {/* divider */}
                       <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
                         <div style={{ flex:1, height:1, background:'rgba(0,0,0,.08)' }}/>
                         <span style={{ fontSize:10, fontWeight:800, color:'var(--text-muted)' }}>OPPURE</span>
                         <div style={{ flex:1, height:1, background:'rgba(0,0,0,.08)' }}/>
                       </div>
-                      {/* wild path */}
                       <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
                         <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(100,100,200,.1)',
                           display:'grid', placeItems:'center', flexShrink:0, fontSize:13 }}>⚡</div>
@@ -172,7 +158,6 @@ function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenC
                     </>
                   );
                 })() : (
-                  /* standalone or base-form uncaught */
                   <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
                     <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(100,100,200,.1)',
                       display:'grid', placeItems:'center', flexShrink:0, fontSize:13 }}>⚡</div>
@@ -181,21 +166,18 @@ function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenC
                       <div style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, marginTop:2 }}>
                         {PC.rarityOf(id).label} — continua a cercare!
                       </div>
-                      {feat && types.length > 0 && (
-                        <div style={{ display:'flex', gap:5, marginTop:6 }}>
-                          {types.map(t => <TypeBadge key={t} type={t}/>)}
-                        </div>
-                      )}
+                      <div style={{ display:'flex', gap:5, marginTop:6 }}>
+                        {types.map(t => <TypeBadge key={t} type={t}/>)}
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
-              {/* evo chain preview */}
-              {feat && feat.evo && feat.evo.length > 1 && (
+              {data && data.evo && data.evo.length > 1 && (
                 <div style={{ marginBottom:14 }}>
                   <SectionTitle>Linea evolutiva</SectionTitle>
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, marginTop:10, flexWrap:'wrap' }}>
-                    {feat.evo.map((eid, i) => (
+                    {data.evo.map((eid, i) => (
                       <React.Fragment key={eid}>
                         {i > 0 && <span style={{ color:'var(--text-muted)', fontSize:18 }}>→</span>}
                         <EvoThumb eid={eid} current={eid === id} isCaught={!!caught[eid]}/>
@@ -209,24 +191,19 @@ function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenC
               </button>
             </div>
           ) : (
-            /* ── CAUGHT STATE ── */
+            /* caught state */
             <>
-              {/* flavor text */}
-              {feat && feat.flavor && (
+              {flavor && (
                 <div style={{ marginTop:20, marginBottom:18 }}>
                   <SectionTitle>Descrizione</SectionTitle>
-                  <p style={{ marginTop:10, fontSize:13.5, lineHeight:1.65, color:'var(--text-primary)' }}>
-                    {feat.flavor}
-                  </p>
+                  <p style={{ marginTop:10, fontSize:13.5, lineHeight:1.65, color:'var(--text-primary)' }}>{flavor}</p>
                 </div>
               )}
-
-              {/* evolution chain */}
-              {feat && feat.evo && feat.evo.length > 1 && (
+              {data && data.evo && data.evo.length > 1 && (
                 <div style={{ marginBottom:16 }}>
                   <SectionTitle>Linea evolutiva</SectionTitle>
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, marginTop:10, flexWrap:'wrap' }}>
-                    {feat.evo.map((eid, i) => (
+                    {data.evo.map((eid, i) => (
                       <React.Fragment key={eid}>
                         {i > 0 && <span style={{ color:'var(--text-muted)', fontSize:18 }}>→</span>}
                         <EvoThumb eid={eid} current={eid === id} isCaught={!!caught[eid]}/>

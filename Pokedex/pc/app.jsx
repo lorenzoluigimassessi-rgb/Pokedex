@@ -16,20 +16,24 @@ function seedCaught() {
   return caught;
 }
 
-function makeEncounter(n) {
-  const pool = PC.ENCOUNTER_POOL;
+function makeEncounter(n, region) {
+  const pool = PC.buildEncounterPool(region || 'kanto');
   const id = pool[Math.floor(Math.random() * pool.length)];
-  const feat = PC.FEATURE[id];
+  const data = PC.getDataSync(id);
+  const types = data ? data.types : ['normal'];
   const shiny = Math.random() < 1/11;
-  const tier = PC.FEAT_RARITY[id] || 2;
-  const ball = tier >= 6 ? 'master' : tier >= 4 ? 'ultra' : tier >= 3 ? 'great' : 'poke';
-  return { id, shiny, ball, types: feat.types, _n: n };
+  const rarity = PC.rarityOf(id);
+  const tier = rarity ? PC.RARITY[Object.keys(PC.RARITY).find(k => PC.RARITY[k] === rarity)] : 2;
+  const tierNum = PC.FEAT_RARITY[id] || (data ? (data.isLegendary || data.isMythical ? 6 : data.stage >= 3 ? 4 : data.stage === 2 ? 3 : 1) : 2);
+  const ball = tierNum >= 6 ? 'master' : tierNum >= 4 ? 'ultra' : tierNum >= 3 ? 'great' : 'poke';
+  return { id, shiny, ball, types, _n: n };
 }
 
 function App() {
   const saved = loadState();
   const [trainer, setTrainer] = useState(saved ? saved.trainer : null);
   const [screen, setScreen] = useState('pokedex');
+  const [region, setRegion] = useState(saved ? (saved.region || 'kanto') : 'kanto');
   const [caught, setCaught] = useState(saved ? saved.caught : {});
   const [stonesInv, setStonesInv] = useState(saved ? saved.stonesInv : { fire:2, water:1, thunder:1, leaf:1 });
   const [typeCounts, setTypeCounts] = useState(saved ? (saved.typeCounts || {}) : {});
@@ -44,12 +48,12 @@ function App() {
   const [completed, setCompleted] = useState(saved ? saved.completed : false);
 
   // first encounter
-  useEffect(() => { if (!encounter) setEncounter(makeEncounter(0)); }, []);
+  useEffect(() => { if (!encounter) setEncounter(makeEncounter(0, region)); }, []);
 
   // persist
   useEffect(() => {
     if (!trainer) return;
-    try { localStorage.setItem(KEY, JSON.stringify({ trainer, caught, stonesInv, typeCounts, catches, completed })); } catch(e){}
+    try { localStorage.setItem(KEY, JSON.stringify({ trainer, caught, stonesInv, typeCounts, catches, completed, region })); } catch(e){}
   }, [trainer, caught, stonesInv, typeCounts, catches, completed]);
 
   const skin = trainer ? trainer.skin : 'classic';
@@ -62,27 +66,26 @@ function App() {
 
   const stonesTotal = Object.values(stonesInv).reduce((a,b)=>a+b, 0);
 
-  // Evolution threshold check — returns true if player can evolve `id`
+  // Generalised canEvolve — works for hardcoded FEATURE and API-fetched data
   function canEvolve(id) {
-    const feat = PC.FEATURE[id];
-    if (!feat) return false;
-    // branch evolution (Eevee): needs 10×
-    if (feat.branch) {
+    const data = PC.getDataSync(id);
+    if (!data) return false;
+    if (data.branch) {
       const cnt = caught[id] ? caught[id].count : 0;
       if (cnt < 10) return false;
-      return feat.branch.some(([, sk]) => (stonesInv[sk] || 0) > 0);
+      return data.branch.some(([, sk]) => sk && (stonesInv[sk] || 0) > 0);
     }
-    if (!feat.evo || feat.evo.length < 2) return false;
-    const idx = feat.evo.indexOf(id);
-    if (idx < 0 || idx >= feat.evo.length - 1) return false;
-    const needed = feat.evo.length === 2 ? 10 : 5;
+    if (!data.evo || data.evo.length < 2) return false;
+    const idx = data.evo.indexOf(id);
+    if (idx < 0 || idx >= data.evo.length - 1) return false;
+    const needed = data.evo.length === 2 ? 10 : 5;
     const cnt = caught[id] ? caught[id].count : 0;
     if (cnt < needed) return false;
-    if (feat.stone) return (stonesInv[feat.stone] || 0) > 0;
+    if (data.stone) return (stonesInv[data.stone] || 0) > 0;
     return true;
   }
 
-  function nextEncounter() { const n = encN + 1; setEncN(n); setEncounter(makeEncounter(n)); }
+  function nextEncounter() { const n = encN + 1; setEncN(n); setEncounter(makeEncounter(n, region)); }
 
   function onResolve(didCatch) {
     if (didCatch && encounter) {
@@ -121,6 +124,7 @@ function App() {
     nextEncounter();
   }
 
+  // Generalised evolve
   function evolve(fromId, toId, sk) {
     if (sk) setStonesInv(prev => ({ ...prev, [sk]: Math.max(0, (prev[sk]||0) - 1) }));
     setCaught(prev => {
@@ -143,6 +147,7 @@ function App() {
             onResolve={onResolve} onOpenDex={()=>setScreen('pokedex')} onOpenStone={(sk)=>setStoneSheet(sk)}/>
         : <PokedexView trainer={trainer} caught={caught} canEvolve={canEvolve}
             stats={{ catches: Object.keys(caught).length, stones: stonesTotal }}
+            region={region} onSetRegion={setRegion}
             skin={skin} onSetSkin={(s)=>setTrainer(t=>({ ...t, skin:s }))}
             onOpenCatch={()=>setScreen('catch')} onOpenDetail={(id)=>setDetailId(id)}/>}
 

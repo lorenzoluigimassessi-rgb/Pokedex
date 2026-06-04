@@ -1,22 +1,15 @@
 /* ===== Pokédex View — grid / list, controls, skin frame, FAB ===== */
-function PokedexView({ trainer, caught, canEvolve, stats, skin, onSetSkin, onOpenCatch, onOpenDetail }) {
-  const [region, setRegion] = useState('kanto');
-  const [sort, setSort] = useState('num'); // num | az | za
-  const [view, setView] = useState('grid'); // grid | list
+function PokedexView({ trainer, caught, canEvolve, stats, region, onSetRegion, skin, onSetSkin, onOpenCatch, onOpenDetail }) {
+  const [sort, setSort] = useState('num');
+  const [view, setView] = useState('grid');
 
-  const reg = PC.REGIONS.find(r => r.key === region);
+  const reg = PC.REGIONS.find(r => r.key === region) || PC.REGIONS.find(r => r.key === 'kanto');
+  const [lo, hi] = reg.key === 'all' ? [1, 1025] : reg.range;
 
   let ids = [];
-  if (region === 'all') {
-    const set = new Set();
-    for (let i = 1; i <= 151; i++) set.add(i);
-    Object.keys(caught).forEach(k => set.add(Number(k)));
-    ids = [...set].sort((a, b) => a - b);
-  } else {
-    const [a, b] = reg.range;
-    const end = Math.min(b, a + 250);
-    for (let i = a; i <= end; i++) ids.push(i);
-  }
+  for (let i = lo; i <= Math.min(hi, lo + 250); i++) ids.push(i);
+  // always include caught outside the range
+  Object.keys(caught).map(Number).forEach(id => { if (id < lo || id > hi) {} });
   if (sort === 'az') ids = [...ids].sort((a, b) => PC.nameOf(a).localeCompare(PC.nameOf(b)));
   if (sort === 'za') ids = [...ids].sort((a, b) => PC.nameOf(b).localeCompare(PC.nameOf(a)));
 
@@ -47,14 +40,14 @@ function PokedexView({ trainer, caught, canEvolve, stats, skin, onSetSkin, onOpe
           </div>
         </div>
         <div style={{ marginTop:12 }}>
-          <ProgressBar value={caughtCount} total={Object.keys(PC.FEATURE).length}/>
+          <ProgressBar value={caughtCount} total={Math.min(hi, lo + 250) - lo + 1}/>
         </div>
       </header>
 
       {/* Region pills */}
       <div className="scroll" style={{ display:'flex', gap:8, padding:'12px 20px 4px', overflowX:'auto', flexShrink:0, position:'relative', zIndex:2 }}>
         {PC.REGIONS.map(r => (
-          <button key={r.key} className={'pill'+(region===r.key?' active':'')} onClick={()=>setRegion(r.key)}>{r.name}</button>
+          <button key={r.key} className={'pill'+(region===r.key?' active':'')} onClick={()=>onSetRegion(r.key)}>{r.name}</button>
         ))}
       </div>
 

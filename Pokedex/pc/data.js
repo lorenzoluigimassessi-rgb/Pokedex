@@ -101,20 +101,7 @@
     150:6, 151:6,     // Legendaries
   };
 
-  // Build weighted encounter pool
-  const ENCOUNTER_POOL = [];
-  Object.keys(FEATURE).map(Number).forEach(id => {
-    const tier = FEAT_RARITY[id] || 2;
-    const w = RARITY[tier].weight;
-    for (let i = 0; i < w; i++) ENCOUNTER_POOL.push(id);
-  });
-
-  // Type → stone mapping (dual-types count for both)
-  const TYPE_TO_STONE = {
-    fire:'fire', water:'water', electric:'thunder',
-    grass:'leaf', fairy:'moon', normal:'moon',
-    psychic:'sun',
-  };
+  // Type → stone mapping now handled in TYPE_TO_STONE_FULL below
 
   // Stones: 2x5 grid
   const STONES = [
@@ -168,35 +155,192 @@
     return `${SPR}${shiny?'/shiny':''}/${id}.png`;
   }
 
-  /* ---- PokéAPI fetch (for non-curated caught mons in detail view) ---- */
-  const cache = {};
-  async function fetchDetail(id) {
-    if (cache[id]) return cache[id];
-    try {
-      const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-      if (!r.ok) throw new Error('bad');
-      const d = await r.json();
-      const out = {
-        types: d.types.map(t => t.type.name),
-        stats: {
-          hp:d.stats[0].base_stat, atk:d.stats[1].base_stat, def:d.stats[2].base_stat,
-          spa:d.stats[3].base_stat, spd:d.stats[4].base_stat, spe:d.stats[5].base_stat
-        },
-        flavor: ''
-      };
-      cache[id] = out; return out;
-    } catch (e) { return null; }
+  /* ---- Stone trigger map — expanded for all generations ---- */
+  const TYPE_TO_STONE_FULL = {
+    fire:'fire', water:'water', electric:'thunder',
+    grass:'leaf', fairy:'moon', normal:'moon',
+    psychic:'sun', ice:'ice', dark:'dusk', ghost:'dusk',
+  };
+
+  /* ---- API evolution trigger → stone key ---- */
+  const EVO_TRIGGER_TO_STONE = {
+    'fire-stone':'fire', 'water-stone':'water', 'thunder-stone':'thunder',
+    'leaf-stone':'leaf', 'moon-stone':'moon', 'sun-stone':'sun',
+    'dusk-stone':'dusk', 'dawn-stone':'dawn', 'ice-stone':'ice',
+    'shiny-stone':'shiny',
+  };
+
+  /* ---- localStorage API cache ---- */
+  const API_CACHE_KEY = 'pkapi_v1';
+  let _apiCache = null;
+  function getApiCache() {
+    if (_apiCache) return _apiCache;
+    try { _apiCache = JSON.parse(localStorage.getItem(API_CACHE_KEY) || '{}'); }
+    catch(e) { _apiCache = {}; }
+    return _apiCache;
+  }
+  function saveApiCache() {
+    try { localStorage.setItem(API_CACHE_KEY, JSON.stringify(_apiCache)); } catch(e) {}
   }
 
+  /* ---- Auto rarity from evolution stage ---- */
+  function rarityFromStage(stage, isLegendary, isMythical) {
+    if (isLegendary || isMythical) return 6;
+    if (stage === 0) return 2; // no evolution line — uncommon
+    if (stage === 1) return 1; // base form — common
+    if (stage === 2) return 3; // middle form — rare
+    if (stage === 3) return 4; // final form — ultra rare
+    return 2;
+  }
+
+  /* ---- Parse PokéAPI evolution chain into flat evo array ---- */
+  function parseEvoChain(chain) {
+    const lines = [];
+    function walk(node, lineage) {
+      const id = parseInt(node.species.url.split('/').slice(-2)[0]);
+      const current = [...lineage, id];
+      // check for stone trigger
+      let stone = null;
+      if (node.evolution_details && node.evolution_details.length > 0) {
+        const detail = node.evolution_details[0];
+        if (detail.item) stone = EVO_TRIGGER_TO_STONE[detail.item.name] || null;
+      }
+      if (node.evolves_to.length === 0) {
+        lines.push({ evo: current, stone });
+      } else {
+        node.evolves_to.forEach(next => walk(next, current));
+      }
+    }
+    walk(chain, []);
+    return lines;
+  }
+
+  /* ---- Full PokéAPI fetch — pokemon + species + evolution chain ---- */
+  async function fetchFullData(id) {
+    const cache = getApiCache();
+    if (cache[id]) return cache[id];
+
+    try {
+      // fetch pokemon and species in parallel
+      const [pRes, sRes] = await Promise.all([
+        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`),
+        fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`),
+      ]);
+      if (!pRes.ok || !sRes.ok) throw new Error('bad');
+      const [p, sp] = await Promise.all([pRes.json(), sRes.json()]);
+
+      // flavor text — first English entry
+      const flavorEntry = sp.flavor_text_entries.find(e => e.language.name === 'en');
+      const flavor = flavorEntry ? flavorEntry.flavor_text.replace(/[\n\f]/g, ' ') : '';
+
+      // fetch evolution chain
+      const evoRes = await fetch(sp.evolution_chain.url);
+      const evoData = await evoRes.json();
+      const evoLines = parseEvoChain(evoData.chain);
+
+      // find which line this pokemon belongs to
+      let evo = [id];
+      let stone = null;
+      let branch = null;
+      let stage = 0;
+
+      // find all lines containing this id
+      const myLines = evoLines.filter(l => l.evo.includes(id));
+      if (myLines.length === 1) {
+        evo = myLines[0].evo;
+        stage = evo.indexOf(id); // 0-based
+        // stone: look at the evolution detail FOR this pokemon (not from it)
+        const stoneLine = evoLines.find(l => l.evo.includes(id) && l.stone);
+        if (stoneLine) {
+          // stone applies to the step BEFORE this id in the chain
+          const idx = stoneLine.evo.indexOf(id);
+          if (idx > 0) stone = stoneLine.stone;
+        }
+      } else if (myLines.length > 1) {
+        // branch evolution (like Eevee)
+        const base = myLines[0].evo[0];
+        evo = [base, id];
+        stage = id === base ? 0 : 1;
+        if (id === base) {
+          // this IS the base — collect all branches
+          branch = myLines.map(l => {
+            const toId = l.evo[1];
+            return [toId, l.stone || null];
+          });
+        }
+      }
+
+      const out = {
+        types: p.types.map(t => t.type.name),
+        flavor,
+        evo,
+        stone,
+        branch: branch || null,
+        stage: stage + 1, // 1-based for rarityFromStage
+        isLegendary: sp.is_legendary,
+        isMythical: sp.is_mythical,
+        name: sp.names.find(n => n.language.name === 'en')?.name || `Pokémon #${id}`,
+      };
+
+      cache[id] = out;
+      saveApiCache();
+      return out;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  /* ---- Get data for any pokemon — hardcoded first, API fallback ---- */
+  function getDataSync(id) {
+    const feat = FEATURE[id];
+    if (feat) return { ...feat, stage: feat.evo ? feat.evo.indexOf(id) + 1 : 1, isLegendary: false, isMythical: false, name: nameOf(id) };
+    const cache = getApiCache();
+    return cache[id] || null; // null = not yet fetched
+  }
+
+  /* ---- Build region encounter pool — all ids in range, weighted by auto-rarity ---- */
+  function buildEncounterPool(regionKey) {
+    const reg = REGIONS.find(r => r.key === regionKey) || REGIONS.find(r => r.key === 'kanto');
+    const [lo, hi] = reg.key === 'all' ? [1, 151] : reg.range; // cap 'all' to kanto for now
+    const pool = [];
+    for (let id = lo; id <= hi; id++) {
+      const data = getDataSync(id);
+      let tier;
+      if (data) {
+        tier = FEAT_RARITY[id] || rarityFromStage(data.stage || 1, data.isLegendary, data.isMythical);
+      } else {
+        // not yet fetched — use position-based heuristic
+        // every 3rd id is treated as a line: base=common, mid=rare, final=ultrarare
+        const pos = ((id - lo) % 3);
+        tier = pos === 0 ? 1 : pos === 1 ? 3 : 4;
+      }
+      const w = RARITY[tier].weight;
+      for (let i = 0; i < w; i++) pool.push(id);
+    }
+    return pool;
+  }
+
+  /* ---- Auto rarity for any id ---- */
+  function rarityOf(id) {
+    if (FEAT_RARITY[id]) return RARITY[FEAT_RARITY[id]];
+    const data = getDataSync(id);
+    if (data) return RARITY[rarityFromStage(data.stage || 1, data.isLegendary, data.isMythical)];
+    return RARITY[2]; // default uncommon
+  }
+
+  function catchRate(id) { return rarityOf(id).catchRate; }
+
   window.PC = {
-    TYPE_COLORS, REGIONS, TOTAL, KANTO, nameOf, FEATURE, ENCOUNTER_POOL,
-    RARITY, FEAT_RARITY, TYPE_TO_STONE,
-    STONES, BALLS, AVATARS, SKINS, artUrl, spriteUrl, fetchDetail,
+    TYPE_COLORS, REGIONS, TOTAL, KANTO, nameOf,
+    FEATURE, FEAT_RARITY, RARITY,
+    TYPE_TO_STONE: TYPE_TO_STONE_FULL,
+    STONES, BALLS, AVATARS, SKINS,
+    artUrl, spriteUrl,
+    fetchFullData, getDataSync, buildEncounterPool,
+    rarityOf, catchRate,
     typeColor: t => TYPE_COLORS[t] || '#888',
     stoneOf: k => STONES.find(s => s.key === k),
     titleCase: t => t.charAt(0).toUpperCase() + t.slice(1),
     avatarUrl: f => 'https://pokemon.fandom.com/wiki/Special:FilePath/' + encodeURIComponent(f) + '?width=240',
-    rarityOf: id => RARITY[FEAT_RARITY[id] || 2],
-    catchRate: id => (RARITY[FEAT_RARITY[id] || 2]).catchRate,
   };
 })();
