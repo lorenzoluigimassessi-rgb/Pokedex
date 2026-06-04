@@ -88,7 +88,6 @@ function showName() {
         <input type="text" id="fte-name-input" class="fte-input" placeholder="Il tuo nome" maxlength="14" autocomplete="off">
         <div style="flex:1"></div>
         <button class="btn-primary" id="fte-name-btn" disabled>Continua</button>
-        ${renderDots(0)}
       </div>
     </div>
   `;
@@ -132,7 +131,6 @@ function showAvatar() {
           ${AVATARS.map((_, i) => `<span class="fte-cdot${i === 0 ? ' active' : ''}"></span>`).join('')}
         </div>
         <button class="btn-primary" id="fte-avatar-next">Scegli</button>
-        ${renderDots(1)}
       </div>
     </div>
   `;
@@ -190,7 +188,6 @@ function showSkin() {
         </div>
         <div style="flex:1"></div>
         <button class="btn-primary" id="fte-skin-next" disabled>Apri il mio Pokédex</button>
-        ${renderDots(2)}
       </div>
     </div>
   `;

@@ -127,6 +127,34 @@
   z-index: 1;
 }
 
+/* Back button + title row */
+.fte-top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.fte-top-row h2 {
+  margin: 0;
+}
+
+.fte-back {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s ease;
+}
+
+.fte-back:active { background: rgba(255,255,255,.2); }
+
 .fte-name-step h2 {
   font-size: 30px;
   line-height: 1.15;
