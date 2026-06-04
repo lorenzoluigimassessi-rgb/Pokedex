@@ -10,6 +10,14 @@ const TYPE_COLOURS = {
   steel: '#b8b8d0', fairy: '#ee99ac',
 };
 
+const TYPE_IT = {
+  normal: 'Normale', fire: 'Fuoco', water: 'Acqua', grass: 'Erba',
+  electric: 'Elettro', ice: 'Ghiaccio', fighting: 'Lotta', poison: 'Veleno',
+  ground: 'Terra', flying: 'Volante', psychic: 'Psico', bug: 'Coleottero',
+  rock: 'Roccia', ghost: 'Spettro', dragon: 'Drago', dark: 'Buio',
+  steel: 'Acciaio', fairy: 'Folletto',
+};
+
 export async function showDetail(container, pokemonId, caught) {
   const overlay = document.createElement('div');
   overlay.className = 'pdx-detail-overlay';
@@ -36,7 +44,7 @@ function renderDetail(overlay, data, caught) {
   const tc = TYPE_COLOURS[mainType] || '#a8a878';
 
   const typeBadges = data.types.map(t =>
-    `<span class="type-badge" style="background:${TYPE_COLOURS[t] || '#888'}">${t}</span>`
+    `<span class="type-badge" style="background:${TYPE_COLOURS[t] || '#888'}">${TYPE_IT[t] || t}</span>`
   ).join('');
 
   const card = overlay.querySelector('.pdx-detail-card');
