@@ -501,8 +501,6 @@
   align-self: center;
   position: relative;
   z-index: 2;
-  padding: 12px 30px;
-  background-clip: content-box;
 }
 
 .pdx-detail-artwork {
