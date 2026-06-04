@@ -127,19 +127,11 @@
   z-index: 1;
 }
 
-/* Back button + title row */
-.fte-top-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.fte-top-row h2 {
-  margin: 0;
-}
-
+/* Back button — fixed top-left on all steps */
 .fte-back {
+  position: absolute;
+  top: 48px;
+  left: 20px;
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -149,10 +141,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  z-index: 10;
   transition: background .15s ease;
 }
-
 .fte-back:active { background: rgba(255,255,255,.2); }
 
 .fte-name-step h2 {
