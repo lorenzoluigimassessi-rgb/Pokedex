@@ -1,6 +1,6 @@
 import { api } from './api.js';
 import { storage } from './storage.js';
-import { FORMS_BY_BASE, MECHANIC_LABEL } from './forms.js';
+import { FORMS_BY_BASE, MECHANIC_LABEL, REGIONAL_BY_BASE } from './forms.js';
 
 const TYPE_COLOURS = {
   normal: '#a8a878', fire: '#f08030', water: '#6890f0', grass: '#78c850',
@@ -92,6 +92,10 @@ function renderDetail(overlay, data, caught) {
           <div class="pdx-section-title">Evoluzioni Speciali</div>
           <div id="detail-forms-chain"></div>
         </div>
+        <div class="pdx-section" id="detail-regional-section" style="display:none">
+          <div class="pdx-section-title">Forme Regionali</div>
+          <div id="detail-regional-chain"></div>
+        </div>
       </div>`;
 
     const heroHtml = `
@@ -177,6 +181,7 @@ function renderDetail(overlay, data, caught) {
   } else {
     loadEvoChain(data, overlay);
     loadSpecialForms(data, overlay);
+    loadRegionalForms(data, overlay);
   }
 }
 
@@ -567,6 +572,51 @@ function openViewer(data, container) {
 
   document.body.appendChild(overlay);
   render();
+}
+
+function loadRegionalForms(data, overlay) {
+  // collect all IDs from evo chain
+  const idsToCheck = new Set([Number(data.id)]);
+  if (data.evo) data.evo.forEach(id => idsToCheck.add(Number(id)));
+
+  let forms = null;
+  for (const id of idsToCheck) {
+    if (REGIONAL_BY_BASE[id] && REGIONAL_BY_BASE[id].length > 0) {
+      forms = REGIONAL_BY_BASE[id];
+      break;
+    }
+  }
+  if (!forms || forms.length === 0) return;
+
+  const section = document.getElementById('detail-regional-section');
+  const chainEl = document.getElementById('detail-regional-chain');
+  if (!section || !chainEl) return;
+
+  section.style.display = 'block';
+  const nodesEl = document.createElement('div');
+  nodesEl.className = 'pdx-forms-nodes';
+  chainEl.appendChild(nodesEl);
+
+  forms.forEach(form => {
+    const node = document.createElement('div');
+    node.className = 'pdx-evo-node pdx-form-node';
+    node.style.cursor = 'pointer';
+    const fallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.baseId}.png`;
+    node.innerHTML = `
+      <div class="pdx-evo-circle">
+        <img src="${fallback}" alt="${form.name}">
+      </div>
+      <span class="pdx-evo-label" style="text-align:center;line-height:1.2;max-width:72px;white-space:normal">${form.name}</span>`;
+    api.getFormSprite(form.slug).then(url => {
+      if (url) { const img = node.querySelector('img'); if (img) img.src = url; }
+    });
+    node.addEventListener('click', () => {
+      closeDetail(overlay);
+      const cont = overlay.parentElement;
+      setTimeout(() => showDetail(cont, form.slug), 320);
+    });
+    nodesEl.appendChild(node);
+  });
 }
 
 function closeDetail(overlay) {

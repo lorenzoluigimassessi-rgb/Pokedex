@@ -1,7 +1,7 @@
 import { storage } from './storage.js';
 import { showDetail } from './detail.js';
 import { AVATARS } from './fte.js';
-import { SPECIAL_FORMS } from './forms.js';
+import { SPECIAL_FORMS, REGIONAL_BY_REGION } from './forms.js';
 import { api } from './api.js';
 
 const REGIONS = [
@@ -211,7 +211,6 @@ function renderGrid() {
   grid.className = 'pdx-grid grid scroll';
 
   const collection = storage.getCollection();
-  const totalCaught = Object.keys(collection).length;
   const total = displayedEntries.length;
   document.getElementById('pdx-progress-text').innerHTML = currentRegion === 'special'
     ? `${total}<span> forme</span>`
@@ -224,6 +223,7 @@ function renderGrid() {
   const sentinel = document.getElementById('pdx-sentinel');
   observer = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting && rendered < displayedEntries.length) renderNextBatch();
+    else if (entries[0].isIntersecting && rendered >= displayedEntries.length) renderRegionalForms(grid);
   }, { rootMargin: '200px' });
   observer.observe(sentinel);
 }
@@ -237,6 +237,33 @@ function renderNextBatch() {
     grid.appendChild(createGridCard(entry, collection[entry.id] || collection[String(entry.id)]));
   }
   rendered = end;
+}
+
+function renderRegionalForms(grid) {
+  if (currentRegion === 'special' || currentRegion === 'all') return;
+  const forms = REGIONAL_BY_REGION[currentRegion];
+  if (!forms || forms.length === 0) return;
+
+  // divider
+  const divider = document.createElement('div');
+  divider.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:16px 4px 8px;';
+  divider.innerHTML = '<div style="flex:1;height:1px;background:rgba(0,0,0,.1)"></div><span style="font-size:11px;font-weight:800;color:var(--text-muted);white-space:nowrap;letter-spacing:.5px">FORME REGIONALI</span><div style="flex:1;height:1px;background:rgba(0,0,0,.1)"></div>';
+  grid.appendChild(divider);
+
+  forms.forEach(form => {
+    const card = document.createElement('button');
+    card.className = 'pdx-card';
+    const fallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.baseId}.png`;
+    card.innerHTML = `
+      <img src="${fallback}" alt="${form.name}" loading="lazy" class="pdx-card-img">
+      <span class="pdx-card-name fredoka" style="font-size:9px;text-align:center;line-height:1.2;padding:0 2px">${form.name}</span>`;
+    // fetch correct form sprite
+    api.getFormSprite(form.slug).then(url => {
+      if (url) { const img = card.querySelector('img'); if (img) img.src = url; }
+    });
+    card.addEventListener('click', () => showDetail(container, form.slug));
+    grid.appendChild(card);
+  });
 }
 
 function createGridCard(entry, caught) {

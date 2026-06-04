@@ -62,46 +62,7 @@ export const SPECIAL_FORMS = [
   // ── ULTRA BURST ──────────────────────────────────────────────
   { slug:'necrozma-ultra',      name:'Necrozma Ultrasolare', baseId:800, mechanic:'ultra' },
 
-  // ── ALOLA REGIONAL FORMS ────────────────────────────────────
-  { slug:'rattata-alola',       name:'Rattata di Alola',       baseId:19,  mechanic:'alola' },
-  { slug:'raticate-alola',      name:'Raticate di Alola',      baseId:20,  mechanic:'alola' },
-  { slug:'raichu-alola',        name:'Raichu di Alola',        baseId:26,  mechanic:'alola' },
-  { slug:'sandshrew-alola',     name:'Sandshrew di Alola',     baseId:27,  mechanic:'alola' },
-  { slug:'sandslash-alola',     name:'Sandslash di Alola',     baseId:28,  mechanic:'alola' },
-  { slug:'vulpix-alola',        name:'Vulpix di Alola',        baseId:37,  mechanic:'alola' },
-  { slug:'ninetales-alola',     name:'Ninetales di Alola',     baseId:38,  mechanic:'alola' },
-  { slug:'diglett-alola',       name:'Diglett di Alola',       baseId:50,  mechanic:'alola' },
-  { slug:'dugtrio-alola',       name:'Dugtrio di Alola',       baseId:51,  mechanic:'alola' },
-  { slug:'meowth-alola',        name:'Meowth di Alola',        baseId:52,  mechanic:'alola' },
-  { slug:'persian-alola',       name:'Persian di Alola',       baseId:53,  mechanic:'alola' },
-  { slug:'geodude-alola',       name:'Geodude di Alola',       baseId:74,  mechanic:'alola' },
-  { slug:'graveler-alola',      name:'Graveler di Alola',      baseId:75,  mechanic:'alola' },
-  { slug:'golem-alola',         name:'Golem di Alola',         baseId:76,  mechanic:'alola' },
-  { slug:'grimer-alola',        name:'Grimer di Alola',        baseId:88,  mechanic:'alola' },
-  { slug:'muk-alola',           name:'Muk di Alola',           baseId:89,  mechanic:'alola' },
-  { slug:'exeggutor-alola',     name:'Exeggutor di Alola',     baseId:103, mechanic:'alola' },
-  { slug:'marowak-alola',       name:'Marowak di Alola',       baseId:105, mechanic:'alola' },
 
-  // ── GALAR REGIONAL FORMS ─────────────────────────────────────
-  { slug:'meowth-galar',        name:'Meowth di Galar',        baseId:52,  mechanic:'galar' },
-  { slug:'ponyta-galar',        name:'Ponyta di Galar',        baseId:77,  mechanic:'galar' },
-  { slug:'rapidash-galar',      name:'Rapidash di Galar',      baseId:78,  mechanic:'galar' },
-  { slug:'slowpoke-galar',      name:'Slowpoke di Galar',      baseId:79,  mechanic:'galar' },
-  { slug:'slowbro-galar',       name:'Slowbro di Galar',       baseId:80,  mechanic:'galar' },
-  { slug:'farfetchd-galar',     name:'Farfetch\u2019d di Galar', baseId:83, mechanic:'galar' },
-  { slug:'weezing-galar',       name:'Weezing di Galar',       baseId:110, mechanic:'galar' },
-  { slug:'mr-mime-galar',       name:'Mr. Mime di Galar',      baseId:122, mechanic:'galar' },
-  { slug:'articuno-galar',      name:'Articuno di Galar',      baseId:144, mechanic:'galar' },
-  { slug:'zapdos-galar',        name:'Zapdos di Galar',        baseId:145, mechanic:'galar' },
-  { slug:'moltres-galar',       name:'Moltres di Galar',       baseId:146, mechanic:'galar' },
-  { slug:'slowking-galar',      name:'Slowking di Galar',      baseId:199, mechanic:'galar' },
-  { slug:'corsola-galar',       name:'Corsola di Galar',       baseId:222, mechanic:'galar' },
-  { slug:'zigzagoon-galar',     name:'Zigzagoon di Galar',     baseId:263, mechanic:'galar' },
-  { slug:'linoone-galar',       name:'Linoone di Galar',       baseId:264, mechanic:'galar' },
-  { slug:'darumaka-galar',      name:'Darumaka di Galar',      baseId:554, mechanic:'galar' },
-  { slug:'darmanitan-galar',    name:'Darmanitan di Galar',    baseId:555, mechanic:'galar' },
-  { slug:'yamask-galar',        name:'Yamask di Galar',        baseId:562, mechanic:'galar' },
-  { slug:'stunfisk-galar',      name:'Stunfisk di Galar',      baseId:618, mechanic:'galar' },
   { slug:'charizard-gmax',      name:'Gigamax Charizard',    baseId:6,   mechanic:'gigantamax' },
   { slug:'venusaur-gmax',       name:'Gigamax Venusaur',     baseId:3,   mechanic:'gigantamax' },
   { slug:'blastoise-gmax',      name:'Gigamax Blastoise',    baseId:9,   mechanic:'gigantamax' },
@@ -144,12 +105,65 @@ for (const form of SPECIAL_FORMS) {
   FORMS_BY_BASE[form.baseId].push(form);
 }
 
+
+// Regional forms (Alola, Galar) — share national dex number, don't count toward total
+export const REGIONAL_FORMS = [
+  { slug:'rattata-alola', name:'Rattata di Alola', baseId:19, mechanic:'alola' },
+  { slug:'raticate-alola', name:'Raticate di Alola', baseId:20, mechanic:'alola' },
+  { slug:'raichu-alola', name:'Raichu di Alola', baseId:26, mechanic:'alola' },
+  { slug:'sandshrew-alola', name:'Sandshrew di Alola', baseId:27, mechanic:'alola' },
+  { slug:'sandslash-alola', name:'Sandslash di Alola', baseId:28, mechanic:'alola' },
+  { slug:'vulpix-alola', name:'Vulpix di Alola', baseId:37, mechanic:'alola' },
+  { slug:'ninetales-alola', name:'Ninetales di Alola', baseId:38, mechanic:'alola' },
+  { slug:'diglett-alola', name:'Diglett di Alola', baseId:50, mechanic:'alola' },
+  { slug:'dugtrio-alola', name:'Dugtrio di Alola', baseId:51, mechanic:'alola' },
+  { slug:'meowth-alola', name:'Meowth di Alola', baseId:52, mechanic:'alola' },
+  { slug:'persian-alola', name:'Persian di Alola', baseId:53, mechanic:'alola' },
+  { slug:'geodude-alola', name:'Geodude di Alola', baseId:74, mechanic:'alola' },
+  { slug:'graveler-alola', name:'Graveler di Alola', baseId:75, mechanic:'alola' },
+  { slug:'golem-alola', name:'Golem di Alola', baseId:76, mechanic:'alola' },
+  { slug:'grimer-alola', name:'Grimer di Alola', baseId:88, mechanic:'alola' },
+  { slug:'muk-alola', name:'Muk di Alola', baseId:89, mechanic:'alola' },
+  { slug:'exeggutor-alola', name:'Exeggutor di Alola', baseId:103, mechanic:'alola' },
+  { slug:'marowak-alola', name:'Marowak di Alola', baseId:105, mechanic:'alola' },
+  { slug:'meowth-galar', name:'Meowth di Galar', baseId:52, mechanic:'galar' },
+  { slug:'ponyta-galar', name:'Ponyta di Galar', baseId:77, mechanic:'galar' },
+  { slug:'rapidash-galar', name:'Rapidash di Galar', baseId:78, mechanic:'galar' },
+  { slug:'slowpoke-galar', name:'Slowpoke di Galar', baseId:79, mechanic:'galar' },
+  { slug:'slowbro-galar', name:'Slowbro di Galar', baseId:80, mechanic:'galar' },
+  { slug:'farfetchd-galar', name:'Farfetch\u2019d di Galar', baseId:83, mechanic:'galar' },
+  { slug:'weezing-galar', name:'Weezing di Galar', baseId:110, mechanic:'galar' },
+  { slug:'mr-mime-galar', name:'Mr. Mime di Galar', baseId:122, mechanic:'galar' },
+  { slug:'articuno-galar', name:'Articuno di Galar', baseId:144, mechanic:'galar' },
+  { slug:'zapdos-galar', name:'Zapdos di Galar', baseId:145, mechanic:'galar' },
+  { slug:'moltres-galar', name:'Moltres di Galar', baseId:146, mechanic:'galar' },
+  { slug:'slowking-galar', name:'Slowking di Galar', baseId:199, mechanic:'galar' },
+  { slug:'corsola-galar', name:'Corsola di Galar', baseId:222, mechanic:'galar' },
+  { slug:'zigzagoon-galar', name:'Zigzagoon di Galar', baseId:263, mechanic:'galar' },
+  { slug:'linoone-galar', name:'Linoone di Galar', baseId:264, mechanic:'galar' },
+  { slug:'darumaka-galar', name:'Darumaka di Galar', baseId:554, mechanic:'galar' },
+  { slug:'darmanitan-galar', name:'Darmanitan di Galar', baseId:555, mechanic:'galar' },
+  { slug:'yamask-galar', name:'Yamask di Galar', baseId:562, mechanic:'galar' },
+  { slug:'stunfisk-galar', name:'Stunfisk di Galar', baseId:618, mechanic:'galar' },
+];
+
+// Grouped by region key
+export const REGIONAL_BY_REGION = {
+  alola: REGIONAL_FORMS.filter(f => f.mechanic === 'alola'),
+  galar: REGIONAL_FORMS.filter(f => f.mechanic === 'galar'),
+};
+
+// Indexed by baseId for detail card lookup
+export const REGIONAL_BY_BASE = {};
+for (const form of REGIONAL_FORMS) {
+  if (!REGIONAL_BY_BASE[form.baseId]) REGIONAL_BY_BASE[form.baseId] = [];
+  REGIONAL_BY_BASE[form.baseId].push(form);
+}
+
 // Mechanic labels in Italian
 export const MECHANIC_LABEL = {
   mega:       'Mega Evoluzione',
   primal:     'Rigresso Primordiale',
   gigantamax: 'Gigamax',
   ultra:      'Ultra Esplosione',
-  alola:      'Forma di Alola',
-  galar:      'Forma di Galar',
 };
