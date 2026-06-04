@@ -1011,9 +1011,11 @@
   .pdx-evo-circle { width: 76px; height: 76px; }
   .pdx-evo-node .pdx-evo-circle img { width: 58px; height: 58px; }
 }
-/* Cristallo artwork has extra padding — scale up to match others */
-.pdx-avatar-sheet-card[data-id="cristallo"] .pdx-avatar-sheet-card-inner img,
-.fte-carousel-card[data-index="6"] .fte-carousel-card-inner img {
-  transform: scale(1.32);
-  transform-origin: bottom center;
+/* Cristallo artwork has extra padding — scale up to match others (tablet+desktop only) */
+@media (min-width: 768px) {
+  .pdx-avatar-sheet-card[data-id="cristallo"] .pdx-avatar-sheet-card-inner img,
+  .fte-carousel-card[data-index="6"] .fte-carousel-card-inner img {
+    transform: scale(1.32);
+    transform-origin: bottom center;
+  }
 }
