@@ -101,6 +101,7 @@ function renderDetail(overlay, data, caught) {
         <div class="pdx-detail-artwork">
           <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
           <img src="${getSprite()}" alt="${data.name}">
+          <button class="pdx-expand-btn" id="pdx-expand-btn" title="Visualizza">⤢</button>
         </div>
         <div class="pdx-detail-identity">
           <div class="pdx-detail-num">${num}</div>
@@ -133,6 +134,13 @@ function renderDetail(overlay, data, caught) {
 
     document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
     if (!isTablet) addSwipeToDismiss(card, overlay);
+
+    // expand button — opens full-screen viewer
+    const expandBtn = document.getElementById('pdx-expand-btn');
+    if (expandBtn) expandBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      openViewer(data, overlay.parentElement);
+    });
 
     // fetch Italian move names asynchronously
     if (data.moves && data.moves.length > 0) {
@@ -402,7 +410,122 @@ function addSwipeToDismiss(card, overlay) {
   }, { passive: true });
 }
 
-function closeDetail(overlay) {
+function openViewer(data, container) {
+  const tc = (data.types && data.types[0]) ? ({
+    normal:'#a8a878',fire:'#f08030',water:'#6890f0',grass:'#78c850',
+    electric:'#f8d030',ice:'#98d8d8',fighting:'#c03028',poison:'#a040a0',
+    ground:'#e0c068',flying:'#a890f0',psychic:'#f85888',bug:'#a8b820',
+    rock:'#b8a038',ghost:'#705898',dragon:'#7038f8',dark:'#705848',
+    steel:'#b8b8d0',fairy:'#ee99ac'
+  })[data.types[0]] || '#888' : '#888';
+
+  let shiny = false;
+  let mode = 'home'; // home | anim
+  let currentAudio = null;
+
+  const SPRITES = {
+    home: data.home || data.artwork || data.sprite,
+    homeShiny: data.homeShiny || data.artworkShiny || data.spriteShiny,
+    anim: data.anim || data.sprite,
+    animShiny: data.animShiny || data.spriteShiny,
+  };
+
+  function getViewerSprite() {
+    if (mode === 'anim') return shiny ? SPRITES.animShiny : SPRITES.anim;
+    return shiny ? SPRITES.homeShiny : SPRITES.home;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;background:#0f1428;animation:fade-in .22s ease';
+
+  function render() {
+    const glowColor = shiny ? '#ffd93d' : tc;
+    const isAnim = mode === 'anim';
+    const src = getViewerSprite();
+
+    overlay.innerHTML = `
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,${glowColor}44 0%,transparent 70%);pointer-events:none;transition:background .5s ease"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:52px 22px 12px;position:relative;z-index:2">
+        <button id="vw-close" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        <span style="font-family:var(--font-display);font-size:20px;color:#fff;text-transform:capitalize;text-shadow:0 2px 8px rgba(0,0,0,.4)">${data.name}</span>
+        <button id="vw-shiny" style="display:flex;align-items:center;gap:6px;background:${shiny?'rgba(255,217,61,.2)':'rgba(255,255,255,.08)'};border:1.5px solid ${shiny?'#ffd93d':'rgba(255,255,255,.18)'};border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;color:${shiny?'#ffd93d':'rgba(255,255,255,.55)'};cursor:pointer;transition:all .2s;${shiny?'box-shadow:0 0 14px rgba(255,217,61,.3)':''}">&#10024; Shiny</button>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:1">
+        <div id="vw-sparkles" style="position:absolute;inset:0;pointer-events:none;display:${shiny?'block':'none'}">
+          <span style="position:absolute;left:25%;top:18%;font-size:17px;animation:sparkle 1.8s ease .1s infinite">&#10024;</span>
+          <span style="position:absolute;left:68%;top:26%;font-size:13px;animation:sparkle 1.8s ease .5s infinite">&#10024;</span>
+          <span style="position:absolute;left:16%;top:60%;font-size:15px;animation:sparkle 1.8s ease .3s infinite">&#10024;</span>
+          <span style="position:absolute;left:74%;top:66%;font-size:12px;animation:sparkle 1.8s ease .8s infinite">&#10024;</span>
+          <span style="position:absolute;left:50%;top:10%;font-size:11px;animation:sparkle 1.8s ease .6s infinite">&#10024;</span>
+        </div>
+        <img id="vw-img" src="${src}" alt="${data.name}"
+          style="max-width:${isAnim?'210px':'260px'};max-height:${isAnim?'210px':'260px'};object-fit:contain;filter:drop-shadow(0 16px 40px rgba(0,0,0,.5));${isAnim?'image-rendering:pixelated':''};transition:opacity .25s ease">
+      </div>
+      <button id="vw-sound" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 6px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:999px;padding:8px 22px;font-size:13px;font-weight:800;color:rgba(255,255,255,.6);cursor:pointer;position:relative;z-index:2">
+        &#128266; Ascolta il verso
+      </button>
+      <div style="padding:0 28px 10px;display:flex;gap:10px;position:relative;z-index:2">
+        <button id="vw-home" style="flex:1;height:46px;border-radius:999px;border:2px solid ${mode==='home'?'rgba(255,255,255,.5)':'rgba(255,255,255,.15)'};background:${mode==='home'?'rgba(255,255,255,.18)':'rgba(255,255,255,.06)'};color:${mode==='home'?'#fff':'rgba(255,255,255,.5)'};font-family:var(--font-body);font-size:14px;font-weight:800;cursor:pointer">
+          &#127968; HOME
+        </button>
+        <button id="vw-anim" style="flex:1;height:46px;border-radius:999px;border:2px solid ${mode==='anim'?'rgba(255,255,255,.5)':'rgba(255,255,255,.15)'};background:${mode==='anim'?'rgba(255,255,255,.18)':'rgba(255,255,255,.06)'};color:${mode==='anim'?'#fff':'rgba(255,255,255,.5)'};font-family:var(--font-body);font-size:14px;font-weight:800;cursor:pointer">
+          &#127902; Animato
+        </button>
+      </div>
+      <div style="padding:8px 22px 36px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2">
+        <div>
+          <div style="font-family:var(--font-display);font-size:28px;color:#fff;text-transform:capitalize;line-height:1">${data.name}</div>
+          <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.4);margin-top:3px">#${String(data.id).padStart(3,'0')}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${(data.types||[]).map(t => `<span style="padding:5px 12px;border-radius:999px;font-size:12px;font-weight:800;color:#fff;background:${({'normal':'#a8a878','fire':'#f08030','water':'#6890f0','grass':'#78c850','electric':'#f8d030','ice':'#98d8d8','fighting':'#c03028','poison':'#a040a0','ground':'#e0c068','flying':'#a890f0','psychic':'#f85888','bug':'#a8b820','rock':'#b8a038','ghost':'#705898','dragon':'#7038f8','dark':'#705848','steel':'#b8b8d0','fairy':'#ee99ac'})[t]||'#888'}">${({'normal':'Normale','fire':'Fuoco','water':'Acqua','grass':'Erba','electric':'Elettro','ice':'Ghiaccio','fighting':'Lotta','poison':'Veleno','ground':'Terra','flying':'Volante','psychic':'Psico','bug':'Coleottero','rock':'Roccia','ghost':'Spettro','dragon':'Drago','dark':'Buio','steel':'Acciaio','fairy':'Folletto'})[t]||t}</span>`).join('')}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('vw-close').onclick = () => {
+      overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity .2s ease';
+      setTimeout(() => overlay.remove(), 200);
+      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    };
+
+    document.getElementById('vw-shiny').onclick = () => { shiny = !shiny; render(); };
+
+    document.getElementById('vw-home').onclick = () => { mode = 'home'; render(); };
+    document.getElementById('vw-anim').onclick = () => { mode = 'anim'; render(); };
+
+    document.getElementById('vw-sound').onclick = () => {
+      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+      const url = data.cryLatest || `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${data.id}.ogg`;
+      const audio = new Audio(url);
+      currentAudio = audio;
+      const btn = document.getElementById('vw-sound');
+      btn.style.color = '#fff';
+      audio.play().catch(() => {});
+      audio.onended = () => { btn.style.color = 'rgba(255,255,255,.6)'; currentAudio = null; };
+    };
+
+    // swipe down to close on mobile
+    let startY = null;
+    overlay.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+    overlay.addEventListener('touchend', e => {
+      if (startY !== null && e.changedTouches[0].clientY - startY > 100) {
+        overlay.style.transition = 'transform .3s ease,opacity .3s ease';
+        overlay.style.transform = 'translateY(100%)';
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 300);
+        if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+      }
+      startY = null;
+    }, { passive: true });
+  }
+
+  render();
+  container.appendChild(overlay);
+}
+
+
   const card = overlay.querySelector('.pdx-detail-card');
   const backdrop = overlay.querySelector('.pdx-detail-backdrop');
   if (card) {

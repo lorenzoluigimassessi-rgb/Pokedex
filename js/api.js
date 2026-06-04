@@ -21,6 +21,8 @@ function trimPokemon(raw) {
     })
     .slice(0, 4)
     .map(m => ({ name: m.move.name, slug: m.move.name }));
+
+  const other = raw.sprites.other || {};
   return {
     id: raw.id,
     name: raw.name,
@@ -28,7 +30,14 @@ function trimPokemon(raw) {
     stats: raw.stats.map(s => ({ name: s.stat.name, value: s.base_stat })),
     sprite: raw.sprites.front_default,
     spriteShiny: raw.sprites.front_shiny,
-    artwork: raw.sprites.other?.['official-artwork']?.front_default || raw.sprites.front_default,
+    artwork: other['official-artwork']?.front_default || raw.sprites.front_default,
+    artworkShiny: other['official-artwork']?.front_shiny || null,
+    home: other.home?.front_default || null,
+    homeShiny: other.home?.front_shiny || null,
+    anim: other.showdown?.front_default || null,
+    animShiny: other.showdown?.front_shiny || null,
+    cryLatest: raw.cries?.latest || null,
+    cryLegacy: raw.cries?.legacy || null,
     moves,
   };
 }
