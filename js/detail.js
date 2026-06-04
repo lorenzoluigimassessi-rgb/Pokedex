@@ -102,7 +102,6 @@ function renderDetail(overlay, data, caught) {
           <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
           <img src="${getSprite()}" alt="${data.name}">
         </div>
-        <button class="pdx-expand-btn" id="pdx-expand-btn" title="Visualizza">⤢</button>
         <div class="pdx-detail-identity">
           <div class="pdx-detail-num">${num}</div>
           <h2 class="pdx-detail-name fredoka">${data.name}</h2>
@@ -135,12 +134,16 @@ function renderDetail(overlay, data, caught) {
     document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
     if (!isTablet) addSwipeToDismiss(card, overlay);
 
-    // expand button — opens full-screen viewer
-    const expandBtn = document.getElementById('pdx-expand-btn');
-    if (expandBtn) expandBtn.addEventListener('click', e => {
+    // expand button — inject directly into card (not inside hero flex)
+    const expandBtn = document.createElement('button');
+    expandBtn.className = 'pdx-expand-btn';
+    expandBtn.title = 'Visualizza';
+    expandBtn.textContent = '⤢';
+    expandBtn.addEventListener('click', e => {
       e.stopPropagation();
       openViewer(data, overlay.parentElement);
     });
+    card.appendChild(expandBtn);
 
     // fetch Italian move names asynchronously
     if (data.moves && data.moves.length > 0) {

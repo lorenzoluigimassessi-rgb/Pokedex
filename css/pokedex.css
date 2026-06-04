@@ -505,9 +505,9 @@
 
 .pdx-expand-btn {
   position: absolute;
-  top: 14px;
+  top: 60px;
   right: 14px;
-  z-index: 5;
+  z-index: 10;
   width: 34px;
   height: 34px;
   border-radius: 50%;
