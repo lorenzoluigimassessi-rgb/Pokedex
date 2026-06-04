@@ -789,81 +789,30 @@
 }
 .pdx-evo-line::-webkit-scrollbar { display: none; }
 
-/* Thin red separator between evo chain and special forms */
+/* Special form separator — color set inline from card tc */
 .pdx-evo-special-sep {
   width: 1px;
   height: 44px;
-  background: rgba(226,59,59,.25);
-  margin: 0 8px;
+  margin: 0 6px;
   flex-shrink: 0;
   align-self: center;
+  background: rgba(0,0,0,.12);
 }
 
-/* Special forms group wrapper */
-.pdx-special-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 3px;
+/* Special form node — identical size to evo node, accent from --special-accent or card tc */
+.pdx-special-form-node.current .pdx-evo-circle {
+  background: color-mix(in srgb, var(--special-accent, var(--skin)) 15%, transparent);
+  border-color: var(--special-accent, var(--skin));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--special-accent, var(--skin)) 15%, transparent);
 }
 
-.pdx-special-tag {
-  font-size: 8px;
-  font-weight: 800;
-  color: rgba(226,59,59,.6);
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  white-space: nowrap;
+.pdx-special-form-node .pdx-evo-circle {
+  background: color-mix(in srgb, var(--special-accent, var(--skin)) 7%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--special-accent, var(--skin)) 22%, transparent);
 }
 
-.pdx-special-nodes {
-  display: flex;
-  gap: 4px;
-}
-
-/* Special form mini node — smaller, red tint */
-.pdx-special-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-}
-
-.pdx-special-circle {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: rgba(226,59,59,.07);
-  border: 1.5px solid rgba(226,59,59,.2);
-  transition: all .15s ease;
-}
-
-.pdx-special-circle:hover,
-.pdx-special-node:active .pdx-special-circle {
-  background: rgba(226,59,59,.16);
-  border-color: rgba(226,59,59,.5);
-}
-
-.pdx-special-circle img {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-.pdx-special-label {
-  font-size: 7.5px;
-  font-weight: 800;
-  color: rgba(226,59,59,.8);
-  text-align: center;
-  white-space: nowrap;
-  max-width: 56px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.pdx-special-form-node .pdx-evo-label {
+  color: color-mix(in srgb, var(--special-accent, var(--skin)) 80%, #333);
 }
 
 /* Regional forms node — blue tint */
