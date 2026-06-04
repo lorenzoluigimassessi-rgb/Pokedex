@@ -167,6 +167,7 @@
   padding: 64px 0 24px;
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
 
 .fte-avatar-step h2 {
@@ -178,7 +179,7 @@
 .fte-avatar-step p {
   font-size: 14px;
   color: rgba(240,240,240,.6);
-  margin: 0 0 24px;
+  margin: 0 0 12px;
   font-weight: 600;
   padding: 0 28px;
 }
@@ -190,8 +191,10 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   gap: 16px;
-  padding: 16px calc(50% - 38vw) 20px;
+  padding: 10px calc(50% - 38vw) 16px;
   align-items: flex-end;
+  height: 52vh;
+  flex-shrink: 0;
 }
 .fte-carousel::-webkit-scrollbar { display: none; }
 
@@ -265,7 +268,7 @@
   display: flex;
   gap: 6px;
   justify-content: center;
-  margin: 4px 0 0;
+  margin: 10px 0 16px;
 }
 
 .fte-cdot {

@@ -124,7 +124,6 @@ function showAvatar() {
         <div class="fte-carousel-dots" id="fte-carousel-dots">
           ${AVATARS.map((_, i) => `<span class="fte-cdot${i === 0 ? ' active' : ''}"></span>`).join('')}
         </div>
-        <div style="flex:1"></div>
         <button class="btn-primary" id="fte-avatar-next">Scegli</button>
         ${renderDots(1)}
       </div>
