@@ -150,18 +150,24 @@ function showAvatar() {
     }
   }
 
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.intersectionRatio >= 0.6) updateActive(parseInt(entry.target.dataset.index));
+  function updateFTECentered() {
+    const midX = carousel.scrollLeft + carousel.offsetWidth / 2;
+    let closest = null, closestDist = Infinity, closestIdx = 0;
+    cards.forEach((c, i) => {
+      const dist = Math.abs((c.offsetLeft + c.offsetWidth / 2) - midX);
+      if (dist < closestDist) { closestDist = dist; closest = c; closestIdx = i; }
     });
-  }, { root: carousel, threshold: 0.6 });
+    if (closest) updateActive(closestIdx);
+  }
 
-  cards.forEach(c => io.observe(c));
+  carousel.addEventListener('scroll', updateFTECentered, { passive: true });
+  carousel.addEventListener('scrollend', updateFTECentered, { passive: true });
   cards.forEach(card => {
     card.addEventListener('click', () =>
       card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     );
   });
+  setTimeout(updateFTECentered, 100);
 
   updateActive(0);
   document.getElementById('fte-avatar-next').addEventListener('click', () => {

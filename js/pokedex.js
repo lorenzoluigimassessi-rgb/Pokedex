@@ -151,29 +151,34 @@ function showAvatarSheet(containerEl, trainer, currentColors) {
   const currentCard = carousel.querySelector('.center');
   if (currentCard) setTimeout(() => currentCard.scrollIntoView({ inline: 'center', block: 'nearest' }), 50);
 
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.intersectionRatio >= 0.6) {
-        cards.forEach(c => c.classList.toggle('center', c === e.target));
-        selectedId = e.target.dataset.id;
-        // Live preview colors while swiping
-        const previewColors = AVATAR_COLORS[selectedId] || AVATAR_COLORS.rosso;
-        const app = document.getElementById('app');
-        app.style.setProperty('--skin', previewColors.color);
-        app.style.setProperty('--skin-dark', previewColors.dark);
-        app.style.setProperty('--skin-header-bg', `linear-gradient(160deg, ${previewColors.color} 0%, ${previewColors.dark} 100%)`);
-        app.style.setProperty('--accent', previewColors.color);
-        app.style.setProperty('--accent-deep', previewColors.dark);
-        const metaTheme = document.querySelector('meta[name="theme-color"]');
-        if (metaTheme) metaTheme.content = previewColors.color;
-      }
+  function updateCentered() {
+    const midX = carousel.scrollLeft + carousel.offsetWidth / 2;
+    let closest = null, closestDist = Infinity;
+    cards.forEach(c => {
+      const dist = Math.abs((c.offsetLeft + c.offsetWidth / 2) - midX);
+      if (dist < closestDist) { closestDist = dist; closest = c; }
     });
-  }, { root: carousel, threshold: 0.6 });
+    if (closest && closest.dataset.id !== selectedId) {
+      cards.forEach(c => c.classList.toggle('center', c === closest));
+      selectedId = closest.dataset.id;
+      const previewColors = AVATAR_COLORS[selectedId] || AVATAR_COLORS.rosso;
+      const app = document.getElementById('app');
+      app.style.setProperty('--skin', previewColors.color);
+      app.style.setProperty('--skin-dark', previewColors.dark);
+      app.style.setProperty('--skin-header-bg', `linear-gradient(160deg, ${previewColors.color} 0%, ${previewColors.dark} 100%)`);
+      app.style.setProperty('--accent', previewColors.color);
+      app.style.setProperty('--accent-deep', previewColors.dark);
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) metaTheme.content = previewColors.color;
+    }
+  }
 
+  carousel.addEventListener('scroll', updateCentered, { passive: true });
+  carousel.addEventListener('scrollend', updateCentered, { passive: true });
   cards.forEach(c => {
-    io.observe(c);
     c.addEventListener('click', () => c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }));
   });
+  setTimeout(updateCentered, 100);
 
   sheet.querySelector('.pdx-avatar-sheet-backdrop').addEventListener('click', () => sheet.remove());
   sheet.querySelector('#sheet-confirm').addEventListener('click', () => {

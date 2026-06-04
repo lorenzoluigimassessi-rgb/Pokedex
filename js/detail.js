@@ -328,9 +328,23 @@ async function loadSiblingForms(data, overlay) {
 
 async function loadSpecialForms(data, overlay) {
   // check all IDs in the evolution chain — forms are keyed to the final form's base ID
-  const idsToCheck = new Set([data.id]);
+  const idsToCheck = new Set([Number(data.id)]);
   if (data.evo && data.evo.length > 0) {
-    data.evo.forEach(id => idsToCheck.add(id));
+    data.evo.forEach(id => idsToCheck.add(Number(id)));
+  } else {
+    // evo not cached yet — try fetching species to get evo chain
+    try {
+      const sp = await api.getSpecies(data.id);
+      if (sp && sp.evolutionChainUrl) {
+        const chainId = parseInt(sp.evolutionChainUrl.split('/').filter(Boolean).pop());
+        const chain = await api.getEvolutionChain(chainId);
+        function collectIds(node) {
+          idsToCheck.add(parseInt(node.id));
+          (node.evolvesTo || []).forEach(collectIds);
+        }
+        collectIds(chain);
+      }
+    } catch(e) {}
   }
 
   let forms = null;
