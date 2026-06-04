@@ -608,7 +608,7 @@
 .pdx-flavor {
   font-size: 14px;
   line-height: 1.6;
-  color: var(--text-muted);
+  color: var(--text-primary);
   font-style: italic;
   text-align: center;
   background: rgba(0,0,0,.04);
