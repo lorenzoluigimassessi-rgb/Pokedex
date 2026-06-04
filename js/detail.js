@@ -1,6 +1,5 @@
 import { api } from './api.js';
 import { storage } from './storage.js';
-import { getStoneEvoInfo, useStoneEvolve, showEvoToast } from './evolution.js';
 
 const TYPE_COLOURS = {
   normal: '#a8a878', fire: '#f08030', water: '#6890f0', grass: '#78c850',
@@ -93,46 +92,20 @@ function renderDetail(overlay, data, caught) {
   `;
 
   document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
-  loadEvoChain(data, overlay, null);
+  loadEvoChain(data, overlay);
 }
 
-async function loadEvoChain(data, overlay, onNavCatch) {
+async function loadEvoChain(data, overlay) {
   const chainEl = document.getElementById('detail-evo-chain');
   if (!chainEl || !data.evolutionChainUrl) {
     if (chainEl) chainEl.textContent = 'Nessuna';
     return;
   }
-
   try {
     const chainId = parseInt(data.evolutionChainUrl.split('/').filter(Boolean).pop());
     const chain = await api.getEvolutionChain(chainId);
     const collection = storage.getCollection();
     chainEl.innerHTML = renderEvoChain(chain, collection, data.id);
-
-    const stoneEvos = await getStoneEvoInfo(data.id);
-    if (stoneEvos && stoneEvos.length > 0) {
-      const section = document.getElementById('detail-evo-section');
-      for (const evo of stoneEvos) {
-        const btn = document.createElement('button');
-        btn.className = 'pdx-stone-btn';
-        btn.disabled = !evo.hasStone;
-        const st = getStoneStyle(evo.stoneType);
-        btn.style.border = `2px solid ${st.color}`;
-        btn.style.background = `${st.color}1a`;
-        btn.innerHTML = `<span class="stone-modal-icon stone-${evo.stoneType}"></span> Usa pietra ${evo.stoneType} → ${evo.targetName}`;
-
-        if (evo.hasStone) {
-          btn.addEventListener('click', () => {
-            const success = useStoneEvolve(data.id, evo.targetId, evo.stoneType);
-            if (success) {
-              showEvoToast(document.body, data.name, evo.targetName);
-              closeDetail(overlay);
-            }
-          });
-        }
-        section.appendChild(btn);
-      }
-    }
   } catch {
     chainEl.textContent = 'Impossibile caricare';
   }
