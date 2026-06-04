@@ -1014,6 +1014,6 @@
 /* Cristallo artwork has extra padding — scale up to match others */
 .pdx-avatar-sheet-card[data-id="cristallo"] .pdx-avatar-sheet-card-inner img,
 .fte-carousel-card[data-index="6"] .fte-carousel-card-inner img {
-  transform: scale(1.18);
+  transform: scale(1.32);
   transform-origin: bottom center;
 }
