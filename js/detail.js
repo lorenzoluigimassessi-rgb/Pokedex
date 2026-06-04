@@ -97,7 +97,7 @@ function renderDetail(overlay, data, caught) {
     const heroHtml = `
       <div class="pdx-detail-hero">
         <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
-        ${isTablet ? '' : '<div class="pdx-detail-handle" id="detail-close"></div>'}
+        ${isTablet ? '' : ''}
         <div class="pdx-detail-artwork">
           <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
           <img src="${getSprite()}" alt="${data.name}">
