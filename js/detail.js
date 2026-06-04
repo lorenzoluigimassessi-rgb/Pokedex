@@ -64,12 +64,9 @@ function renderDetail(overlay, data, caught) {
       <div class="pdx-detail-hero">
         <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
         <div class="pdx-detail-handle" id="detail-close"></div>
-        <button class="pdx-shiny-toggle" id="pdx-shiny-toggle" title="Versione Cromatica">
-          ✨
-        </button>
         <div class="pdx-detail-artwork">
           <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
-          <img id="pdx-detail-img" src="${getSprite()}" alt="${data.name}">
+          <img src="${getSprite()}" alt="${data.name}">
         </div>
         <div class="pdx-detail-identity">
           <div class="pdx-detail-num">${num}</div>
@@ -99,12 +96,6 @@ function renderDetail(overlay, data, caught) {
     `;
 
     document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
-    document.getElementById('pdx-shiny-toggle').addEventListener('click', () => {
-      isShiny = !isShiny;
-      document.getElementById('pdx-detail-img').src = getSprite();
-      const toggleBtn = document.getElementById('pdx-shiny-toggle');
-      toggleBtn.classList.toggle('active', isShiny);
-    });
     addSwipeToDismiss(card, overlay);
   }
 
