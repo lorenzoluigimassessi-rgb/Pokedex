@@ -89,7 +89,7 @@ function App() {
     if (didCatch && encounter) {
       const { id, shiny, types } = encounter;
       setCaught(prev => {
-        const next = { ...prev, [id]: { count: (prev[id] ? prev[id].count : 0) + 1, shiny: (prev[id] && prev[id].shiny) || shiny } };
+        const next = { ...prev, [id]: { count: (prev[id] ? prev[id].count : 0) + 1, shiny: (prev[id] && prev[id].shiny) || shiny, source: prev[id]?.source || 'wild' } };
         // check completion — all FEATURE caught
         if (!completed && Object.keys(PC.FEATURE).every(k => next[Number(k)])) {
           setCompleted(true);
@@ -127,7 +127,7 @@ function App() {
     if (sk) setStonesInv(prev => ({ ...prev, [sk]: Math.max(0, (prev[sk]||0) - 1) }));
     setCaught(prev => {
       const tgt = prev[toId];
-      return { ...prev, [toId]: { count: (tgt ? tgt.count : 0) + 1, shiny: tgt ? tgt.shiny : false } };
+      return { ...prev, [toId]: { count: (tgt ? tgt.count : 0) + 1, shiny: tgt ? tgt.shiny : false, source: tgt ? tgt.source : 'evolved' } };
     });
     setDetailId(null);
     setEvoScreen({ fromId, toId });

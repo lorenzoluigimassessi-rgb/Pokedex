@@ -1,5 +1,106 @@
 /* ===== Overlays — Detail sheet, Evolution toast ===== */
 
+/* ── Shared helpers ── */
+function evoThreshold(d) {
+  if (!d || !d.evo) return 5;
+  return d.evo.length === 2 ? 10 : 5;
+}
+
+function EvoThumb({ eid, current, isCaught }) {
+  const d = PC.getDataSync(eid);
+  const label = isCaught ? (d?.name || PC.nameOf(eid)) : '???';
+  return (
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+      <div style={{ width:60, height:60, borderRadius:'50%', display:'grid', placeItems:'center',
+        background: current ? 'var(--skin-soft)' : 'rgba(0,0,0,.04)',
+        border: current ? '2px solid var(--skin)' : '2px solid rgba(0,0,0,.08)',
+        boxShadow: current ? '0 0 12px var(--skin)44' : 'none' }}>
+        {isCaught
+          ? <Sprite id={eid} size={46}/>
+          : <div style={{ filter:'brightness(0) saturate(0)', opacity:.4 }}><Sprite id={eid} size={46}/></div>}
+      </div>
+      <span style={{ fontSize:10, fontWeight:800,
+        color: current ? 'var(--text-primary)' : 'var(--text-muted)',
+        letterSpacing: isCaught ? 0 : 1 }}>{label}</span>
+    </div>
+  );
+}
+
+function SectionTitle({ children }) {
+  return <div style={{ fontFamily:'var(--font-display)', fontSize:13, color:'var(--text-primary)',
+    letterSpacing:'.3px', borderLeft:'3px solid var(--accent)', paddingLeft:8, marginBottom:8 }}>{children}</div>;
+}
+
+function EvoChain({ evo, currentId, caught }) {
+  if (!evo || evo.length < 2) return null;
+  return (
+    <div style={{ marginBottom:16 }}>
+      <SectionTitle>Linea evolutiva</SectionTitle>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, marginTop:10, flexWrap:'wrap' }}>
+        {evo.map((eid, i) => (
+          <React.Fragment key={eid}>
+            {i > 0 && <span style={{ color:'var(--text-muted)', fontSize:18 }}>→</span>}
+            <EvoThumb eid={eid} current={eid === currentId} isCaught={!!caught[eid]}/>
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Evolve button — handles all states (variants 2-6) ── */
+function EvolveButton({ id, toId, sk, data, info, stonesInv, onEvolve }) {
+  const threshold = evoThreshold(data);
+  const cnt = info ? info.count : 0;
+  const countOk = cnt >= threshold;
+  const st = sk ? PC.stoneOf(sk) : null;
+  const stoneOk = !sk || (stonesInv[sk] || 0) > 0;
+  const canEvo = countOk && stoneOk;
+  const toData = PC.getDataSync(toId);
+  const toName = toData?.name || PC.nameOf(toId);
+  const fromName = data?.name || PC.nameOf(id);
+
+  const borderColor = canEvo ? (st ? st.color : 'var(--accent)') : 'rgba(0,0,0,.12)';
+  const bg = canEvo ? (st ? `${st.color}18` : 'rgba(255,107,107,.08)') : 'transparent';
+
+  // status label below button
+  let statusLabel = '';
+  let statusColor = 'var(--text-muted)';
+  if (!countOk) {
+    statusLabel = `Servono ${threshold}× ${fromName} — ne hai ${cnt}`;
+  } else if (!stoneOk && st) {
+    statusLabel = `✓ ${cnt}/${threshold} — manca Pietra ${st.name}`;
+    statusColor = st.color;
+  } else {
+    statusLabel = '✓ Pronto!';
+    statusColor = st ? st.color : 'var(--accent)';
+  }
+
+  return (
+    <div style={{ marginBottom:10 }}>
+      <button
+        onClick={canEvo ? () => onEvolve(id, toId, sk) : undefined}
+        style={{ width:'100%', height:52, borderRadius:14, border:`2px solid ${borderColor}`,
+          background: bg, display:'flex', alignItems:'center', justifyContent:'center', gap:10,
+          fontFamily:'var(--font-display)', fontSize:15, color:'var(--text-primary)',
+          opacity: canEvo ? 1 : .5, cursor: canEvo ? 'pointer' : 'not-allowed', transition:'all .2s ease' }}>
+        {st ? <StoneIcon stone={sk} size={26} glow={false}/> : <Sprite id={toId} size={32}/>}
+        {st ? `Usa Pietra ${st.name}` : 'Evolvi'} → {toName}
+      </button>
+      <div style={{ fontSize:10, fontWeight:800, textAlign:'center', marginTop:4, color: statusColor }}>
+        {statusLabel}
+      </div>
+      {/* hint when stone is the missing piece */}
+      {countOk && !stoneOk && st && (
+        <div style={{ fontSize:10, color:'var(--text-muted)', fontWeight:700, textAlign:'center', marginTop:2 }}>
+          Cattura 10 Pokémon di tipo {st.name} per ottenerla
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Main DetailOverlay ── */
 function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenCatch }) {
   const isCaught = !!info;
   const [data, setData] = useState(() => PC.getDataSync(id));
@@ -9,67 +110,41 @@ function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenC
     let cancelled = false;
     if (!data) {
       setLoading(true);
-      PC.fetchFullData(id).then(d => {
-        if (!cancelled) { setData(d); setLoading(false); }
-      });
+      PC.fetchFullData(id).then(d => { if (!cancelled) { setData(d); setLoading(false); } });
     }
     return () => { cancelled = true; };
   }, [id]);
 
-  const types = data ? data.types : ['normal'];
-  const mainType = types[0];
-  const tc = PC.typeColor(mainType);
-  const name = data ? (data.name || PC.nameOf(id)) : PC.nameOf(id);
-  const flavor = data ? data.flavor : '';
-
-  // loading state
+  /* Variant 11 — loading */
   if (loading) {
     return (
       <div style={{ position:'absolute', inset:0, zIndex:30, animation:'fade-in .2s ease' }}>
         <div onClick={onClose} style={{ position:'absolute', inset:0, background:'rgba(10,8,20,.5)', backdropFilter:'blur(2px)' }}/>
-        <div style={{ position:'absolute', left:0, right:0, bottom:0, height:'50%',
+        <div style={{ position:'absolute', left:0, right:0, bottom:0, height:'45%',
           background:'var(--bg-pokedex)', borderTopLeftRadius:26, borderTopRightRadius:26,
-          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12 }}>
-          <div className="skel" style={{ width:80, height:80, borderRadius:'50%' }}/>
+          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14 }}>
+          <div className="skel" style={{ width:90, height:90, borderRadius:'50%' }}/>
           <div style={{ fontSize:13, fontWeight:700, color:'var(--text-muted)' }}>Caricamento…</div>
         </div>
       </div>
     );
   }
 
-  // --- evolution options from data (works for both hardcoded + API) ---
-  function evoThreshold(fromId) {
-    const d = PC.getDataSync(fromId);
-    if (!d || !d.evo) return 5;
-    return d.evo.length === 2 ? 10 : 5;
-  }
+  const types = data?.types || ['normal'];
+  const tc = PC.typeColor(types[0]);
+  const name = data?.name || PC.nameOf(id);
+  const flavor = data?.flavor || '';
+  const evo = data?.evo || null;
+  const hasBranch = !!(data?.branch);
+  const evoIdx = evo ? evo.indexOf(id) : -1;
+  const isFinalEvo = evo ? (evoIdx === evo.length - 1) : true;
+  const isBaseForm = evoIdx === 0 || evo === null;
 
-  const stoneOpts = [];
-  const evolveOpts = [];
-  if (isCaught && data) {
-    if (data.branch) {
-      const threshold = evoThreshold(id);
-      const cnt = info.count;
-      data.branch.forEach(([toId, sk]) => {
-        const hasStone = sk ? (stonesInv[sk] || 0) > 0 : false;
-        stoneOpts.push({ toId, sk, threshold, cnt, canEvo: cnt >= threshold && hasStone });
-      });
-    } else if (data.evo && data.evo.length > 1) {
-      const idx = data.evo.indexOf(id);
-      if (idx > -1 && idx < data.evo.length - 1) {
-        const toId = data.evo[idx + 1];
-        const threshold = evoThreshold(id);
-        const cnt = info.count;
-        if (data.stone) {
-          const hasStone = (stonesInv[data.stone] || 0) > 0;
-          stoneOpts.push({ toId, sk: data.stone, threshold, cnt, canEvo: cnt >= threshold && hasStone });
-        } else {
-          evolveOpts.push({ toId, threshold, cnt, canEvo: cnt >= threshold });
-        }
-      }
-    }
-  }
+  // source badge for caught evolved forms
+  const showSourceBadge = isCaught && evo && evo.length > 1 && !isBaseForm;
+  const sourceBadge = info?.source === 'wild' ? '⚡ Selvatico' : info?.source === 'evolved' ? '◆ Evoluto' : null;
 
+  // sheet — always 90% height
   return (
     <div style={{ position:'absolute', inset:0, zIndex:30, animation:'fade-in .2s ease' }}>
       <div onClick={onClose} style={{ position:'absolute', inset:0, background:'rgba(10,8,20,.5)', backdropFilter:'blur(2px)' }}/>
@@ -77,216 +152,183 @@ function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenC
         background:'var(--bg-pokedex)', borderTopLeftRadius:26, borderTopRightRadius:26,
         animation:'sheet-up .32s ease', display:'flex', flexDirection:'column', overflow:'hidden' }}>
 
-        {/* header strip */}
-        <div style={{ background:`linear-gradient(180deg, ${tc}30, transparent)`, borderTop:'4px solid var(--skin)', paddingTop:8, flexShrink:0 }}>
+        {/* header strip — type-tinted */}
+        <div style={{ background:`linear-gradient(180deg,${tc}28,transparent)`, borderTop:`4px solid var(--skin)`, paddingTop:8, flexShrink:0 }}>
           <div onClick={onClose} style={{ width:44, height:5, borderRadius:99, background:'rgba(0,0,0,.18)', margin:'2px auto 6px', cursor:'pointer' }}/>
         </div>
 
-        <div className="scroll" style={{ flex:1, padding:'0 22px 28px' }}>
+        <div className="scroll" style={{ flex:1, padding:'0 22px 32px' }}>
+
           {/* artwork */}
-          <div style={{ display:'grid', placeItems:'center', position:'relative', marginTop:-4 }}>
-            <div style={{ position:'absolute', top:20, width:200, height:200, borderRadius:'50%',
-              background:`radial-gradient(${tc}40, transparent 68%)` }}/>
+          <div style={{ display:'grid', placeItems:'center', position:'relative', marginTop:-4, marginBottom:4 }}>
+            <div style={{ position:'absolute', top:16, width:190, height:190, borderRadius:'50%',
+              background:`radial-gradient(${tc}38,transparent 68%)` }}/>
             {isCaught
-              ? <Sprite id={id} shiny={info.shiny} art size={210}/>
-              : <div style={{ filter:'brightness(0)', opacity:.55 }}><Sprite id={id} art size={210}/></div>}
+              ? <Sprite id={id} shiny={info.shiny} art size={200}/>
+              : <div style={{ filter:'brightness(0)', opacity:.5 }}><Sprite id={id} art size={200}/></div>}
           </div>
 
-          {/* name / badges */}
-          <div style={{ textAlign:'center', marginTop:-6 }}>
-            <div style={{ fontSize:13, fontWeight:800, color:'var(--text-muted)' }}>#{String(id).padStart(3,'0')}</div>
-            <h2 className="fredoka" style={{ fontSize:30, margin:'2px 0 10px' }}>
+          {/* number + name + badges */}
+          <div style={{ textAlign:'center', marginBottom:14 }}>
+            <div style={{ fontSize:12, fontWeight:800, color:'var(--text-muted)' }}>#{String(id).padStart(3,'0')}</div>
+            <h2 className="fredoka" style={{ fontSize:30, margin:'2px 0 8px',
+              letterSpacing: isCaught ? 0 : 3, color: isCaught ? 'var(--text-primary)' : 'var(--text-muted)' }}>
               {isCaught ? name : '???'}
             </h2>
-            {isCaught && (
-              <div style={{ display:'flex', gap:8, justifyContent:'center', alignItems:'center', flexWrap:'wrap' }}>
-                {types.map(t => <TypeBadge key={t} type={t}/>)}
-                {info.count > 1 && <span style={{ fontSize:13, fontWeight:800, color:'var(--accent)', whiteSpace:'nowrap',
-                  background:'rgba(255,107,107,.12)', padding:'5px 12px', borderRadius:99 }}>×{info.count} catturati</span>}
-                {info.shiny && <span style={{ fontSize:13, fontWeight:800, color:'#b8860b', whiteSpace:'nowrap',
-                  background:'rgba(255,217,61,.22)', padding:'5px 12px', borderRadius:99 }}>✨ Cromatico</span>}
-              </div>
-            )}
+            <div style={{ display:'flex', gap:6, justifyContent:'center', alignItems:'center', flexWrap:'wrap' }}>
+              {isCaught && types.map(t => <TypeBadge key={t} type={t}/>)}
+              {isCaught && info.count > 0 && (
+                <span style={{ fontSize:12, fontWeight:800, color:'var(--accent)',
+                  background:'rgba(255,107,107,.1)', padding:'4px 10px', borderRadius:99 }}>
+                  ×{info.count} catturati
+                </span>
+              )}
+              {isCaught && info.shiny && (
+                <span style={{ fontSize:12, fontWeight:800, color:'#b8860b',
+                  background:'rgba(255,217,61,.18)', padding:'4px 10px', borderRadius:99 }}>✨ Cromatico</span>
+              )}
+              {showSourceBadge && sourceBadge && (
+                <span style={{ fontSize:11, fontWeight:800, color:'var(--text-muted)',
+                  background:'rgba(0,0,0,.06)', padding:'4px 10px', borderRadius:99 }}>{sourceBadge}</span>
+              )}
+            </div>
           </div>
 
-          {/* uncaught state */}
-          {!isCaught ? (
-            <div style={{ marginTop:20 }}>
-              <div style={{ background:'rgba(255,107,107,.07)', border:'1.5px solid rgba(255,107,107,.25)',
+          {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              UNCAUGHT VARIANTS (9, 10, 12)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+          {!isCaught && (
+            <div style={{ marginTop:4 }}>
+              <div style={{ background:'rgba(255,107,107,.06)', border:'1.5px solid rgba(255,107,107,.2)',
                 borderRadius:14, padding:'14px 16px', marginBottom:16 }}>
-                <div style={{ fontFamily:'var(--font-display)', fontSize:14, color:'var(--accent)', marginBottom:10 }}>
+                <div style={{ fontFamily:'var(--font-display)', fontSize:14, color:'var(--accent)', marginBottom:12 }}>
                   Come ottenere {name}
                 </div>
-                {data && data.evo && data.evo.length > 1 && data.evo.indexOf(id) > 0 ? (() => {
-                  const prevId = data.evo[data.evo.indexOf(id) - 1];
-                  const threshold = evoThreshold(prevId);
+
+                {/* variant 10 — evolved form: show evolve path first */}
+                {evo && evo.length > 1 && evoIdx > 0 && (() => {
+                  const prevId = evo[evoIdx - 1];
+                  const prevData = PC.getDataSync(prevId);
+                  const thresh = evoThreshold(prevData);
                   const prevCnt = caught[prevId] ? caught[prevId].count : 0;
-                  const prevName = PC.getDataSync(prevId)?.name || PC.nameOf(prevId);
+                  const prevName = prevData?.name || PC.nameOf(prevId);
                   return (
                     <>
-                      <div style={{ display:'flex', alignItems:'flex-start', gap:10, marginBottom:10 }}>
+                      {/* evolve path */}
+                      <div style={{ display:'flex', alignItems:'flex-start', gap:10, marginBottom:12 }}>
                         <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(255,107,107,.15)',
                           display:'grid', placeItems:'center', flexShrink:0, fontSize:13 }}>◆</div>
                         <div style={{ flex:1 }}>
-                          <div style={{ fontSize:12, fontWeight:800, color:'var(--text-primary)' }}>Evolvi da {prevName}</div>
-                          <div style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, marginTop:2 }}>
-                            Cattura {threshold}× {prevName} — ne hai {prevCnt}
+                          <div style={{ fontSize:12, fontWeight:800, color:'var(--text-primary)' }}>
+                            Evolvi da {prevName}
                           </div>
-                          <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:5 }}>
-                            <div style={{ flex:1, height:5, borderRadius:999, background:'rgba(0,0,0,.1)', overflow:'hidden' }}>
-                              <div style={{ width:`${Math.min(100,(prevCnt/threshold)*100)}%`, height:'100%', borderRadius:999, background:'var(--accent)' }}/>
+                          <div style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, marginTop:2 }}>
+                            Cattura {thresh}× {prevName} — ne hai {prevCnt}
+                          </div>
+                          <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:6 }}>
+                            <div style={{ flex:1, height:5, borderRadius:999, background:'rgba(0,0,0,.08)', overflow:'hidden' }}>
+                              <div style={{ width:`${Math.min(100,(prevCnt/thresh)*100)}%`, height:'100%',
+                                borderRadius:999, background:'var(--accent)', transition:'width .4s ease' }}/>
                             </div>
-                            <span style={{ fontSize:10, fontWeight:800, color:'var(--accent)' }}>{prevCnt}/{threshold}</span>
+                            <span style={{ fontSize:10, fontWeight:800, color:'var(--accent)' }}>{prevCnt}/{thresh}</span>
                           </div>
                         </div>
                       </div>
-                      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
                         <div style={{ flex:1, height:1, background:'rgba(0,0,0,.08)' }}/>
                         <span style={{ fontSize:10, fontWeight:800, color:'var(--text-muted)' }}>OPPURE</span>
                         <div style={{ flex:1, height:1, background:'rgba(0,0,0,.08)' }}/>
                       </div>
-                      <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
-                        <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(100,100,200,.1)',
-                          display:'grid', placeItems:'center', flexShrink:0, fontSize:13 }}>⚡</div>
-                        <div>
-                          <div style={{ fontSize:12, fontWeight:800, color:'var(--text-primary)' }}>Trovalo allo stato selvatico</div>
-                          <div style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, marginTop:2 }}>
-                            {PC.rarityOf(id).label} — continua a cercare!
-                          </div>
-                        </div>
-                      </div>
                     </>
                   );
-                })() : (
-                  <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
-                    <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(100,100,200,.1)',
-                      display:'grid', placeItems:'center', flexShrink:0, fontSize:13 }}>⚡</div>
-                    <div>
-                      <div style={{ fontSize:12, fontWeight:800, color:'var(--text-primary)' }}>Trovalo allo stato selvatico</div>
-                      <div style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, marginTop:2 }}>
-                        {PC.rarityOf(id).label} — continua a cercare!
-                      </div>
-                      <div style={{ display:'flex', gap:5, marginTop:6 }}>
+                })()}
+
+                {/* wild path — always shown */}
+                <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                  <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(100,120,220,.12)',
+                    display:'grid', placeItems:'center', flexShrink:0, fontSize:13 }}>⚡</div>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:800, color:'var(--text-primary)' }}>
+                      Trovalo allo stato selvatico
+                    </div>
+                    <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:4 }}>
+                      <span style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700 }}>
+                        {PC.rarityOf(id).label}
+                      </span>
+                      <div style={{ display:'flex', gap:4 }}>
                         {types.map(t => <TypeBadge key={t} type={t}/>)}
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-              {data && data.evo && data.evo.length > 1 && (
-                <div style={{ marginBottom:14 }}>
-                  <SectionTitle>Linea evolutiva</SectionTitle>
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, marginTop:10, flexWrap:'wrap' }}>
-                    {data.evo.map((eid, i) => (
-                      <React.Fragment key={eid}>
-                        {i > 0 && <span style={{ color:'var(--text-muted)', fontSize:18 }}>→</span>}
-                        <EvoThumb eid={eid} current={eid === id} isCaught={!!caught[eid]}/>
-                      </React.Fragment>
-                    ))}
-                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* evo chain preview */}
+              {evo && evo.length > 1 && <EvoChain evo={evo} currentId={id} caught={caught}/>}
+
+              {/* CTA */}
               <button className="btn-primary" style={{ maxWidth:260, margin:'0 auto' }} onClick={onOpenCatch}>
-                Vai a catturare!
+                {evo && evoIdx > 0
+                  ? `Vai a catturare ${(PC.getDataSync(evo[evoIdx-1])?.name || PC.nameOf(evo[evoIdx-1]))}!`
+                  : 'Vai a catturare!'}
               </button>
             </div>
-          ) : (
-            /* caught state */
+          )}
+
+          {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              CAUGHT VARIANTS (1–8)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+          {isCaught && (
             <>
+              {/* description */}
               {flavor && (
-                <div style={{ marginTop:20, marginBottom:18 }}>
+                <div style={{ marginBottom:20 }}>
                   <SectionTitle>Descrizione</SectionTitle>
-                  <p style={{ marginTop:10, fontSize:13.5, lineHeight:1.65, color:'var(--text-primary)' }}>{flavor}</p>
+                  <p style={{ fontSize:13.5, lineHeight:1.65, color:'var(--text-primary)', marginTop:4 }}>{flavor}</p>
                 </div>
               )}
-              {data && data.evo && data.evo.length > 1 && (
-                <div style={{ marginBottom:16 }}>
-                  <SectionTitle>Linea evolutiva</SectionTitle>
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, marginTop:10, flexWrap:'wrap' }}>
-                    {data.evo.map((eid, i) => (
-                      <React.Fragment key={eid}>
-                        {i > 0 && <span style={{ color:'var(--text-muted)', fontSize:18 }}>→</span>}
-                        <EvoThumb eid={eid} current={eid === id} isCaught={!!caught[eid]}/>
-                      </React.Fragment>
+
+              {/* evo chain — variants 2-8 */}
+              {evo && evo.length > 1 && <EvoChain evo={evo} currentId={id} caught={caught}/>}
+
+              {/* ─── EVOLVE SECTION ─── */}
+
+              {/* variants 2-5: linear evolution */}
+              {!hasBranch && evo && !isFinalEvo && (
+                <div style={{ marginBottom:4 }}>
+                  <SectionTitle>Evolvi</SectionTitle>
+                  <div style={{ marginTop:8 }}>
+                    <EvolveButton
+                      id={id} toId={evo[evoIdx+1]} sk={data?.stone || null}
+                      data={data} info={info} stonesInv={stonesInv} onEvolve={onEvolve}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* variant 6: branch (Eevee-style) */}
+              {hasBranch && (
+                <div style={{ marginBottom:4 }}>
+                  <SectionTitle>Evolvi</SectionTitle>
+                  <div style={{ marginTop:8, display:'flex', flexDirection:'column', gap:0 }}>
+                    {data.branch.map(([toId, sk]) => (
+                      <EvolveButton
+                        key={`${toId}-${sk}`}
+                        id={id} toId={toId} sk={sk}
+                        data={data} info={info} stonesInv={stonesInv} onEvolve={onEvolve}
+                      />
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* evolve buttons (no stone) */}
-              {evolveOpts.map(({ toId, threshold, cnt, canEvo }) => (
-                <div key={toId} style={{ marginBottom:8 }}>
-                  <button onClick={canEvo ? () => onEvolve(id, toId, null) : undefined}
-                    style={{ width:'100%', height:50, borderRadius:14,
-                      border:`2px solid ${canEvo ? 'var(--accent)' : 'rgba(0,0,0,.15)'}`,
-                      background: canEvo ? 'rgba(255,107,107,.1)' : 'transparent',
-                      display:'flex', alignItems:'center', justifyContent:'center', gap:10,
-                      fontFamily:'var(--font-display)', fontSize:15, color:'var(--text-primary)',
-                      opacity: canEvo ? 1 : .5, cursor: canEvo ? 'pointer' : 'not-allowed' }}>
-                    <Sprite id={toId} size={32}/>
-                    Evolvi → {PC.nameOf(toId)}
-                  </button>
-                  <div style={{ fontSize:10, color: canEvo ? 'var(--accent)' : 'var(--text-muted)',
-                    fontWeight:700, textAlign:'center', marginTop:3 }}>
-                    {canEvo ? `✓ ${cnt}/${threshold} — Pronto!` : `Servono ${threshold}× ${name} (hai ${cnt})`}
-                  </div>
-                </div>
-              ))}
-
-              {/* evolve buttons (stone) */}
-              {stoneOpts.map(({ toId, sk, threshold, cnt, canEvo }) => {
-                const st = PC.stoneOf(sk);
-                return (
-                  <div key={`${toId}-${sk}`} style={{ marginBottom:8 }}>
-                    <button onClick={canEvo ? () => onEvolve(id, toId, sk) : undefined}
-                      style={{ width:'100%', height:50, borderRadius:14,
-                        border:`2px solid ${canEvo ? st.color : 'rgba(0,0,0,.15)'}`,
-                        background: canEvo ? `${st.color}18` : 'transparent',
-                        display:'flex', alignItems:'center', justifyContent:'center', gap:10,
-                        fontFamily:'var(--font-display)', fontSize:15, color:'var(--text-primary)',
-                        opacity: canEvo ? 1 : .5, cursor: canEvo ? 'pointer' : 'not-allowed' }}>
-                      <StoneIcon stone={sk} size={28} glow={false}/>
-                      Usa Pietra {st.name} → {PC.nameOf(toId)}
-                    </button>
-                    <div style={{ fontSize:10, color: canEvo ? st.color : 'var(--text-muted)',
-                      fontWeight:700, textAlign:'center', marginTop:3 }}>
-                      {cnt < threshold
-                        ? `Servono ${threshold}× ${name} (hai ${cnt})`
-                        : (stonesInv[sk] || 0) === 0
-                          ? `Servono ${cnt}/${threshold} ✓ — ma manca la Pietra ${st.name}`
-                          : `✓ Pronto!`}
-                    </div>
-                  </div>
-                );
-              })}
+              {/* variants 1, 8: final / no evolution — nothing to show */}
             </>
           )}
         </div>
       </div>
     </div>
   );
-}
-
-function EvoThumb({ eid, current, isCaught }) {
-  return (
-    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
-      <div style={{ width:62, height:62, borderRadius:'50%', display:'grid', placeItems:'center',
-        background: current ? 'var(--skin-soft)' : 'rgba(0,0,0,.04)',
-        border: current ? '2px solid var(--skin)' : '2px solid transparent' }}>
-        {isCaught
-          ? <Sprite id={eid} size={48}/>
-          : <div style={{ filter:'brightness(0) saturate(0)', opacity:.5 }}><Sprite id={eid} size={48}/></div>}
-      </div>
-      <span style={{ fontSize:10, fontWeight:800, color: current ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-        {isCaught ? PC.nameOf(eid) : '???'}
-      </span>
-    </div>
-  );
-}
-
-function SectionTitle({ children }) {
-  return <div style={{ fontFamily:'var(--font-display)', fontSize:14, color:'var(--text-primary)',
-    letterSpacing:'.3px', borderLeft:'3px solid var(--accent)', paddingLeft:8 }}>{children}</div>;
 }
 
 /* ----- Evolution toast ----- */
