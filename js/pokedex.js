@@ -37,8 +37,8 @@ const AVATAR_COLORS = {
   cristallo: { color: '#3b8fe2', dark: '#1a5faa', shadow: '0 0 0 6px #1a5faa, 0 0 0 10px #103880, 0 28px 60px rgba(0,0,0,.55)' },
 };
 
-// Images that have baked-in white/light backgrounds — wrap in dark pill
-const PDX_IMG_HAS_BG = { sinnoh: true, kalos: true };
+// All images now have transparent backgrounds
+const PDX_IMG_HAS_BG = {};
 
 function pdxImgStyle(region) {
   return PDX_IMG_HAS_BG[region] ? 'style="border-radius:8px;background:rgba(0,0,0,.25);padding:3px"' : '';

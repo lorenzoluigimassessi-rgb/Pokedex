@@ -27,10 +27,8 @@ export async function showDetail(container, pokemonId, caught) {
 
 function renderDetail(overlay, data, caught) {
   const collection = storage.getCollection();
-  const catchData = collection[data.id] || { count: 1, shiny: false };
-  const isShiny = catchData?.shiny;
-
-  const sprite = isShiny && data.spriteShiny ? data.spriteShiny : data.artwork || data.sprite;
+  const catchData = collection[data.id] || collection[String(data.id)] || { count: 1, shiny: false };
+  let isShiny = catchData?.shiny;
 
   const num = `#${String(data.id).padStart(3, '0')}`;
   const mainType = data.types[0] || 'normal';
@@ -41,58 +39,76 @@ function renderDetail(overlay, data, caught) {
   ).join('');
 
   const card = overlay.querySelector('.pdx-detail-card');
-  card.className = `pdx-detail-card${isShiny ? ' shiny' : ''}`;
 
-  const movesHtml = (data.moves && data.moves.length > 0)
-    ? data.moves.map(m => `<span class="pdx-move-badge">${m.name}</span>`).join('')
-    : '<span style="color:var(--text-muted);font-size:13px">—</span>';
+  function getSprite() {
+    return isShiny && data.spriteShiny ? data.spriteShiny : data.artwork || data.sprite;
+  }
 
-  const statsHtml = data.stats.map(s => {
-    const pct = Math.min((s.value / 180) * 100, 100);
-    return `<div class="pdx-stat-row">
-      <span class="pdx-stat-name">${formatStatName(s.name)}</span>
-      <div class="pdx-stat-track"><div class="pdx-stat-fill" style="width:${pct}%;background:${tc}"></div></div>
-      <span class="pdx-stat-val">${s.value}</span>
-    </div>`;
-  }).join('');
+  function render() {
+    card.className = `pdx-detail-card${isShiny ? ' shiny' : ''}`;
 
-  card.innerHTML = `
-    <div class="pdx-detail-hero">
-      <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
-      <div class="pdx-detail-handle" id="detail-close"></div>
-      <div class="pdx-detail-artwork">
-        <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
-        <img src="${sprite}" alt="${data.name}">
-      </div>
-      <div class="pdx-detail-identity">
-        <div class="pdx-detail-num">${num}</div>
-        <h2 class="pdx-detail-name fredoka">${data.name}</h2>
-        <div class="pdx-detail-badges">
-          ${typeBadges}
-          ${catchData.count > 1 ? `<span class="pdx-detail-count-badge">×${catchData.count} catturato</span>` : ''}
-          ${isShiny ? '<span class="pdx-detail-shiny-badge">✨ Shiny</span>' : ''}
+    const movesHtml = (data.moves && data.moves.length > 0)
+      ? data.moves.map(m => `<span class="pdx-move-badge">${m.name}</span>`).join('')
+      : '<span style="color:var(--text-muted);font-size:13px">—</span>';
+
+    const statsHtml = data.stats.map(s => {
+      const pct = Math.min((s.value / 180) * 100, 100);
+      return `<div class="pdx-stat-row">
+        <span class="pdx-stat-name">${formatStatName(s.name)}</span>
+        <div class="pdx-stat-track"><div class="pdx-stat-fill" style="width:${pct}%;background:${tc}"></div></div>
+        <span class="pdx-stat-val">${s.value}</span>
+      </div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="pdx-detail-hero">
+        <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
+        <div class="pdx-detail-handle" id="detail-close"></div>
+        <button class="pdx-shiny-toggle" id="pdx-shiny-toggle" title="Versione Cromatica">
+          ✨
+        </button>
+        <div class="pdx-detail-artwork">
+          <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
+          <img id="pdx-detail-img" src="${getSprite()}" alt="${data.name}">
+        </div>
+        <div class="pdx-detail-identity">
+          <div class="pdx-detail-num">${num}</div>
+          <h2 class="pdx-detail-name fredoka">${data.name}</h2>
+          <div class="pdx-detail-badges">
+            ${typeBadges}
+            ${catchData.count > 1 ? `<span class="pdx-detail-count-badge">×${catchData.count} catturato</span>` : ''}
+            ${isShiny ? '<span class="pdx-detail-shiny-badge">✨ Cromatico</span>' : ''}
+          </div>
         </div>
       </div>
-    </div>
-    <div class="pdx-detail-content scroll">
-      ${data.flavorText ? `<div class="pdx-section"><p class="pdx-flavor">${data.flavorText}</p></div>` : ''}
-      <div class="pdx-section">
-        <div class="pdx-section-title">Statistiche Base</div>
-        <div class="pdx-stats">${statsHtml}</div>
+      <div class="pdx-detail-content scroll">
+        ${data.flavorText ? `<div class="pdx-section"><p class="pdx-flavor">${data.flavorText}</p></div>` : ''}
+        <div class="pdx-section">
+          <div class="pdx-section-title">Statistiche Base</div>
+          <div class="pdx-stats">${statsHtml}</div>
+        </div>
+        <div class="pdx-section">
+          <div class="pdx-section-title">Mosse</div>
+          <div class="pdx-moves">${movesHtml}</div>
+        </div>
+        <div class="pdx-section" id="detail-evo-section">
+          <div class="pdx-section-title">Evoluzione</div>
+          <div class="pdx-evo-chain" id="detail-evo-chain">Caricamento...</div>
+        </div>
       </div>
-      <div class="pdx-section">
-        <div class="pdx-section-title">Mosse</div>
-        <div class="pdx-moves">${movesHtml}</div>
-      </div>
-      <div class="pdx-section" id="detail-evo-section">
-        <div class="pdx-section-title">Evoluzione</div>
-        <div class="pdx-evo-chain" id="detail-evo-chain">Caricamento...</div>
-      </div>
-    </div>
-  `;
+    `;
 
-  document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
-  addSwipeToDismiss(card, overlay);
+    document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
+    document.getElementById('pdx-shiny-toggle').addEventListener('click', () => {
+      isShiny = !isShiny;
+      document.getElementById('pdx-detail-img').src = getSprite();
+      const toggleBtn = document.getElementById('pdx-shiny-toggle');
+      toggleBtn.classList.toggle('active', isShiny);
+    });
+    addSwipeToDismiss(card, overlay);
+  }
+
+  render();
   loadEvoChain(data, overlay);
 }
 
