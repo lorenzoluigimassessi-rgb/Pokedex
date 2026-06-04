@@ -689,12 +689,26 @@
 .pdx-forms-nodes {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   justify-content: flex-start;
+  margin-top: 6px;
 }
 
 .pdx-form-node {
   transition: transform .15s ease;
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.pdx-form-node .pdx-evo-circle {
+  width: 64px;
+  height: 64px;
+}
+
+.pdx-form-node .pdx-evo-circle img {
+  width: 56px;
+  height: 56px;
+  image-rendering: auto;
 }
 
 .pdx-form-node:active {
@@ -710,14 +724,23 @@
   background: linear-gradient(135deg, var(--accent), #f5b942);
   border-color: transparent;
 }
+.pdx-evo-chain {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
   justify-content: center;
+  margin-top: 10px;
 }
 
 .pdx-evo-branching {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
   display: flex;
   align-items: center;
   gap: 8px;

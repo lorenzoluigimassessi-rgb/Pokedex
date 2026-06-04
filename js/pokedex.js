@@ -240,11 +240,12 @@ function createGridCard(entry, caught) {
 
   // special form card
   if (entry.isForm) {
-    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${entry.id}.png`;
+    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
+    const fallbackUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.num}.png`;
     card.innerHTML = `
       <span class="pdx-card-num">#${String(entry.num).padStart(3,'0')}</span>
       <img src="${spriteUrl}" alt="${entry.name}" loading="lazy" class="pdx-card-img"
-        onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.num}.png'">
+        onerror="this.src='${fallbackUrl}'">
       <span class="pdx-card-name fredoka">${entry.name}</span>
     `;
     card.addEventListener('click', () => showDetail(container, entry.id));

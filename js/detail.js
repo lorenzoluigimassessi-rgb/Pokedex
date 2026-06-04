@@ -258,15 +258,16 @@ async function loadSpecialForms(data, overlay) {
       const node = document.createElement('div');
       node.className = 'pdx-evo-node pdx-form-node';
       node.style.cursor = 'pointer';
-      // show name immediately, load sprite async
-      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${form.slug}.png`;
+      // use front_default sprite — official-artwork path doesn't work for form slugs
+      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.slug}.png`;
+      const fallbackUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.baseId}.png`;
       node.innerHTML = `
         <div class="pdx-evo-circle">
           <img src="${spriteUrl}"
-            onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png'"
+            onerror="this.src='${fallbackUrl}'"
             alt="${form.name}">
         </div>
-        <span class="pdx-evo-label">${form.name}</span>`;
+        <span class="pdx-evo-label" style="text-align:center;line-height:1.2;max-width:72px;white-space:normal">${form.name}</span>`;
       node.addEventListener('click', () => {
         closeDetail(overlay);
         const container = overlay.parentElement;
