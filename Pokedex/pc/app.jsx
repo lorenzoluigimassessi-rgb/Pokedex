@@ -151,7 +151,13 @@ function App() {
           onClose={()=>setDetailId(null)} onEvolve={evolve} onOpenCatch={()=>{ setDetailId(null); setScreen('catch'); }}/>
       )}
 
+      {evoScreen && <EvoScreen fromId={evoScreen.fromId} toId={evoScreen.toId}
+        onClose={()=>{ setEvoScreen(null); setDetailId(evoScreen.toId); }}/>}
 
+      {stoneSheet && <StoneSheet stoneKey={stoneSheet} stonesInv={stonesInv}
+        onClose={()=>setStoneSheet(null)} onOpenDetail={(id)=>{ setStoneSheet(null); setDetailId(id); }}/>}
+
+      {completed && <CompletionScreen trainerName={trainer.name} onClose={()=>setCompleted(false)}/>}
     </>
   );
 }
