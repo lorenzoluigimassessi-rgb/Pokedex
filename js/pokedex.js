@@ -1,4 +1,3 @@
-import { api } from './api.js';
 import { storage } from './storage.js';
 import { showDetail } from './detail.js';
 import { AVATARS } from './fte.js';
@@ -44,6 +43,8 @@ const PDX_IMG_HAS_BG = { sinnoh: true, kalos: true };
 function pdxImgStyle(region) {
   return PDX_IMG_HAS_BG[region] ? 'style="border-radius:8px;background:rgba(0,0,0,.25);padding:3px"' : '';
 }
+
+let currentRegion = 'kanto';
 let displayedEntries = [];
 let renderBatch = 50;
 let rendered = 0;
