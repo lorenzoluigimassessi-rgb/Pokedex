@@ -141,8 +141,8 @@ function renderDetail(overlay, data, caught) {
     expandBtn.textContent = '⤢';
     expandBtn.addEventListener('click', e => {
       e.stopPropagation();
-      alert('expand clicked, data.id=' + data.id);
-      openViewer(data, overlay.parentElement);
+      const viewerContainer = overlay.closest('#app') || overlay.parentElement;
+      openViewer(data, viewerContainer);
     });
     card.appendChild(expandBtn);
 
@@ -435,11 +435,14 @@ function openViewer(data, container) {
   let mode = 'home'; // home | anim
   let currentAudio = null;
 
+  // Build sprite URLs — fallback chain for missing data
+  const pid = data.id;
   const SPRITES = {
-    home: data.home || data.artwork || data.sprite,
-    homeShiny: data.homeShiny || data.artworkShiny || data.spriteShiny,
-    anim: data.anim || data.sprite,
-    animShiny: data.animShiny || data.spriteShiny,
+    home: data.home || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pid}.png`,
+    homeShiny: data.homeShiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/${pid}.png`,
+    anim: data.anim || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${pid}.gif`,
+    animShiny: data.animShiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/shiny/${pid}.gif`,
+    cry: data.cryLatest || `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pid}.ogg`,
   };
 
   function getViewerSprite() {
@@ -509,7 +512,7 @@ function openViewer(data, container) {
 
     document.getElementById('vw-sound').onclick = () => {
       if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-      const url = data.cryLatest || `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${data.id}.ogg`;
+      const url = SPRITES.cry;
       const audio = new Audio(url);
       currentAudio = audio;
       const btn = document.getElementById('vw-sound');
