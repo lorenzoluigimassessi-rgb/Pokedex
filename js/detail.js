@@ -536,8 +536,12 @@ function openViewer(data, container) {
     }, { passive: true });
   }
 
-  render();
-  console.log('openViewer: appending to', container, 'overlay:', overlay);
+  try {
+    render();
+  } catch(e) {
+    alert('render error: ' + e.message);
+    return;
+  }
   document.body.appendChild(overlay);
 }
 
