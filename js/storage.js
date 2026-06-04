@@ -90,8 +90,8 @@ export const storage = {
   getCachedPokemon(id) { return getCached(`pokemon_${id}`, TTL_7_DAYS); },
   setCachedPokemon(id, data) { setCache(`pokemon_${id}`, data); },
 
-  getCachedSpecies(id) { return getCached(`species_${id}`, TTL_7_DAYS); },
-  setCachedSpecies(id, data) { setCache(`species_${id}`, data); },
+  getCachedSpecies(id) { return getCached(`species_it_${id}`, TTL_7_DAYS); },
+  setCachedSpecies(id, data) { setCache(`species_it_${id}`, data); },
 
   getCachedPokedex(id) { return getCached(`pokedex_${id}`, TTL_30_DAYS); },
   setCachedPokedex(id, data) { setCache(`pokedex_${id}`, data); },
