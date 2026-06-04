@@ -11,12 +11,13 @@
   overflow: hidden;
 }
 
-/* Header — device color bg */
+/* Header — sticky */
 .pdx-header {
   padding: 48px 18px 18px;
   background: var(--skin-header-bg);
-  position: relative;
-  z-index: 2;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .pdx-header::after {
@@ -80,15 +81,16 @@
   line-height: 1;
 }
 
-/* Pokédex image in header — no background, mix-blend for clean cutout */
+/* Pokédex image — use brightness filter to kill white backgrounds on images with baked-in bg */
 .pdx-header-pdx-img {
   width: 72px;
   height: 72px;
   object-fit: contain;
   flex-shrink: 0;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
-  mix-blend-mode: multiply;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.3)) brightness(1.05) contrast(1.1);
   transition: opacity 0.3s ease;
+  border-radius: 8px;
+  background: transparent;
 }
 
 /* Avatar bottom sheet */
@@ -239,14 +241,16 @@
 .pdx-filters {
   display: flex;
   gap: 8px;
-  padding: 12px 18px 4px;
+  padding: 14px 18px 14px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   flex-shrink: 0;
-  position: relative;
-  z-index: 2;
+  position: sticky;
+  top: 0;
+  z-index: 9;
   background: var(--bg-pokedex);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
 .pdx-filters::-webkit-scrollbar { display: none; }
 
@@ -263,7 +267,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  padding: 4px 16px 100px;
+  padding: 16px 16px 100px;
 }
 
 .pdx-grid.list {

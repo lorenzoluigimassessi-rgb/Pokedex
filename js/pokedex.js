@@ -32,13 +32,18 @@ const AVATAR_COLORS = {
   rosso:     { color: '#e23b3b', dark: '#9a0000', shadow: '0 0 0 6px #9a0000, 0 0 0 10px #660000, 0 28px 60px rgba(0,0,0,.55)' },
   blu:       { color: '#3b6fe2', dark: '#1a3fa0', shadow: '0 0 0 6px #1a3fa0, 0 0 0 10px #102060, 0 28px 60px rgba(0,0,0,.55)' },
   verde:     { color: '#4aab3b', dark: '#2a7a1a', shadow: '0 0 0 6px #2a7a1a, 0 0 0 10px #1a5010, 0 28px 60px rgba(0,0,0,.55)' },
-  giallo:    { color: '#d4a800', dark: '#8a6400', shadow: '0 0 0 6px #8a6400, 0 0 0 10px #604400, 0 28px 60px rgba(0,0,0,.55)' },
-  oro:       { color: '#d4a017', dark: '#8a6400', shadow: '0 0 0 6px #8a6400, 0 0 0 10px #604400, 0 28px 60px rgba(0,0,0,.55)' },
+  giallo:    { color: '#e8b800', dark: '#8a6400', shadow: '0 0 0 6px #8a6400, 0 0 0 10px #604400, 0 28px 60px rgba(0,0,0,.55)' },
+  oro:       { color: '#c47c00', dark: '#7a4a00', shadow: '0 0 0 6px #7a4a00, 0 0 0 10px #502e00, 0 28px 60px rgba(0,0,0,.55)' },
   argento:   { color: '#6a7fa8', dark: '#3a4f78', shadow: '0 0 0 6px #3a4f78, 0 0 0 10px #243058, 0 28px 60px rgba(0,0,0,.55)' },
   cristallo: { color: '#3b8fe2', dark: '#1a5faa', shadow: '0 0 0 6px #1a5faa, 0 0 0 10px #103880, 0 28px 60px rgba(0,0,0,.55)' },
 };
 
-let currentRegion = 'kanto';
+// Images that have baked-in white/light backgrounds — wrap in dark pill
+const PDX_IMG_HAS_BG = { sinnoh: true, kalos: true };
+
+function pdxImgStyle(region) {
+  return PDX_IMG_HAS_BG[region] ? 'style="border-radius:8px;background:rgba(0,0,0,.25);padding:3px"' : '';
+}
 let displayedEntries = [];
 let renderBatch = 50;
 let rendered = 0;
@@ -66,6 +71,11 @@ export async function renderPokedexView(el, navCatchCallback) {
   app.style.setProperty('--accent', colors.color);
   app.style.setProperty('--accent-deep', colors.dark);
 
+  // Update browser chrome color
+  let metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (!metaTheme) { metaTheme = document.createElement('meta'); metaTheme.name = 'theme-color'; document.head.appendChild(metaTheme); }
+  metaTheme.content = colors.color;
+
   container.innerHTML = `
     <div class="view-pokedex">
       <header class="pdx-header">
@@ -77,7 +87,7 @@ export async function renderPokedexView(el, navCatchCallback) {
             <span class="pdx-header-label">Pokédex di</span>
             <h1 class="fredoka">${trainer.name || 'Allenatore'}</h1>
           </div>
-          <img src="${REGION_PDX_IMG[currentRegion]}" alt="pokédex" class="pdx-header-pdx-img" id="pdx-header-pdx-img">
+          <img src="${REGION_PDX_IMG[currentRegion]}" alt="pokédex" class="pdx-header-pdx-img" id="pdx-header-pdx-img" ${pdxImgStyle(currentRegion)}>
         </div>
         <div class="pdx-progress">
           <div class="pdx-progress-bar"><div class="pdx-progress-fill" id="pdx-fill"></div></div>
@@ -140,6 +150,16 @@ function showAvatarSheet(containerEl, trainer, currentColors) {
       if (e.intersectionRatio >= 0.6) {
         cards.forEach(c => c.classList.toggle('center', c === e.target));
         selectedId = e.target.dataset.id;
+        // Live preview colors while swiping
+        const previewColors = AVATAR_COLORS[selectedId] || AVATAR_COLORS.rosso;
+        const app = document.getElementById('app');
+        app.style.setProperty('--skin', previewColors.color);
+        app.style.setProperty('--skin-dark', previewColors.dark);
+        app.style.setProperty('--skin-header-bg', `linear-gradient(160deg, ${previewColors.color} 0%, ${previewColors.dark} 100%)`);
+        app.style.setProperty('--accent', previewColors.color);
+        app.style.setProperty('--accent-deep', previewColors.dark);
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.content = previewColors.color;
       }
     });
   }, { root: carousel, threshold: 0.6 });
@@ -246,6 +266,17 @@ function onRegionChange(region) {
     btn.classList.toggle('active', btn.dataset.region === region);
   });
   const pdxImg = document.getElementById('pdx-header-pdx-img');
-  if (pdxImg) pdxImg.src = REGION_PDX_IMG[region];
+  if (pdxImg) {
+    pdxImg.src = REGION_PDX_IMG[region];
+    if (PDX_IMG_HAS_BG[region]) {
+      pdxImg.style.borderRadius = '8px';
+      pdxImg.style.background = 'rgba(0,0,0,.25)';
+      pdxImg.style.padding = '3px';
+    } else {
+      pdxImg.style.borderRadius = '';
+      pdxImg.style.background = '';
+      pdxImg.style.padding = '';
+    }
+  }
   loadEntries();
 }
