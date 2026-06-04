@@ -11,9 +11,16 @@ async function fetchJSON(url) {
 
 // Extract only essential fields from /pokemon/{id}
 function trimPokemon(raw) {
-  const moves = (raw.moves || []).slice(0, 4).map(m => ({
-    name: m.move.name.replace(/-/g, ' '),
-  }));
+  const moves = (raw.moves || [])
+    .filter(m => m.version_group_details.some(v => v.move_learn_method.name === 'level-up' && v.level_learned_at > 0))
+    .sort((a, b) => {
+      const lvOf = m => Math.min(...m.version_group_details
+        .filter(v => v.move_learn_method.name === 'level-up' && v.level_learned_at > 0)
+        .map(v => v.level_learned_at));
+      return lvOf(a) - lvOf(b);
+    })
+    .slice(0, 4)
+    .map(m => ({ name: m.move.name, slug: m.move.name }));
   return {
     id: raw.id,
     name: raw.name,
@@ -87,6 +94,23 @@ export const api = {
     const chain = parseChain(raw.chain);
     storage.setCachedEvoChain(id, chain);
     return chain;
+  },
+
+  // Get Italian move name
+  async getMoveName(slug) {
+    const cacheKey = `move_it_${slug}`;
+    const cached = storage.getCachedPokemon(cacheKey);
+    if (cached) return cached;
+    try {
+      const raw = await fetchJSON(`${BASE}/move/${slug}`);
+      const entry = raw.names.find(n => n.language.name === 'it') ||
+                    raw.names.find(n => n.language.name === 'en');
+      const name = entry?.name || slug.replace(/-/g, ' ');
+      storage.setCachedPokemon(cacheKey, name);
+      return name;
+    } catch {
+      return slug.replace(/-/g, ' ');
+    }
   },
 
   // Get both pokemon + species data in one call

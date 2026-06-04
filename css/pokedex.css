@@ -475,7 +475,7 @@
 }
 
 /* Hero — type-coloured banner with artwork */
-
+.pdx-detail-hero {
   padding: 14px 20px 0;
   flex-shrink: 0;
   display: flex;

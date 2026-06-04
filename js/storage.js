@@ -87,8 +87,8 @@ export const storage = {
   setEvolutions(data) { setItem('evolutions', data); },
 
   // API cache
-  getCachedPokemon(id) { return getCached(`pokemon_${id}`, TTL_7_DAYS); },
-  setCachedPokemon(id, data) { setCache(`pokemon_${id}`, data); },
+  getCachedPokemon(id) { return getCached(`pokemon_v2_${id}`, TTL_7_DAYS); },
+  setCachedPokemon(id, data) { setCache(`pokemon_v2_${id}`, data); },
 
   getCachedSpecies(id) { return getCached(`species_it_${id}`, TTL_7_DAYS); },
   setCachedSpecies(id, data) { setCache(`species_it_${id}`, data); },

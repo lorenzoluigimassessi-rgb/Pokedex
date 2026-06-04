@@ -48,7 +48,7 @@ function renderDetail(overlay, data, caught) {
     card.className = `pdx-detail-card${isShiny ? ' shiny' : ''}`;
 
     const movesHtml = (data.moves && data.moves.length > 0)
-      ? data.moves.map(m => `<span class="pdx-move-badge">${m.name}</span>`).join('')
+      ? data.moves.map(m => `<span class="pdx-move-badge pdx-move-loading" data-slug="${m.slug}">${m.name.replace(/-/g, ' ')}</span>`).join('')
       : '<span style="color:var(--text-muted);font-size:13px">—</span>';
 
     const statsHtml = data.stats.map(s => {
@@ -85,8 +85,8 @@ function renderDetail(overlay, data, caught) {
           <div class="pdx-stats">${statsHtml}</div>
         </div>
         <div class="pdx-section">
-          <div class="pdx-section-title">Mosse</div>
-          <div class="pdx-moves">${movesHtml}</div>
+          <div class="pdx-section-title">Mosse Principali</div>
+          <div class="pdx-moves" id="detail-moves">${movesHtml}</div>
         </div>
         <div class="pdx-section" id="detail-evo-section">
           <div class="pdx-section-title">Evoluzione</div>
@@ -97,6 +97,15 @@ function renderDetail(overlay, data, caught) {
 
     document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
     addSwipeToDismiss(card, overlay);
+
+    // fetch Italian move names asynchronously
+    if (data.moves && data.moves.length > 0) {
+      data.moves.forEach(async m => {
+        const itName = await api.getMoveName(m.slug);
+        const badge = card.querySelector(`[data-slug="${m.slug}"]`);
+        if (badge) { badge.textContent = itName; badge.classList.remove('pdx-move-loading'); }
+      });
+    }
   }
 
   render();
@@ -114,6 +123,17 @@ async function loadEvoChain(data, overlay) {
     const chain = await api.getEvolutionChain(chainId);
     const collection = storage.getCollection();
     chainEl.innerHTML = renderEvoChain(chain, collection, data.id);
+    // wire up clicks on non-current nodes
+    chainEl.querySelectorAll('.pdx-evo-node[data-id]').forEach(node => {
+      const id = parseInt(node.dataset.id);
+      if (id === data.id) return;
+      node.style.cursor = 'pointer';
+      node.addEventListener('click', () => {
+        closeDetail(overlay);
+        const container = overlay.parentElement;
+        setTimeout(() => showDetail(container, id, collection[id] || collection[String(id)]), 320);
+      });
+    });
   } catch {
     chainEl.textContent = 'Impossibile caricare';
   }
@@ -127,7 +147,7 @@ function renderEvoChain(node, collection, currentId) {
     const cls = isCurrent ? 'current' : (!isCaught ? 'uncaught' : '');
     const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
     const arrow = i > 0 ? '<span class="pdx-evo-arrow">→</span>' : '';
-    return `${arrow}<div class="pdx-evo-node ${cls}">
+    return `${arrow}<div class="pdx-evo-node ${cls}" data-id="${entry.id}">
       <div class="pdx-evo-circle"><img src="${spriteUrl}" alt="${entry.name}"></div>
       <span class="pdx-evo-label">${isCaught || isCurrent ? entry.name : '?'}</span>
     </div>`;
