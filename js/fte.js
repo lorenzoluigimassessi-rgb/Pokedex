@@ -80,7 +80,10 @@ function showName() {
     <div class="fte-screen">
       <div class="fte-stars">${renderStars()}</div>
       <div class="fte-name-step">
-        <h2 class="fredoka">Come ti chiami,<br>Allenatore?</h2>
+        <div class="fte-top-row">
+          <button class="fte-back" id="fte-back">←</button>
+          <h2 class="fredoka">Come ti chiami,<br>Allenatore?</h2>
+        </div>
         <p>Registreremo il tuo nome nel Pokédex.</p>
         <input type="text" id="fte-name-input" class="fte-input" placeholder="Il tuo nome" maxlength="14" autocomplete="off">
         <div style="flex:1"></div>
@@ -89,6 +92,7 @@ function showName() {
       </div>
     </div>
   `;
+  document.getElementById('fte-back').addEventListener('click', () => { step--; showStep(); });
   const input = document.getElementById('fte-name-input');
   const btn = document.getElementById('fte-name-btn');
   input.addEventListener('input', () => { btn.disabled = input.value.trim().length < 2; });
@@ -106,7 +110,10 @@ function showAvatar() {
     <div class="fte-screen">
       <div class="fte-stars">${renderStars()}</div>
       <div class="fte-avatar-step">
-        <h2 class="fredoka">Scegli il tuo<br>Allenatore</h2>
+        <div class="fte-top-row">
+          <button class="fte-back" id="fte-back">←</button>
+          <h2 class="fredoka">Scegli il tuo Allenatore</h2>
+        </div>
         <p>Scorri per vedere tutti.</p>
         <div class="fte-carousel" id="fte-carousel">
           ${AVATARS.map((a, i) => `
@@ -130,6 +137,8 @@ function showAvatar() {
     </div>
   `;
 
+  document.getElementById('fte-back').addEventListener('click', () => { step--; showStep(); });
+
   const carousel = document.getElementById('fte-carousel');
   const dotsEl = document.getElementById('fte-carousel-dots');
   const cards = carousel.querySelectorAll('.fte-carousel-card');
@@ -141,26 +150,20 @@ function showAvatar() {
     trainerData.avatar = AVATARS[index].id;
   }
 
-  // Use IntersectionObserver to detect which card is centered
   const io = new IntersectionObserver(entries => {
     entries.forEach(entry => {
-      if (entry.intersectionRatio >= 0.6) {
-        updateActive(parseInt(entry.target.dataset.index));
-      }
+      if (entry.intersectionRatio >= 0.6) updateActive(parseInt(entry.target.dataset.index));
     });
   }, { root: carousel, threshold: 0.6 });
 
   cards.forEach(c => io.observe(c));
-
-  // Tap side cards to scroll to them
-  cards.forEach((card, i) => {
-    card.addEventListener('click', () => {
-      card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    });
+  cards.forEach(card => {
+    card.addEventListener('click', () =>
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    );
   });
 
   updateActive(0);
-
   document.getElementById('fte-avatar-next').addEventListener('click', next);
 }
 
@@ -169,7 +172,10 @@ function showSkin() {
     <div class="fte-screen">
       <div class="fte-stars">${renderStars()}</div>
       <div class="fte-skin-step">
-        <h2 class="fredoka">Scegli il tuo Pokédex</h2>
+        <div class="fte-top-row">
+          <button class="fte-back" id="fte-back">←</button>
+          <h2 class="fredoka">Scegli il tuo Pokédex</h2>
+        </div>
         <p>Puoi cambiarlo dopo.</p>
         <div class="fte-pokedex-grid">
           ${POKEDEX_MODELS.map(m => `
@@ -189,6 +195,7 @@ function showSkin() {
     </div>
   `;
 
+  document.getElementById('fte-back').addEventListener('click', () => { step--; showStep(); });
   const btns = container.querySelectorAll('.fte-pokedex-btn');
   const nextBtn = document.getElementById('fte-skin-next');
   btns.forEach(btn => {

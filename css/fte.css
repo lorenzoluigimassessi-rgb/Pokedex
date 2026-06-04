@@ -192,8 +192,8 @@
   scrollbar-width: none;
   gap: 16px;
   padding: 10px calc(50% - 38vw) 16px;
-  align-items: flex-end;
-  height: 52vh;
+  align-items: center;
+  height: 58vh;
   flex-shrink: 0;
 }
 .fte-carousel::-webkit-scrollbar { display: none; }
@@ -202,11 +202,12 @@
   flex-shrink: 0;
   width: 76vw;
   max-width: 320px;
+  height: 100%;
   scroll-snap-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   transition: transform 0.3s ease, opacity 0.3s ease;
   transform: scale(0.82);
   opacity: 0.45;
@@ -221,7 +222,8 @@
 
 .fte-carousel-card-inner {
   width: 100%;
-  aspect-ratio: 2/3;
+  flex: 1;
+  min-height: 0;
   border-radius: 24px;
   background: linear-gradient(160deg, color-mix(in srgb, var(--cap) 35%, #1a1a3a), #13132a);
   border: 2px solid color-mix(in srgb, var(--cap) 50%, transparent);
@@ -239,7 +241,7 @@
 
 .fte-carousel-card-inner img {
   width: 88%;
-  height: 95%;
+  height: 100%;
   object-fit: contain;
   object-position: bottom center;
 }
