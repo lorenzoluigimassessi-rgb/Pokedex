@@ -253,12 +253,8 @@ function createGridCard(entry, caught) {
   `;
 
   card.addEventListener('click', async () => {
-    try {
-      await showDetail(container, entry.id, collection[entry.id] || collection[String(entry.id)]);
-    } catch(e) {
-      console.error('showDetail error:', e);
-      alert('Errore: ' + e.message);
-    }
+    const col = storage.getCollection();
+    await showDetail(container, entry.id, col[entry.id] || col[String(entry.id)]);
   });
   return card;
 }
