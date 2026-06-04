@@ -145,7 +145,10 @@ function renderDetail(overlay, data, caught) {
       const viewerContainer = overlay.closest('#app') || overlay.parentElement;
       openViewer(data, viewerContainer);
     });
-    card.appendChild(expandBtn);
+    // append to hero so it's positioned within the colored area
+    const heroEl = card.querySelector('.pdx-detail-hero');
+    if (heroEl) heroEl.appendChild(expandBtn);
+    else card.appendChild(expandBtn);
 
     // fetch Italian move names asynchronously
     if (data.moves && data.moves.length > 0) {

@@ -569,3 +569,14 @@
 .fte-btn-wrap {
   margin-top: auto;
 }
+
+/* Tablet fix — prevent carousel jumping */
+@media (min-width: 768px) {
+  .fte-carousel {
+    padding: 10px calc(50% - 160px) 16px;
+  }
+  .fte-carousel-card {
+    width: 280px;
+    max-width: 280px;
+  }
+}

@@ -263,7 +263,6 @@ function createGridCard(entry, caught) {
   const num = `#${String(entry.id).padStart(3, '0')}`;
   const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
 
-  // show sprite for all caught pokemon — use cached sprite if available, else direct URL
   let imgHtml;
   if (caught) {
     const sprite = (caught.shiny && cachedData?.spriteShiny) ? cachedData.spriteShiny : (cachedData?.sprite || spriteUrl);
@@ -272,13 +271,27 @@ function createGridCard(entry, caught) {
     imgHtml = `<div class="pdx-card-silhouette"><img src="${spriteUrl}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=placeholder>???</span>'"></div>`;
   }
 
+  const nameId = `name-${entry.id}`;
   card.innerHTML = `
     <span class="pdx-card-num">${num}</span>
     ${caught?.shiny ? '<span class="pdx-card-shiny">✨</span>' : ''}
     ${imgHtml}
-    <span class="pdx-card-name fredoka ${!name ? 'loading-name' : ''}">${name || num}</span>
+    <span class="pdx-card-name fredoka" id="${nameId}">${name || '...'}</span>
     ${caught && caught.count > 1 ? `<span class="pdx-card-count">×${caught.count}</span>` : ''}
   `;
+
+  // fetch name async if not cached
+  if (!name) {
+    api.getSpecies(entry.id).then(s => {
+      if (s && s.name) {
+        const el = document.getElementById(nameId);
+        if (el) el.textContent = s.name;
+      }
+    }).catch(() => {
+      const el = document.getElementById(nameId);
+      if (el) el.textContent = `Pokémon ${entry.id}`;
+    });
+  }
 
   card.addEventListener('click', async () => {
     const col = storage.getCollection();

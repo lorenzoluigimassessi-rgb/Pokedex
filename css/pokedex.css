@@ -147,7 +147,28 @@
   align-items: center;
   height: 44vh;
 }
-.pdx-avatar-sheet-carousel::-webkit-scrollbar { display: none; }
+/* Carousel — tablet fix */
+@media (min-width: 768px) {
+  .pdx-avatar-sheet-carousel {
+    padding: 8px calc(50% - 140px) 12px;
+    height: 50vh;
+  }
+  .pdx-avatar-sheet-card {
+    width: 240px;
+    max-width: 240px;
+  }
+}
+
+/* FTE carousel tablet fix */
+@media (min-width: 768px) {
+  .fte-carousel {
+    padding: 8px calc(50% - 140px) 12px;
+  }
+  .fte-carousel-card {
+    width: 240px;
+    max-width: 240px;
+  }
+}
 
 .pdx-avatar-sheet-card {
   flex-shrink: 0;
@@ -503,6 +524,7 @@
   z-index: 2;
 }
 
+/* mobile: button sits at top-right of hero colored area */
 .pdx-expand-btn {
   position: absolute;
   top: 14px;
@@ -872,20 +894,27 @@
   .pdx-grid.grid { grid-template-columns: repeat(6, 1fr); }
 
   .pdx-expand-btn {
-    top: auto;
-    bottom: 12px;
-    right: 50%;
-    transform: translateX(50%);
+    top: 50%;
+    right: auto;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    bottom: auto;
     width: auto;
-    height: 34px;
+    height: 36px;
     border-radius: 999px;
-    padding: 0 14px;
+    padding: 0 16px;
     font-size: 13px;
     font-weight: 800;
     gap: 6px;
     white-space: nowrap;
+    opacity: 0;
+    transition: opacity .2s ease, transform .15s ease;
   }
-  .pdx-expand-btn:active { transform: translateX(50%) scale(.95); }
+  .pdx-detail-hero:hover .pdx-expand-btn,
+  .pdx-detail-hero:focus-within .pdx-expand-btn {
+    opacity: 1;
+  }
+  .pdx-expand-btn:active { transform: translate(-50%,-50%) scale(.95); }
 
   /* Option C — full screen detail on iPad */
   .pdx-detail-overlay { animation: none; }
