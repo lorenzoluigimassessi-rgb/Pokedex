@@ -220,7 +220,7 @@ function renderNextBatch() {
   const end = Math.min(rendered + renderBatch, displayedEntries.length);
   for (let i = rendered; i < end; i++) {
     const entry = displayedEntries[i];
-    grid.appendChild(createGridCard(entry, collection[entry.id]));
+    grid.appendChild(createGridCard(entry, collection[entry.id] || collection[String(entry.id)]));
   }
   rendered = end;
 }
@@ -252,7 +252,7 @@ function createGridCard(entry, caught) {
     ${caught && caught.count > 1 ? `<span class="pdx-card-count">×${caught.count}</span>` : ''}
   `;
 
-  card.addEventListener('click', () => showDetail(container, entry.id, collection[entry.id]));
+  card.addEventListener('click', () => showDetail(container, entry.id, collection[entry.id] || collection[String(entry.id)]));
   return card;
 }
 
