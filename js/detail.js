@@ -281,44 +281,48 @@ async function loadSpecialForms(data, overlay) {
 function addSwipeToDismiss(card, overlay) {
   let startY = null;
   let currentY = 0;
-  let dragging = false;
 
-  // attach to the hero section (top ~200px) — easy to grab
   const hero = card.querySelector('.pdx-detail-hero');
   const trigger = hero || card;
 
   trigger.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
     currentY = 0;
-    dragging = false;
     card.style.transition = 'none';
   }, { passive: true });
 
-  // track on document so gesture works even if finger drifts off
   function onMove(e) {
     if (startY === null) return;
     const dy = e.touches[0].clientY - startY;
-    if (dy < 0) return; // no upward drag
-    dragging = true;
+    if (dy < 0) return;
     currentY = dy;
     card.style.transform = `translateY(${dy}px)`;
+    // fade backdrop as card moves down
+    const backdrop = overlay.querySelector('.pdx-detail-backdrop');
+    if (backdrop) backdrop.style.opacity = String(1 - Math.min(dy / 300, 0.8));
   }
 
   function onEnd() {
     if (startY === null) return;
     startY = null;
-    if (currentY > 100) {
-      card.style.transition = 'transform 0.28s ease';
-      card.style.transform = 'translateY(100%)';
-      setTimeout(() => closeDetail(overlay), 280);
-    } else {
-      card.style.transition = 'transform 0.28s ease';
-      card.style.transform = 'translateY(0)';
-    }
-    currentY = 0;
-    dragging = false;
     document.removeEventListener('touchmove', onMove);
     document.removeEventListener('touchend', onEnd);
+
+    if (currentY > 100) {
+      // slide card fully off screen, then remove
+      card.style.transition = 'transform 0.3s cubic-bezier(0.32,0,0.67,0)';
+      card.style.transform = `translateY(110%)`;
+      const backdrop = overlay.querySelector('.pdx-detail-backdrop');
+      if (backdrop) { backdrop.style.transition = 'opacity 0.3s ease'; backdrop.style.opacity = '0'; }
+      setTimeout(() => overlay.remove(), 300);
+    } else {
+      // snap back
+      card.style.transition = 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)';
+      card.style.transform = 'translateY(0)';
+      const backdrop = overlay.querySelector('.pdx-detail-backdrop');
+      if (backdrop) { backdrop.style.transition = 'opacity 0.35s ease'; backdrop.style.opacity = '1'; }
+    }
+    currentY = 0;
   }
 
   trigger.addEventListener('touchstart', () => {
@@ -328,7 +332,15 @@ function addSwipeToDismiss(card, overlay) {
 }
 
 function closeDetail(overlay) {
-  overlay.style.opacity = '0';
-  overlay.style.transition = 'opacity 0.3s';
+  const card = overlay.querySelector('.pdx-detail-card');
+  const backdrop = overlay.querySelector('.pdx-detail-backdrop');
+  if (card) {
+    card.style.transition = 'transform 0.3s cubic-bezier(0.32,0,0.67,0)';
+    card.style.transform = 'translateY(110%)';
+  }
+  if (backdrop) {
+    backdrop.style.transition = 'opacity 0.3s ease';
+    backdrop.style.opacity = '0';
+  }
   setTimeout(() => overlay.remove(), 300);
 }
