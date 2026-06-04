@@ -688,7 +688,7 @@
 
 .pdx-forms-nodes {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   justify-content: flex-start;
   margin-top: 6px;
