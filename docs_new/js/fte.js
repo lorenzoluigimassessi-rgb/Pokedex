@@ -109,17 +109,20 @@ function showAvatar() {
         <h2 class="fredoka">Scegli il tuo<br>Allenatore</h2>
         <p>Scorri per vedere tutti.</p>
         <div class="fte-carousel" id="fte-carousel">
-          ${AVATARS.map((a, i) => `
-            <div class="fte-carousel-card" data-index="${i}">
-              <div class="fte-carousel-card-inner" style="--cap:${a.cap}">
-                <img src="assets/avatars/${a.file}" alt="${a.name}" onerror="this.style.opacity='.3'">
+          <div class="fte-carousel-track" id="fte-carousel-track">
+            ${AVATARS.map((a, i) => `
+              <div class="fte-carousel-card" data-index="${i}">
+                <div class="fte-carousel-card-inner" style="--cap:${a.cap}">
+                  <img src="assets/avatars/${a.file}" alt="${a.name}"
+                    onerror="this.style.opacity='.3'">
+                </div>
+                <div class="fte-carousel-label">
+                  <span class="fte-carousel-name fredoka">${a.name}</span>
+                  <span class="fte-carousel-game">${a.game}</span>
+                </div>
               </div>
-              <div class="fte-carousel-label">
-                <span class="fte-carousel-name fredoka">${a.name}</span>
-                <span class="fte-carousel-game">${a.game}</span>
-              </div>
-            </div>
-          `).join('')}
+            `).join('')}
+          </div>
         </div>
         <div class="fte-carousel-dots" id="fte-carousel-dots">
           ${AVATARS.map((_, i) => `<span class="fte-cdot${i === 0 ? ' active' : ''}"></span>`).join('')}
@@ -131,36 +134,36 @@ function showAvatar() {
     </div>
   `;
 
-  const carousel = document.getElementById('fte-carousel');
+  const track = document.getElementById('fte-carousel-track');
   const dotsEl = document.getElementById('fte-carousel-dots');
-  const cards = carousel.querySelectorAll('.fte-carousel-card');
 
-  function updateActive(index) {
-    carouselIndex = index;
-    cards.forEach((c, i) => c.classList.toggle('center', i === index));
-    dotsEl.querySelectorAll('.fte-cdot').forEach((d, i) => d.classList.toggle('active', i === index));
-    trainerData.avatar = AVATARS[index].id;
+  function goTo(index) {
+    carouselIndex = (index + AVATARS.length) % AVATARS.length;
+    track.style.transform = `translateX(calc(-${carouselIndex} * 72%))`;
+    dotsEl.querySelectorAll('.fte-cdot').forEach((d, i) => d.classList.toggle('active', i === carouselIndex));
+    track.querySelectorAll('.fte-carousel-card').forEach((c, i) => {
+      const diff = Math.abs(i - carouselIndex);
+      c.classList.toggle('center', i === carouselIndex);
+      c.classList.toggle('side', diff === 1);
+      c.classList.toggle('far', diff > 1);
+    });
+    trainerData.avatar = AVATARS[carouselIndex].id;
   }
 
-  // Use IntersectionObserver to detect which card is centered
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.intersectionRatio >= 0.6) {
-        updateActive(parseInt(entry.target.dataset.index));
-      }
-    });
-  }, { root: carousel, threshold: 0.6 });
+  goTo(0);
 
-  cards.forEach(c => io.observe(c));
-
-  // Tap side cards to scroll to them
-  cards.forEach((card, i) => {
-    card.addEventListener('click', () => {
-      card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    });
+  // Touch swipe
+  let startX = 0;
+  track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) goTo(carouselIndex + (dx < 0 ? 1 : -1));
   });
 
-  updateActive(0);
+  // Click on side cards
+  track.querySelectorAll('.fte-carousel-card').forEach((card, i) => {
+    card.addEventListener('click', () => goTo(i));
+  });
 
   document.getElementById('fte-avatar-next').addEventListener('click', next);
 }
