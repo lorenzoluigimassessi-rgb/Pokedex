@@ -141,6 +141,7 @@ function renderDetail(overlay, data, caught) {
     expandBtn.textContent = '⤢';
     expandBtn.addEventListener('click', e => {
       e.stopPropagation();
+      alert('expand clicked, data.id=' + data.id);
       openViewer(data, overlay.parentElement);
     });
     card.appendChild(expandBtn);
