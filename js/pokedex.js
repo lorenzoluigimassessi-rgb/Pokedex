@@ -2,6 +2,7 @@ import { storage } from './storage.js';
 import { showDetail } from './detail.js';
 import { AVATARS } from './fte.js';
 import { SPECIAL_FORMS } from './forms.js';
+import { api } from './api.js';
 
 const REGIONS = [
   { id: 'kanto', name: 'Kanto', range: [1, 151] },
@@ -240,14 +241,19 @@ function createGridCard(entry, caught) {
 
   // special form card
   if (entry.isForm) {
-    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
     const fallbackUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.num}.png`;
     card.innerHTML = `
       <span class="pdx-card-num">#${String(entry.num).padStart(3,'0')}</span>
-      <img src="${spriteUrl}" alt="${entry.name}" loading="lazy" class="pdx-card-img"
-        onerror="this.src='${fallbackUrl}'">
+      <img src="${fallbackUrl}" alt="${entry.name}" loading="lazy" class="pdx-card-img" id="form-img-${entry.id.replace(/[^a-z0-9]/g,'-')}">
       <span class="pdx-card-name fredoka">${entry.name}</span>
     `;
+    // fetch correct sprite async
+    api.getFormSprite(entry.id).then(url => {
+      if (url) {
+        const img = card.querySelector('.pdx-card-img');
+        if (img) img.src = url;
+      }
+    });
     card.addEventListener('click', () => showDetail(container, entry.id));
     return card;
   }

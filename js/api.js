@@ -113,6 +113,23 @@ export const api = {
     }
   },
 
+  // Get sprite URL for a form slug (forms use numeric IDs, not slug names)
+  async getFormSprite(slug) {
+    const cacheKey = `form_sprite_${slug}`;
+    const cached = storage.getCachedPokemon(cacheKey);
+    if (cached) return cached;
+    try {
+      const raw = await fetchJSON(`${BASE}/pokemon/${slug}`);
+      const url = raw.sprites.other?.['official-artwork']?.front_default
+        || raw.sprites.front_default
+        || null;
+      if (url) storage.setCachedPokemon(cacheKey, url);
+      return url;
+    } catch {
+      return null;
+    }
+  },
+
   // Get both pokemon + species data in one call
   // id can be a number or a slug string (e.g. 'charizard-mega-x')
   async getFullPokemon(id) {

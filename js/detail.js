@@ -309,12 +309,15 @@ async function loadSiblingForms(data, overlay) {
       const node = document.createElement('div');
       node.className = 'pdx-evo-node pdx-form-node';
       node.style.cursor = 'pointer';
-      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.slug}.png`;
+      const fallbackUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png`;
       node.innerHTML = `
         <div class="pdx-evo-circle">
-          <img src="${spriteUrl}" onerror="this.src='${baseSpriteUrl}'" alt="${form.name}">
+          <img src="${fallbackUrl}" alt="${form.name}">
         </div>
         <span class="pdx-evo-label" style="text-align:center;line-height:1.2;max-width:72px;white-space:normal">${form.name}</span>`;
+      api.getFormSprite(form.slug).then(url => {
+        if (url) { const img = node.querySelector('img'); if (img) img.src = url; }
+      });
       node.addEventListener('click', () => {
         closeDetail(overlay);
         const container = overlay.parentElement;
@@ -348,13 +351,17 @@ async function loadSpecialForms(data, overlay) {
     const node = document.createElement('div');
     node.className = 'pdx-evo-node pdx-form-node';
     node.style.cursor = 'pointer';
-    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.slug}.png`;
     const fallbackUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.baseId}.png`;
+    // placeholder while loading
     node.innerHTML = `
       <div class="pdx-evo-circle">
-        <img src="${spriteUrl}" onerror="this.src='${fallbackUrl}'" alt="${form.name}">
+        <img src="${fallbackUrl}" alt="${form.name}">
       </div>
       <span class="pdx-evo-label" style="text-align:center;line-height:1.2;max-width:72px;white-space:normal">${form.name}</span>`;
+    // fetch correct form sprite async
+    api.getFormSprite(form.slug).then(url => {
+      if (url) { const img = node.querySelector('img'); if (img) img.src = url; }
+    });
     node.addEventListener('click', () => {
       closeDetail(overlay);
       const container = overlay.parentElement;
