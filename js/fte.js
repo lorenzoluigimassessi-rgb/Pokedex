@@ -141,6 +141,13 @@ function showAvatar() {
     cards.forEach((c, i) => c.classList.toggle('center', i === index));
     dotsEl.querySelectorAll('.fte-cdot').forEach((d, i) => d.classList.toggle('active', i === index));
     trainerData.avatar = AVATARS[index].id;
+    // live update button + accent color from avatar cap color
+    const cap = AVATARS[index].cap || '#e23b3b';
+    const app = document.getElementById('app');
+    if (app) {
+      app.style.setProperty('--accent', cap);
+      app.style.setProperty('--accent-deep', cap);
+    }
   }
 
   const io = new IntersectionObserver(entries => {

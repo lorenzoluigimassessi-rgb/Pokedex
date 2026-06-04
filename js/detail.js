@@ -478,7 +478,7 @@ function openViewer(data, container) {
       <div style="display:flex;align-items:center;justify-content:space-between;padding:52px 22px 12px;position:relative;z-index:2">
         <button id="vw-close" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
         <span style="font-family:var(--font-display);font-size:20px;color:#fff;text-transform:capitalize;text-shadow:0 2px 8px rgba(0,0,0,.4)">${data.name}</span>
-        <button id="vw-anim-toggle" style="display:flex;align-items:center;gap:6px;background:${mode==='anim'?'rgba(255,255,255,.18)':'rgba(255,255,255,.08)'};border:1.5px solid ${mode==='anim'?'rgba(255,255,255,.5)':'rgba(255,255,255,.18)'};border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;color:${mode==='anim'?'#fff':'rgba(255,255,255,.55)'};cursor:pointer;transition:all .2s">&#127902; Animato</button>
+        <button id="vw-anim-toggle" style="display:flex;align-items:center;gap:6px;background:${mode==='anim'?'rgba(255,255,255,.18)':'rgba(255,255,255,.08)'};border:1.5px solid ${mode==='anim'?'rgba(255,255,255,.5)':'rgba(255,255,255,.18)'};border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;color:${mode==='anim'?'#fff':'rgba(255,255,255,.55)'};cursor:pointer;transition:all .2s">&#127902; Animato#127902; Animazione</button>
       </div>
       <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;padding-top:10px">
         <div id="vw-sparkles" style="position:absolute;inset:0;pointer-events:none;display:${shiny?'block':'none'}">
