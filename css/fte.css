@@ -122,7 +122,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 76px 32px 24px;
+  padding: 110px 32px 24px;
   position: relative;
   z-index: 1;
 }
@@ -183,7 +183,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 64px 0 24px;
+  padding: 110px 0 24px;
   position: relative;
   z-index: 1;
   overflow: hidden;
@@ -310,7 +310,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 56px 28px 24px;
+  padding: 110px 28px 24px;
   position: relative;
   z-index: 1;
 }
