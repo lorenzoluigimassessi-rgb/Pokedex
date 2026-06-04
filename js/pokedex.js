@@ -52,13 +52,16 @@ export async function renderPokedexView(el, navCatchCallback) {
 
   container.innerHTML = `
     <div class="view-pokedex">
-      <div class="pdx-skin-frame"></div>
+      <div class="pdx-skin-frame" style="display:none"></div>
       <header class="pdx-header">
         <div class="pdx-header-row">
           <button class="pdx-avatar-btn" id="pdx-avatar-btn">
             <img src="assets/avatars/${avatar.file}" alt="${avatar.name}" onerror="this.style.display='none'">
           </button>
-          <h1 class="fredoka">Pokédex di ${trainer.name || 'Allenatore'}</h1>
+          <div class="pdx-header-text">
+            <span class="pdx-header-label">Pokédex di</span>
+            <h1 class="fredoka">${trainer.name || 'Allenatore'}</h1>
+          </div>
           <img src="${REGION_PDX_IMG[currentRegion]}" alt="pokédex" class="pdx-header-pdx-img" id="pdx-header-pdx-img">
         </div>
         <div class="pdx-progress">

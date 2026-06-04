@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>UI Options Preview</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #1a1a2e;
+  font-family: 'Nunito', sans-serif;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+.section-label {
+  font-family: 'Fredoka One', cursive;
+  font-size: 13px;
+  color: rgba(255,255,255,.35);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.section-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 22px;
+  color: #fff;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.section-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,.45);
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.phone {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ─────────────────────────────────────────
+   OPTION A — Trainer Card
+───────────────────────────────────────── */
+.a-wrap { background: #f5f2eb; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+
+.a-header {
+  background: #fff;
+  padding: 44px 18px 14px;
+  border-bottom: 4px solid #e23b3b;
+}
+.a-row { display: flex; align-items: center; gap: 12px; }
+.a-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 3px solid #e23b3b;
+  overflow: hidden; flex-shrink: 0;
+  background: linear-gradient(160deg,#cfe3f5,#e9dfce);
+  box-shadow: 0 4px 12px rgba(226,59,59,.3);
+}
+.a-avatar img { width:100%; height:100%; object-fit:cover; object-position:top center; }
+.a-text { flex:1; min-width:0; }
+.a-label { font-size:10px; font-weight:800; color:#aaa; text-transform:uppercase; letter-spacing:1.2px; }
+.a-name { font-family:'Fredoka One',cursive; font-size:26px; color:#e23b3b; line-height:1; }
+.a-pdx { width:50px; height:50px; object-fit:contain; flex-shrink:0; }
+.a-progress { margin-top:10px; display:flex; align-items:center; gap:8px; }
+.bar { flex:1; height:8px; background:rgba(0,0,0,.07); border-radius:99px; overflow:hidden; }
+.fill-a { height:100%; background:linear-gradient(90deg,#e23b3b,#ff8080); border-radius:99px; }
+.prog-text { font-family:'Fredoka One',cursive; font-size:12px; color:#2d2d2d; white-space:nowrap; }
+.prog-text span { opacity:.4; }
+.pills-a { display:flex; gap:7px; padding:10px 18px; overflow-x:auto; scrollbar-width:none; }
+.pill { height:32px; padding:0 13px; border-radius:99px; font-family:'Nunito',sans-serif; font-weight:700; font-size:12px; background:rgba(0,0,0,.06); color:#8a8a99; border:none; white-space:nowrap; flex-shrink:0; }
+.pill.on-a { background:#e23b3b; color:#fff; }
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; padding:6px 14px 20px; }
+.card-a { background:#fff; border-radius:10px; height:72px; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 2px 8px rgba(0,0,0,.07); border-left: 3px solid rgba(226,59,59,.2); }
+
+
+/* ─────────────────────────────────────────
+   OPTION B — Material Device
+───────────────────────────────────────── */
+.b-wrap {
+  background: #f0ece0;
+  box-shadow:
+    0 0 0 6px #b85c00,
+    0 0 0 10px #8a4300,
+    0 24px 60px rgba(0,0,0,.6);
+  border-radius: 28px;
+}
+.b-header {
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+  padding: 44px 18px 16px;
+  position: relative;
+}
+.b-row { display:flex; align-items:center; gap:12px; }
+.b-avatar {
+  width:52px; height:52px; border-radius:50%;
+  border: 3px solid rgba(255,255,255,.6);
+  overflow:hidden; flex-shrink:0;
+  background:rgba(255,255,255,.2);
+  box-shadow: 0 0 0 2px rgba(0,0,0,.2), inset 0 2px 4px rgba(255,255,255,.3);
+}
+.b-avatar img { width:100%; height:100%; object-fit:cover; object-position:top center; }
+.b-text { flex:1; min-width:0; }
+.b-label { font-size:10px; font-weight:800; color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:1.2px; }
+.b-name { font-family:'Fredoka One',cursive; font-size:26px; color:#fff; line-height:1; text-shadow:0 2px 8px rgba(0,0,0,.2); }
+.b-pdx { width:50px; height:50px; object-fit:contain; flex-shrink:0; filter:drop-shadow(0 4px 8px rgba(0,0,0,.3)); }
+.b-progress { margin-top:10px; display:flex; align-items:center; gap:8px; }
+.fill-b { height:100%; background:rgba(255,255,255,.9); border-radius:99px; }
+.b-bar { flex:1; height:8px; background:rgba(0,0,0,.2); border-radius:99px; overflow:hidden; }
+.b-prog-text { font-family:'Fredoka One',cursive; font-size:12px; color:rgba(255,255,255,.9); white-space:nowrap; }
+.b-prog-text span { opacity:.6; }
+.pills-b { display:flex; gap:7px; padding:10px 18px; overflow-x:auto; scrollbar-width:none; background:#f0ece0; }
+.pill.on-b {
+  background:#f97316; color:#fff;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.2), 0 1px 0 rgba(255,255,255,.4);
+  transform: translateY(1px);
+}
+.card-b { background:#fff; border-radius:10px; height:72px; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 3px 0 rgba(249,115,22,.15), 0 2px 8px rgba(0,0,0,.07); }
+
+
+/* ─────────────────────────────────────────
+   OPTION C — Dark Cockpit
+───────────────────────────────────────── */
+.c-wrap {
+  background: #0f1428;
+  box-shadow:
+    0 0 0 3px #f5d23b,
+    0 0 20px rgba(245,210,59,.3),
+    0 24px 60px rgba(0,0,0,.7);
+  border-radius: 28px;
+}
+.c-header {
+  background: linear-gradient(180deg,#1e1a0e,#171410);
+  padding: 44px 18px 16px;
+  border-bottom: 2px solid rgba(245,210,59,.3);
+  position: relative;
+}
+.c-header::after {
+  content:'';
+  position:absolute;
+  bottom:-1px; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, #f5d23b, transparent);
+}
+.c-row { display:flex; align-items:center; gap:12px; }
+.c-avatar {
+  width:52px; height:52px; border-radius:50%;
+  border: 2px solid #f5d23b;
+  overflow:hidden; flex-shrink:0;
+  background:#1a1a2e;
+  box-shadow: 0 0 16px rgba(245,210,59,.4);
+}
+.c-avatar img { width:100%; height:100%; object-fit:cover; object-position:top center; }
+.c-text { flex:1; min-width:0; }
+.c-label { font-size:10px; font-weight:800; color:rgba(245,210,59,.5); text-transform:uppercase; letter-spacing:1.2px; }
+.c-name { font-family:'Fredoka One',cursive; font-size:26px; color:#f5d23b; line-height:1; text-shadow:0 0 20px rgba(245,210,59,.5); }
+.c-pdx { width:50px; height:50px; object-fit:contain; flex-shrink:0; filter:drop-shadow(0 0 8px rgba(245,210,59,.4)) brightness(1.1); }
+.c-progress { margin-top:10px; display:flex; align-items:center; gap:8px; }
+.c-bar { flex:1; height:8px; background:rgba(255,255,255,.07); border-radius:99px; overflow:hidden; border:1px solid rgba(245,210,59,.15); }
+.fill-c { height:100%; background:linear-gradient(90deg,#f5d23b,#fde68a); border-radius:99px; box-shadow:0 0 6px rgba(245,210,59,.5); }
+.c-prog-text { font-family:'Fredoka One',cursive; font-size:12px; color:#f5d23b; white-space:nowrap; }
+.c-prog-text span { opacity:.4; }
+.pills-c { display:flex; gap:7px; padding:10px 18px; overflow-x:auto; scrollbar-width:none; background:#0f1428; }
+.pill-c { height:32px; padding:0 13px; border-radius:99px; font-family:'Nunito',sans-serif; font-weight:700; font-size:12px; background:rgba(255,255,255,.05); color:rgba(255,255,255,.35); border:1px solid rgba(255,255,255,.08); white-space:nowrap; flex-shrink:0; }
+.pill-c.on-c { background:rgba(245,210,59,.15); color:#f5d23b; border-color:rgba(245,210,59,.4); box-shadow:0 0 10px rgba(245,210,59,.15); }
+.grid-c { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; padding:6px 14px 20px; background:#0f1428; }
+.card-c { background:rgba(255,255,255,.04); border-radius:10px; height:72px; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid rgba(245,210,59,.08); }
+
+
+/* ─────────────────────────────────────────
+   OPTION D — Sticker Book
+───────────────────────────────────────── */
+.d-wrap {
+  background: #fffbf0;
+  box-shadow:
+    0 0 0 5px #4aab3b,
+    0 0 0 9px #2d7a23,
+    0 24px 60px rgba(0,0,0,.5);
+  border-radius: 24px;
+}
+.d-header {
+  background: #fff;
+  padding: 44px 18px 14px;
+  border-bottom: 5px solid #4aab3b;
+  position: relative;
+  overflow: visible;
+}
+.d-row { display:flex; align-items:center; gap:10px; }
+.d-avatar {
+  width:58px; height:58px; border-radius:50%;
+  border: 4px solid #4aab3b;
+  overflow:hidden; flex-shrink:0;
+  background:linear-gradient(160deg,#d4f5c8,#f5e8c8);
+  box-shadow: 4px 4px 0 #2d7a23;
+  transform: rotate(-3deg);
+}
+.d-avatar img { width:100%; height:100%; object-fit:cover; object-position:top center; }
+.d-text { flex:1; min-width:0; }
+.d-label { font-size:10px; font-weight:800; color:#aaa; text-transform:uppercase; letter-spacing:1.2px; }
+.d-name { font-family:'Fredoka One',cursive; font-size:26px; color:#4aab3b; line-height:1; }
+.d-pdx {
+  width:54px; height:54px; object-fit:contain; flex-shrink:0;
+  transform: rotate(6deg);
+  filter: drop-shadow(3px 3px 0 rgba(0,0,0,.15));
+}
+.d-progress { margin-top:10px; display:flex; align-items:center; gap:8px; }
+.d-bar { flex:1; height:10px; background:#e8f5e3; border-radius:99px; overflow:hidden; border:2px solid #4aab3b; }
+.fill-d { height:100%; background:linear-gradient(90deg,#4aab3b,#86efac); border-radius:99px; }
+.pills-d { display:flex; gap:7px; padding:10px 18px; overflow-x:auto; scrollbar-width:none; background:#fffbf0; }
+.pill.on-d { background:#4aab3b; color:#fff; box-shadow: 3px 3px 0 #2d7a23; transform: translateY(-1px); }
+.card-d {
+  background:#fff; border-radius:12px; height:72px;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  border: 2px solid #e8f5e3;
+  box-shadow: 3px 3px 0 rgba(74,171,59,.15);
+}
+
+
+/* ─────────────────────────────────────────
+   OPTION E — Cartridge
+───────────────────────────────────────── */
+.e-wrap {
+  background: #1a0a2e;
+  box-shadow:
+    0 0 0 4px #8a2be2,
+    0 0 0 8px #5b1a9e,
+    0 24px 60px rgba(0,0,0,.7);
+  border-radius: 28px;
+}
+.e-header {
+  background: linear-gradient(160deg, #2d1b4e 0%, #1a0a2e 100%);
+  padding: 44px 18px 16px;
+  border-bottom: 1px solid rgba(138,43,226,.3);
+  position: relative;
+  overflow: hidden;
+}
+.e-header::before {
+  content: 'KANTO';
+  position: absolute;
+  bottom: -10px; right: -10px;
+  font-family:'Fredoka One',cursive;
+  font-size: 72px;
+  color: rgba(138,43,226,.1);
+  letter-spacing: -2px;
+  pointer-events: none;
+  line-height: 1;
+}
+.e-row { display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
+.e-avatar {
+  width:52px; height:52px; border-radius:12px;
+  border: 2px solid rgba(138,43,226,.6);
+  overflow:hidden; flex-shrink:0;
+  background:#2d1b4e;
+  box-shadow: 0 0 12px rgba(138,43,226,.4), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.e-avatar img { width:100%; height:100%; object-fit:cover; object-position:top center; }
+.e-text { flex:1; min-width:0; }
+.e-label { font-size:10px; font-weight:800; color:rgba(138,43,226,.7); text-transform:uppercase; letter-spacing:1.2px; }
+.e-name { font-family:'Fredoka One',cursive; font-size:26px; color:#c084fc; line-height:1; }
+.e-pdx {
+  width:50px; height:50px; object-fit:contain; flex-shrink:0;
+  filter: drop-shadow(0 0 8px rgba(138,43,226,.5));
+}
+.e-progress { margin-top:10px; display:flex; align-items:center; gap:8px; position:relative; z-index:1; }
+.e-bar { flex:1; height:7px; background:rgba(138,43,226,.15); border-radius:2px; overflow:hidden; border:1px solid rgba(138,43,226,.2); }
+.fill-e { height:100%; background:linear-gradient(90deg,#8b5cf6,#c084fc); }
+.e-prog-text { font-family:'Fredoka One',cursive; font-size:12px; color:#c084fc; white-space:nowrap; }
+.e-prog-text span { opacity:.4; }
+.pills-e { display:flex; gap:7px; padding:10px 18px; overflow-x:auto; scrollbar-width:none; background:#150823; }
+.pill-e { height:30px; padding:0 13px; border-radius:4px; font-family:'Nunito',sans-serif; font-weight:700; font-size:12px; background:rgba(255,255,255,.04); color:rgba(255,255,255,.3); border:1px solid rgba(138,43,226,.15); white-space:nowrap; flex-shrink:0; }
+.pill-e.on-e { background:rgba(138,43,226,.25); color:#c084fc; border-color:rgba(138,43,226,.5); }
+.grid-e { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; padding:6px 14px 20px; background:#150823; position:relative; }
+.grid-e::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 14px, rgba(255,255,255,.015) 14px, rgba(255,255,255,.015) 15px);
+}
+.card-e { background:rgba(255,255,255,.04); border-radius:6px; height:72px; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid rgba(138,43,226,.1); position:relative; z-index:1; }
+
+</style>
+</head>
+<body>
+
+<!-- OPTION A -->
+<div>
+  <div class="section-label">Opzione A</div>
+  <div class="section-title">Trainer Card</div>
+  <div class="section-sub">Pulito, gerarchico, familiare. Colore avatar sull'accento.</div>
+  <div class="phone a-wrap">
+    <div class="a-header">
+      <div class="a-row">
+        <div class="a-avatar"><img src="assets/avatars/Rosso.png" onerror="this.style.display='none'"></div>
+        <div class="a-text">
+          <div class="a-label">Pokédex di</div>
+          <div class="a-name">Marco</div>
+        </div>
+        <img src="assets/pokedex/Kanto Pokedex.png" class="a-pdx" onerror="this.style.display='none'">
+      </div>
+      <div class="a-progress">
+        <div class="bar"><div class="fill-a" style="width:34%"></div></div>
+        <span class="prog-text">51<span>/151</span></span>
+      </div>
+    </div>
+    <div class="pills-a">
+      <button class="pill on-a">Kanto</button>
+      <button class="pill">Johto</button>
+      <button class="pill">Hoenn</button>
+      <button class="pill">Sinnoh</button>
+    </div>
+    <div class="grid">
+      <div class="card-a">🔴</div><div class="card-a">🟡</div>
+      <div class="card-a">🟢</div><div class="card-a">🔵</div>
+      <div class="card-a">⚫</div><div class="card-a">🟣</div>
+      <div class="card-a">🟠</div><div class="card-a">⚪</div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION B -->
+<div>
+  <div class="section-label">Opzione B</div>
+  <div class="section-title">Material Device</div>
+  <div class="section-sub">Il device diventa l'header. Bordo plastico a strati. Colore Pokédex.</div>
+  <div class="phone b-wrap">
+    <div class="b-header">
+      <div class="b-row">
+        <div class="b-avatar"><img src="assets/avatars/Oro.webp" onerror="this.style.display='none'"></div>
+        <div class="b-text">
+          <div class="b-label">Pokédex di</div>
+          <div class="b-name">Marco</div>
+        </div>
+        <img src="assets/pokedex/Hoenn Pokedex.webp" class="b-pdx" onerror="this.style.display='none'">
+      </div>
+      <div class="b-progress">
+        <div class="b-bar"><div class="fill-b" style="width:48%"></div></div>
+        <span class="b-prog-text">65<span>/135</span></span>
+      </div>
+    </div>
+    <div class="pills-b">
+      <button class="pill">Kanto</button>
+      <button class="pill">Johto</button>
+      <button class="pill on-b">Hoenn</button>
+      <button class="pill">Sinnoh</button>
+    </div>
+    <div class="grid">
+      <div class="card-b">🌿</div><div class="card-b">🔥</div>
+      <div class="card-b">💧</div><div class="card-b">⚡</div>
+      <div class="card-b">❄️</div><div class="card-b">👊</div>
+      <div class="card-b">🌍</div><div class="card-b">🦋</div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION C -->
+<div>
+  <div class="section-label">Opzione C</div>
+  <div class="section-title">Dark Cockpit</div>
+  <div class="section-sub">UI scura. Neon dal colore avatar. Bordo esterno brillante.</div>
+  <div class="phone c-wrap">
+    <div class="c-header">
+      <div class="c-row">
+        <div class="c-avatar"><img src="assets/avatars/Giallo.webp" onerror="this.style.display='none'"></div>
+        <div class="c-text">
+          <div class="c-label">Pokédex di</div>
+          <div class="c-name">Marco</div>
+        </div>
+        <img src="assets/pokedex/Sinnoh Pokedex.jpeg" class="c-pdx" onerror="this.style.display='none'">
+      </div>
+      <div class="c-progress">
+        <div class="c-bar"><div class="fill-c" style="width:28%"></div></div>
+        <span class="c-prog-text">42<span>/151</span></span>
+      </div>
+    </div>
+    <div class="pills-c">
+      <button class="pill-c">Kanto</button>
+      <button class="pill-c">Johto</button>
+      <button class="pill-c">Hoenn</button>
+      <button class="pill-c on-c">Sinnoh</button>
+    </div>
+    <div class="grid-c">
+      <div class="card-c">🔴</div><div class="card-c">🟡</div>
+      <div class="card-c">🟢</div><div class="card-c">🔵</div>
+      <div class="card-c">⚫</div><div class="card-c">🟣</div>
+      <div class="card-c">🟠</div><div class="card-c">⚪</div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION D -->
+<div>
+  <div class="section-label">Opzione D</div>
+  <div class="section-title">Sticker Book</div>
+  <div class="section-sub">Massimalista, giocoso. Avatar inclinato, ombre piatte, bordo doppio.</div>
+  <div class="phone d-wrap">
+    <div class="d-header">
+      <div class="d-row">
+        <div class="d-avatar"><img src="assets/avatars/Verde.webp" onerror="this.style.display='none'"></div>
+        <div class="d-text">
+          <div class="d-label">Pokédex di</div>
+          <div class="d-name">Marco</div>
+        </div>
+        <img src="assets/pokedex/Kanto Pokedex.png" class="d-pdx" onerror="this.style.display='none'">
+      </div>
+      <div class="d-progress">
+        <div class="d-bar"><div class="fill-d" style="width:60%"></div></div>
+        <span class="prog-text">90<span>/151</span></span>
+      </div>
+    </div>
+    <div class="pills-d">
+      <button class="pill on-d">Kanto</button>
+      <button class="pill">Johto</button>
+      <button class="pill">Hoenn</button>
+      <button class="pill">Sinnoh</button>
+    </div>
+    <div class="grid">
+      <div class="card-d">🌿</div><div class="card-d">🔥</div>
+      <div class="card-d">💧</div><div class="card-d">⚡</div>
+      <div class="card-d">❄️</div><div class="card-d">👊</div>
+      <div class="card-d">🌍</div><div class="card-d">🦋</div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION E -->
+<div>
+  <div class="section-label">Opzione E</div>
+  <div class="section-title">Cartridge</div>
+  <div class="section-sub">Dark, retro. Watermark regione, scanlines, avatar rettangolare.</div>
+  <div class="phone e-wrap">
+    <div class="e-header">
+      <div class="e-row">
+        <div class="e-avatar"><img src="assets/avatars/Cristallo.webp" onerror="this.style.display='none'"></div>
+        <div class="e-text">
+          <div class="e-label">Pokédex di</div>
+          <div class="e-name">Marco</div>
+        </div>
+        <img src="assets/pokedex/Alola pokedex.png" class="e-pdx" onerror="this.style.display='none'">
+      </div>
+      <div class="e-progress">
+        <div class="e-bar"><div class="fill-e" style="width:20%"></div></div>
+        <span class="e-prog-text">17<span>/88</span></span>
+      </div>
+    </div>
+    <div class="pills-e">
+      <button class="pill-e">Kanto</button>
+      <button class="pill-e">Johto</button>
+      <button class="pill-e">Hoenn</button>
+      <button class="pill-e">Sinnoh</button>
+      <button class="pill-e on-e">Alola</button>
+    </div>
+    <div class="grid-e">
+      <div class="card-e">🌴</div><div class="card-e">🌺</div>
+      <div class="card-e">🏄</div><div class="card-e">⚡</div>
+      <div class="card-e">🌊</div><div class="card-e">🔮</div>
+      <div class="card-e">🌙</div><div class="card-e">🦈</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

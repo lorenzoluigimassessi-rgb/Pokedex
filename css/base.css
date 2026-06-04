@@ -77,59 +77,91 @@
 /* Pokédex model overrides via data-pokedex on #app */
 [data-pokedex="classic"] {
   --skin: #cc0000;
+  --skin-dark: #8a0000;
   --skin-soft: rgba(204,0,0,.13);
-  --frame-border: 6px solid #cc0000;
-  --frame-radius: 22px;
-  --frame-glow: none;
+  --skin-header-bg: linear-gradient(160deg, #e02020 0%, #b00000 100%);
+  --frame-shadow:
+    0 0 0 6px #990000,
+    0 0 0 10px #660000,
+    0 28px 60px rgba(0,0,0,.55);
+  --frame-radius: 28px;
 }
 [data-pokedex="johto"] {
   --skin: #d4a017;
+  --skin-dark: #8a6400;
   --skin-soft: rgba(212,160,23,.14);
-  --frame-border: 5px solid #d4a017;
-  --frame-radius: 16px;
-  --frame-glow: inset 0 0 12px rgba(212,160,23,.15);
+  --skin-header-bg: linear-gradient(160deg, #e8b020 0%, #b07800 100%);
+  --frame-shadow:
+    0 0 0 6px #9a6e00,
+    0 0 0 10px #6b4a00,
+    0 28px 60px rgba(0,0,0,.55);
+  --frame-radius: 24px;
 }
 [data-pokedex="hoenn"] {
   --skin: #f97316;
+  --skin-dark: #b84d00;
   --skin-soft: rgba(249,115,22,.12);
-  --frame-border: 5px solid #f97316;
-  --frame-radius: 18px;
-  --frame-glow: none;
+  --skin-header-bg: linear-gradient(160deg, #f97316 0%, #c85000 100%);
+  --frame-shadow:
+    0 0 0 6px #b85c00,
+    0 0 0 10px #8a3d00,
+    0 28px 60px rgba(0,0,0,.55);
+  --frame-radius: 28px;
 }
 [data-pokedex="sinnoh"] {
   --skin: #e63946;
+  --skin-dark: #a00015;
   --skin-soft: rgba(230,57,70,.12);
-  --frame-border: 4px solid #e63946;
-  --frame-radius: 14px;
-  --frame-glow: none;
+  --skin-header-bg: linear-gradient(160deg, #e63946 0%, #a81020 100%);
+  --frame-shadow:
+    0 0 0 6px #960018,
+    0 0 0 10px #680010,
+    0 28px 60px rgba(0,0,0,.55);
+  --frame-radius: 20px;
 }
 [data-pokedex="unova"] {
   --skin: #555b6e;
+  --skin-dark: #2a2f3d;
   --skin-soft: rgba(85,91,110,.14);
-  --frame-border: 3px solid #555b6e;
-  --frame-radius: 8px;
-  --frame-glow: 0 0 16px rgba(85,91,110,.3);
+  --skin-header-bg: linear-gradient(160deg, #6b7280 0%, #374151 100%);
+  --frame-shadow:
+    0 0 0 6px #374151,
+    0 0 0 10px #1f2937,
+    0 28px 60px rgba(0,0,0,.6);
+  --frame-radius: 16px;
 }
 [data-pokedex="kalos"] {
   --skin: #e63946;
+  --skin-dark: #a00015;
   --skin-soft: rgba(230,57,70,.12);
-  --frame-border: 3px solid #e63946;
-  --frame-radius: 28px;
-  --frame-glow: 0 0 18px rgba(230,57,70,.2), 0 0 0 1px rgba(230,57,70,.3);
+  --skin-header-bg: linear-gradient(160deg, #f04050 0%, #b01828 100%);
+  --frame-shadow:
+    0 0 0 6px #960018,
+    0 0 0 10px #680010,
+    0 28px 60px rgba(0,0,0,.55);
+  --frame-radius: 32px;
 }
 [data-pokedex="alola"] {
   --skin: #f4a261;
+  --skin-dark: #b05c18;
   --skin-soft: rgba(244,162,97,.12);
-  --frame-border: 3px solid #f4a261;
-  --frame-radius: 24px;
-  --frame-glow: 0 0 14px rgba(244,162,97,.25);
+  --skin-header-bg: linear-gradient(160deg, #f4a261 0%, #c06820 100%);
+  --frame-shadow:
+    0 0 0 6px #b06020,
+    0 0 0 10px #804010,
+    0 28px 60px rgba(0,0,0,.5);
+  --frame-radius: 30px;
 }
 [data-pokedex="rotom"] {
   --skin: #e76f51;
+  --skin-dark: #a83818;
   --skin-soft: rgba(231,111,81,.12);
-  --frame-border: 3px solid #e76f51;
-  --frame-radius: 28px;
-  --frame-glow: 0 0 18px rgba(231,111,81,.3), 0 0 0 1px rgba(231,111,81,.3);
+  --skin-header-bg: linear-gradient(160deg, #e76f51 0%, #b84030 100%);
+  --frame-shadow:
+    0 0 0 6px #a83818,
+    0 0 0 10px #782008,
+    0 28px 60px rgba(0,0,0,.55);
+  --frame-radius: 32px;
 }
 
 html, body {
