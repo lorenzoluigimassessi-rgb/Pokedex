@@ -410,19 +410,6 @@ function addSwipeToDismiss(card, overlay) {
   }, { passive: true });
 }
 
-function closeDetail(overlay) {
-  const card = overlay.querySelector('.pdx-detail-card');
-  const backdrop = overlay.querySelector('.pdx-detail-backdrop');
-  if (card) {
-    card.style.transition = 'transform 0.3s cubic-bezier(0.32,0,0.67,0)';
-    card.style.transform = 'translateY(110%)';
-  }
-  if (backdrop) {
-    backdrop.style.transition = 'opacity 0.3s ease';
-    backdrop.style.opacity = '0';
-  }
-  setTimeout(() => overlay.remove(), 300);
-}
 
 function renderTypeBadges(types) {
   const TC = {normal:'#a8a878',fire:'#f08030',water:'#6890f0',grass:'#78c850',electric:'#f8d030',ice:'#98d8d8',fighting:'#c03028',poison:'#a040a0',ground:'#e0c068',flying:'#a890f0',psychic:'#f85888',bug:'#a8b820',rock:'#b8a038',ghost:'#705898',dragon:'#7038f8',dark:'#705848',steel:'#b8b8d0',fairy:'#ee99ac'};
@@ -546,7 +533,7 @@ function openViewer(data, container) {
   container.appendChild(overlay);
 }
 
-
+function closeDetail(overlay) {
   const card = overlay.querySelector('.pdx-detail-card');
   const backdrop = overlay.querySelector('.pdx-detail-backdrop');
   if (card) {
