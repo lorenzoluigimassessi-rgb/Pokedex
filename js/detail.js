@@ -86,11 +86,15 @@ function renderDetail(overlay, data, caught) {
         </div>
         <div class="pdx-section" id="detail-evo-section">
           <div class="pdx-section-title">Evoluzione</div>
-          <div class="pdx-evo-line" id="detail-evo-chain">Caricamento...</div>
+          <div id="detail-evo-chain">Caricamento...</div>
         </div>
-        <div class="pdx-section" id="detail-regional-section" style="display:none">
-          <div class="pdx-section-title" style="border-left:3px solid rgba(100,144,240,.6);padding-left:7px">Forme Regionali</div>
-          <div id="detail-regional-chain"></div>
+        <div class="pdx-section pdx-section--special" id="detail-special-section" style="display:none">
+          <div class="pdx-section-title pdx-section-title--special">Evoluzioni Speciali</div>
+          <div class="pdx-special-pills" id="detail-special-pills"></div>
+        </div>
+        <div class="pdx-section pdx-section--regional" id="detail-regional-section" style="display:none">
+          <div class="pdx-section-title pdx-section-title--regional">Forme Regionali</div>
+          <div class="pdx-evo-line" id="detail-regional-chain"></div>
         </div>
       </div>`;
 
@@ -162,7 +166,6 @@ function renderDetail(overlay, data, caught) {
 
   render();
   if (data.isForm) {
-    // find base ID from either special or regional map
     let baseId = Object.keys(FORMS_BY_BASE).find(bid =>
       (FORMS_BY_BASE[bid] || []).some(f => f.slug === data._slug)
     );
@@ -172,16 +175,14 @@ function renderDetail(overlay, data, caught) {
     if (baseId) {
       api.getSpecies(parseInt(baseId)).then(species => {
         if (species && species.evolutionChainUrl) {
-          // use base pokemon's ID for evo chain (shows Kanto line for regional forms)
-          loadEvoChain({ ...data, id: parseInt(baseId), evolutionChainUrl: species.evolutionChainUrl }, overlay)
-            .then(() => loadSiblingForms(data, overlay, tc));
+          loadEvoChain({ ...data, id: parseInt(baseId), evolutionChainUrl: species.evolutionChainUrl }, overlay);
         }
       });
+      loadSiblingForms(data, overlay, tc);
     }
   } else {
-    loadEvoChain(data, overlay).then(() => {
-      loadSpecialForms(data, overlay, tc);
-    });
+    loadEvoChain(data, overlay);
+    loadSpecialForms(data, overlay, tc);
     loadRegionalForms(data, overlay);
   }
 }
@@ -216,18 +217,38 @@ async function loadEvoChain(data, overlay) {
 function renderEvoChain(node, collection, currentId) {
   const lines = buildEvoLines(node);
   if (lines.length === 0) return '';
+  if (lines.length === 1) return `<div class="pdx-evo-line">${renderEvoLine(lines[0], collection, currentId)}</div>`;
 
-  // Single linear line
-  if (lines.length === 1) {
-    return renderEvoLine(lines[0], collection, currentId);
+  const base = lines[0][0];
+  const branches = lines.map(line => line.slice(1)); // each branch path after base
+
+  // Eevee-style: many single-step branches → 4x2 grid
+  const allSingleStep = branches.every(b => b.length === 1);
+  if (allSingleStep && branches.length >= 5) {
+    const baseHtml = renderEvoNode(base, collection, currentId);
+    const gridItems = branches.map(b => renderEvoNode(b[0], collection, currentId)).join('');
+    return `<div class="pdx-evo-eevee">
+      <div class="pdx-evo-line pdx-evo-line--base">${baseHtml}</div>
+      <span class="pdx-evo-down-arrow">↓</span>
+      <div class="pdx-evo-grid">${gridItems}</div>
+    </div>`;
   }
 
-  // Branching (e.g. Eevee) — base node + all evolutions in one scrollable row
-  const base = lines[0][0];
+  // Standard fork: base left, diagonal arrows, branches stacked right
   const baseHtml = renderEvoNode(base, collection, currentId);
-  const allEvoNodes = lines.map(line => renderEvoNode(line[line.length - 1], collection, currentId)).join('<div style="width:4px;flex-shrink:0"></div>');
+  const branchRows = branches.map(branch => {
+    const nodes = branch.map((entry, i) => {
+      const arrow = i > 0 ? '<span class="pdx-evo-arrow">→</span>' : '';
+      return arrow + renderEvoNode(entry, collection, currentId);
+    }).join('');
+    return `<div class="pdx-evo-branch-row">${nodes}</div>`;
+  }).join('');
 
-  return baseHtml + '<span class="pdx-evo-arrow">→</span>' + allEvoNodes;
+  return `<div class="pdx-evo-fork">
+    <div class="pdx-evo-line pdx-evo-line--base">${baseHtml}</div>
+    <div class="pdx-evo-fork-arrows"><span>→</span><span>→</span></div>
+    <div class="pdx-evo-fork-branches">${branchRows}</div>
+  </div>`;
 }
 
 function buildEvoLines(node) {
@@ -294,85 +315,59 @@ async function loadSiblingForms(data, overlay, tc) {
   }
   if (!baseId) return;
 
-  // all special forms for this base (siblings + self if it's a special form)
   const specialForms = (FORMS_BY_BASE[baseId] || []);
-  const regionalSiblings = (REGIONAL_BY_BASE[baseId] || []).filter(f => f.slug !== currentSlug);
+  const regionalForms = (REGIONAL_BY_BASE[baseId] || []);
 
-  const chainEl = document.getElementById('detail-evo-chain');
-  if (chainEl && specialForms.length > 0) {
-    appendSpecialFormsInline(chainEl, specialForms, currentSlug, tc, overlay);
-  }
-
-  if (regionalSiblings.length > 0) {
-    const section = document.getElementById('detail-regional-section');
-    const chainContainer = document.getElementById('detail-regional-chain');
-    if (section && chainContainer) {
-      section.style.display = 'block';
-      renderRegionalNodes(chainContainer, regionalSiblings, overlay);
-    }
-  }
+  if (specialForms.length > 0) renderSpecialPills(specialForms, currentSlug, tc, overlay);
+  if (regionalForms.length > 0) renderRegionalNodes(regionalForms, currentSlug, overlay);
 }
 
 async function loadSpecialForms(data, overlay, tc) {
   const idsToCheck = new Set([Number(data.id)]);
-  if (data.evo && data.evo.length > 0) {
-    data.evo.forEach(id => idsToCheck.add(Number(id)));
-  } else {
-    try {
-      const sp = await api.getSpecies(data.id);
-      if (sp && sp.evolutionChainUrl) {
-        const chainId = parseInt(sp.evolutionChainUrl.split('/').filter(Boolean).pop());
-        const chain = await api.getEvolutionChain(chainId);
-        function collectIds(node) {
-          idsToCheck.add(parseInt(node.id));
-          (node.evolvesTo || []).forEach(collectIds);
-        }
-        collectIds(chain);
-      }
-    } catch(e) {}
-  }
+  try {
+    const sp = await api.getSpecies(data.id);
+    if (sp && sp.evolutionChainUrl) {
+      const chainId = parseInt(sp.evolutionChainUrl.split('/').filter(Boolean).pop());
+      const chain = await api.getEvolutionChain(chainId);
+      function collectIds(n) { idsToCheck.add(parseInt(n.id)); (n.evolvesTo||[]).forEach(collectIds); }
+      collectIds(chain);
+    }
+  } catch(e) {}
 
   let forms = null;
   for (const id of idsToCheck) {
     if (FORMS_BY_BASE[id] && FORMS_BY_BASE[id].length > 0) { forms = FORMS_BY_BASE[id]; break; }
   }
   if (!forms || forms.length === 0) return;
-
-  const chainEl = document.getElementById('detail-evo-chain');
-  // null currentSlug — base pokemon, no form is "active"
-  if (chainEl) appendSpecialFormsInline(chainEl, forms, null, tc, overlay);
+  renderSpecialPills(forms, null, tc, overlay);
 }
 
-// currentSlug: the currently-open form slug (highlighted), or null for base
-function appendSpecialFormsInline(chainEl, forms, currentSlug, tc, overlay) {
-  const sep = document.createElement('div');
-  sep.className = 'pdx-evo-special-sep';
-  // color the sep with the card accent
-  sep.style.background = tc ? tc.replace(')', ', .3)').replace('rgb', 'rgba') : 'rgba(0,0,0,.15)';
-  chainEl.appendChild(sep);
+function renderSpecialPills(forms, currentSlug, tc, overlay) {
+  const section = document.getElementById('detail-special-section');
+  const container = document.getElementById('detail-special-pills');
+  if (!section || !container) return;
+  section.style.display = 'block';
+  // set accent colour as CSS var on section
+  if (tc) section.style.setProperty('--special-tc', tc);
 
   forms.forEach(form => {
     const isCurrent = form.slug === currentSlug;
-    const node = document.createElement('div');
-    node.className = `pdx-evo-node pdx-special-form-node${isCurrent ? ' current' : ''}`;
-    node.style.cursor = 'pointer';
-    // accent color applied via inline style so it uses the card's tc
-    if (isCurrent && tc) {
-      node.style.setProperty('--special-accent', tc);
-    }
+    const pill = document.createElement('div');
+    pill.className = `pdx-special-pill${isCurrent ? ' active' : ''}`;
     const fallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.baseId}.png`;
-    node.innerHTML = `<div class="pdx-evo-circle"><img src="${fallback}" alt="${form.name}"></div>
-      <span class="pdx-evo-label">${form.name}</span>`;
+    pill.innerHTML = `<img src="${fallback}" alt="${form.name}"><span class="pdx-special-pill-label">${form.name}</span>`;
     api.getFormSprite(form.slug).then(url => {
-      if (url) { const img = node.querySelector('img'); if (img) img.src = url; }
+      if (url) { const img = pill.querySelector('img'); if (img) img.src = url; }
     });
-    node.addEventListener('click', () => {
-      if (isCurrent) return;
-      closeDetail(overlay);
-      const container = overlay.parentElement;
-      setTimeout(() => showDetail(container, form.slug), 320);
-    });
-    chainEl.appendChild(node);
+    if (!isCurrent) {
+      pill.style.cursor = 'pointer';
+      pill.addEventListener('click', () => {
+        closeDetail(overlay);
+        const container = overlay.parentElement;
+        setTimeout(() => showDetail(container, form.slug), 320);
+      });
+    }
+    container.appendChild(pill);
   });
 }
 
@@ -557,41 +552,50 @@ function openViewer(data, container) {
 
 function loadRegionalForms(data, overlay) {
   const idsToCheck = new Set([Number(data.id)]);
-  if (data.evo) data.evo.forEach(id => idsToCheck.add(Number(id)));
+  try {
+    if (data.evolutionChainUrl) {
+      // will be populated async — for now just check direct ID
+    }
+  } catch(e) {}
 
   let forms = null;
   for (const id of idsToCheck) {
     if (REGIONAL_BY_BASE[id] && REGIONAL_BY_BASE[id].length > 0) { forms = REGIONAL_BY_BASE[id]; break; }
   }
   if (!forms || forms.length === 0) return;
-
-  const section = document.getElementById('detail-regional-section');
-  const chainEl = document.getElementById('detail-regional-chain');
-  if (!section || !chainEl) return;
-  section.style.display = 'block';
-  renderRegionalNodes(chainEl, forms, overlay);
+  renderRegionalNodes(forms, null, overlay);
 }
 
-function renderRegionalNodes(container, forms, overlay) {
-  const nodesEl = document.createElement('div');
-  nodesEl.className = 'pdx-forms-nodes';
-  container.appendChild(nodesEl);
-  forms.forEach(form => {
+function renderRegionalNodes(forms, currentSlug, overlay) {
+  const section = document.getElementById('detail-regional-section');
+  const container = document.getElementById('detail-regional-chain');
+  if (!section || !container) return;
+  section.style.display = 'block';
+
+  forms.forEach((form, i) => {
+    if (i > 0) {
+      const dot = document.createElement('span');
+      dot.className = 'pdx-evo-arrow';
+      dot.textContent = '·';
+      container.appendChild(dot);
+    }
     const node = document.createElement('div');
-    node.className = 'pdx-evo-node pdx-form-node pdx-regional-node';
+    node.className = `pdx-evo-node pdx-regional-node${form.slug === currentSlug ? ' current' : ''}`;
     node.style.cursor = 'pointer';
     const fallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.baseId}.png`;
     node.innerHTML = `<div class="pdx-evo-circle"><img src="${fallback}" alt="${form.name}"></div>
-      <span class="pdx-evo-label" style="text-align:center;line-height:1.2;max-width:72px;white-space:normal">${form.name}</span>`;
+      <span class="pdx-evo-label">${form.name}</span>`;
     api.getFormSprite(form.slug).then(url => {
       if (url) { const img = node.querySelector('img'); if (img) img.src = url; }
     });
-    node.addEventListener('click', () => {
-      closeDetail(overlay);
-      const cont = overlay.parentElement;
-      setTimeout(() => showDetail(cont, form.slug), 320);
-    });
-    nodesEl.appendChild(node);
+    if (form.slug !== currentSlug) {
+      node.addEventListener('click', () => {
+        closeDetail(overlay);
+        const cont = overlay.parentElement;
+        setTimeout(() => showDetail(cont, form.slug), 320);
+      });
+    }
+    container.appendChild(node);
   });
 }
 

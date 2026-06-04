@@ -777,7 +777,7 @@
   background: linear-gradient(135deg, var(--accent), #f5b942);
   border-color: transparent;
 }
-/* Evolution chain — one scrollable line */
+/* Evolution chain — scrollable line */
 .pdx-evo-line {
   display: flex;
   align-items: center;
@@ -788,42 +788,63 @@
   gap: 0;
 }
 .pdx-evo-line::-webkit-scrollbar { display: none; }
+.pdx-evo-line--base { overflow: visible; padding: 0; justify-content: center; }
 
-/* Special form separator — color set inline from card tc */
-.pdx-evo-special-sep {
-  width: 1px;
-  height: 44px;
-  margin: 0 6px;
-  flex-shrink: 0;
-  align-self: center;
-  background: rgba(0,0,0,.12);
+/* Fork layout */
+.pdx-evo-fork { display: flex; align-items: center; padding: 4px 0 8px; gap: 0; }
+.pdx-evo-fork-arrows {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; flex-shrink: 0; margin: 0 2px; padding-bottom: 14px;
+}
+.pdx-evo-fork-arrows span { font-size: 15px; color: var(--text-muted); line-height: 1; display: block; }
+.pdx-evo-fork-arrows span:first-child { transform: rotate(-35deg); }
+.pdx-evo-fork-arrows span:last-child  { transform: rotate( 35deg); }
+.pdx-evo-fork-branches { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.pdx-evo-branch-row { display: flex; align-items: center; gap: 0; }
+
+/* Eevee grid */
+.pdx-evo-eevee { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0 8px; }
+.pdx-evo-down-arrow { color: var(--text-muted); font-size: 14px; line-height: 1; }
+.pdx-evo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 0; width: 100%; }
+.pdx-evo-grid .pdx-evo-node { width: 100%; }
+
+/* Section titles with left accent bar */
+.pdx-section-title--special {
+  border-left: 3px solid rgba(200,70,30,.45); padding-left: 7px;
+  color: rgba(190,65,25,.8); font-family: var(--font-body);
+  font-size: 10px; font-weight: 900; letter-spacing: .7px; text-transform: uppercase;
+}
+.pdx-section-title--regional {
+  border-left: 3px solid rgba(90,120,200,.5); padding-left: 7px;
+  color: rgba(80,110,190,.85); font-family: var(--font-body);
+  font-size: 10px; font-weight: 900; letter-spacing: .7px; text-transform: uppercase;
+}
+.pdx-section--special { margin-top: 18px; }
+.pdx-section--regional { margin-top: 10px; }
+
+/* Special form pills */
+.pdx-special-pills {
+  display: flex; gap: 6px; overflow-x: auto;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px;
+}
+.pdx-special-pills::-webkit-scrollbar { display: none; }
+.pdx-special-pill {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: rgba(200,70,30,.07); border: 1.5px solid rgba(200,70,30,.22);
+  border-radius: 13px; padding: 5px 8px 6px; transition: all .15s; flex-shrink: 0;
+}
+.pdx-special-pill:hover { background: rgba(200,70,30,.15); border-color: rgba(200,70,30,.5); }
+.pdx-special-pill.active { background: rgba(200,70,30,.16); border-color: rgba(200,70,30,.8); box-shadow: 0 0 0 3px rgba(200,70,30,.1); }
+.pdx-special-pill img { width: 44px; height: 44px; object-fit: contain; image-rendering: pixelated; }
+.pdx-special-pill-label {
+  font-size: 8px; font-weight: 800; color: rgba(190,65,25,.85);
+  text-align: center; white-space: nowrap; line-height: 1;
+  max-width: 60px; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Special form node — identical size to evo node, accent from --special-accent or card tc */
-.pdx-special-form-node.current .pdx-evo-circle {
-  background: color-mix(in srgb, var(--special-accent, var(--skin)) 15%, transparent);
-  border-color: var(--special-accent, var(--skin));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--special-accent, var(--skin)) 15%, transparent);
-}
-
-.pdx-special-form-node .pdx-evo-circle {
-  background: color-mix(in srgb, var(--special-accent, var(--skin)) 7%, transparent);
-  border: 1.5px solid color-mix(in srgb, var(--special-accent, var(--skin)) 22%, transparent);
-}
-
-.pdx-special-form-node .pdx-evo-label {
-  color: color-mix(in srgb, var(--special-accent, var(--skin)) 80%, #333);
-}
-
-/* Regional forms node — blue tint */
-.pdx-regional-node .pdx-evo-circle {
-  background: rgba(100,144,240,.08);
-  border: 1.5px solid rgba(100,144,240,.2);
-}
-
-.pdx-regional-node .pdx-evo-label {
-  color: rgba(100,144,240,.8);
-}
+/* Regional node — same circle size, blue tint */
+.pdx-regional-node .pdx-evo-circle { background: rgba(90,120,200,.08); border-color: rgba(90,120,200,.28); }
+.pdx-regional-node .pdx-evo-label { color: rgba(80,110,190,.85); }
 
 .pdx-evo-node {
   display: flex;
