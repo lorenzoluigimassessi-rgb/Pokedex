@@ -140,28 +140,60 @@ async function loadEvoChain(data, overlay) {
 }
 
 function renderEvoChain(node, collection, currentId) {
-  const flatChain = flattenChain(node);
-  return flatChain.map((entry, i) => {
-    const isCaught = !!collection[entry.id];
-    const isCurrent = entry.id === currentId;
-    const cls = isCurrent ? 'current' : (!isCaught ? 'uncaught' : '');
-    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
+  // Build a flat representation handling branches
+  const lines = buildEvoLines(node);
+  if (lines.length === 0) return '';
+
+  // Single linear line
+  if (lines.length === 1) {
+    return renderEvoLine(lines[0], collection, currentId);
+  }
+
+  // Branching (e.g. Eevee) — show base + each branch on its own row
+  const base = lines[0][0];
+  const baseHtml = renderEvoNode(base, collection, currentId);
+  const branchRows = lines.map(line => {
+    const rest = line.slice(1);
+    return `<div class="pdx-evo-branch-row">${rest.map(e => renderEvoNode(e, collection, currentId)).join('<span class="pdx-evo-arrow">→</span>')}</div>`;
+  }).join('');
+
+  return `<div class="pdx-evo-branching">
+    <div class="pdx-evo-base-row">${baseHtml}</div>
+    <div class="pdx-evo-branches">${branchRows}</div>
+  </div>`;
+}
+
+function buildEvoLines(node) {
+  const lines = [];
+  function walk(n, current) {
+    const entry = { id: n.id, name: n.name };
+    const path = [...current, entry];
+    if (!n.evolvesTo || n.evolvesTo.length === 0) {
+      lines.push(path);
+    } else {
+      n.evolvesTo.forEach(child => walk(child, path));
+    }
+  }
+  walk(node, []);
+  return lines;
+}
+
+function renderEvoLine(line, collection, currentId) {
+  return line.map((entry, i) => {
     const arrow = i > 0 ? '<span class="pdx-evo-arrow">→</span>' : '';
-    return `${arrow}<div class="pdx-evo-node ${cls}" data-id="${entry.id}">
-      <div class="pdx-evo-circle"><img src="${spriteUrl}" alt="${entry.name}"></div>
-      <span class="pdx-evo-label">${isCaught || isCurrent ? entry.name : '?'}</span>
-    </div>`;
+    return arrow + renderEvoNode(entry, collection, currentId);
   }).join('');
 }
 
-function flattenChain(node) {
-  const result = [{ id: node.id, name: node.name }];
-  if (node.evolvesTo.length) {
-    for (const child of node.evolvesTo) {
-      result.push(...flattenChain(child));
-    }
-  }
-  return result;
+function renderEvoNode(entry, collection, currentId) {
+  const isCaught = !!(collection[entry.id] || collection[String(entry.id)]);
+  const isCurrent = entry.id === currentId;
+  const cls = isCurrent ? 'current' : (!isCaught ? 'uncaught' : '');
+  const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
+  return `<div class="pdx-evo-node ${cls}" data-id="${entry.id}">
+    <div class="pdx-evo-circle"><img src="${spriteUrl}" alt="${entry.name}"></div>
+    <span class="pdx-evo-label">${isCaught || isCurrent ? entry.name : '?'}</span>
+  </div>`;
 }
 
 function getStoneStyle(type) {
