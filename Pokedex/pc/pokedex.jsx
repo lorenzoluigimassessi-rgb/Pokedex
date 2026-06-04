@@ -1,5 +1,5 @@
 /* ===== Pokédex View — grid / list, controls, skin frame, FAB ===== */
-function PokedexView({ trainer, caught, stats, skin, onSetSkin, onOpenCatch, onOpenDetail }) {
+function PokedexView({ trainer, caught, canEvolve, stats, skin, onSetSkin, onOpenCatch, onOpenDetail }) {
   const [region, setRegion] = useState('kanto');
   const [sort, setSort] = useState('num'); // num | az | za
   const [view, setView] = useState('grid'); // grid | list
@@ -80,11 +80,11 @@ function PokedexView({ trainer, caught, stats, skin, onSetSkin, onOpenCatch, onO
       <div className="scroll" style={{ flex:1, padding:'4px 16px 120px', position:'relative', zIndex:1 }}>
         {view === 'grid' ? (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
-            {ids.map(id => <GridCard key={id} id={id} info={caught[id]} onOpen={onOpenDetail}/>)}
+            {ids.map(id => <GridCard key={id} id={id} info={caught[id]} ready={canEvolve(id)} onOpen={onOpenDetail}/>)}
           </div>
         ) : (
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-            {ids.map(id => <ListRow key={id} id={id} info={caught[id]} onOpen={onOpenDetail}/>)}
+            {ids.map(id => <ListRow key={id} id={id} info={caught[id]} ready={canEvolve(id)} onOpen={onOpenDetail}/>)}
           </div>
         )}
       </div>
@@ -94,13 +94,13 @@ function PokedexView({ trainer, caught, stats, skin, onSetSkin, onOpenCatch, onO
         height:56, padding:'0 30px', borderRadius:99, zIndex:7,
         background:'var(--accent)', color:'#fff', fontFamily:'var(--font-display)', fontSize:18, letterSpacing:'.5px',
         boxShadow:'0 10px 26px rgba(255,107,107,.5)', display:'flex', alignItems:'center', gap:10 }}>
-        <BallIcon type="poke" size={26}/> CATCH!
+        <BallIcon type="poke" size={26}/> CATTURA!
       </button>
     </div>
   );
 }
 
-function GridCard({ id, info, onOpen }) {
+function GridCard({ id, info, ready, onOpen }) {
   const caught = !!info;
   return (
     <button onClick={()=> onOpen(id)} style={{ background:'var(--card-light)', borderRadius:12, padding:'8px 4px 7px',
@@ -110,6 +110,9 @@ function GridCard({ id, info, onOpen }) {
       onMouseUp={e=>e.currentTarget.style.transform='none'} onMouseLeave={e=>e.currentTarget.style.transform='none'}>
       <span style={{ position:'absolute', top:5, left:7, fontSize:9.5, fontWeight:800, color:'var(--text-muted)' }}>#{String(id).padStart(3,'0')}</span>
       {caught && info.shiny && <span style={{ position:'absolute', top:4, right:6, fontSize:12 }}>✨</span>}
+      {/* ready-to-evolve dot */}
+      {ready && <div style={{ position:'absolute', top:4, right: info && info.shiny ? 22 : 6,
+        width:9, height:9, borderRadius:'50%', background:'#22c55e', boxShadow:'0 0 6px #22c55e' }}/>}
       {caught
         ? <Sprite id={id} shiny={info.shiny} size={58}/>
         : <Sprite id={id} silhouette size={58}/>}
@@ -122,7 +125,7 @@ function GridCard({ id, info, onOpen }) {
   );
 }
 
-function ListRow({ id, info, onOpen }) {
+function ListRow({ id, info, ready, onOpen }) {
   const caught = !!info;
   const feat = PC.FEATURE[id];
   return (
@@ -134,6 +137,7 @@ function ListRow({ id, info, onOpen }) {
           <span style={{ fontSize:11, fontWeight:800, color:'var(--text-muted)' }}>#{String(id).padStart(3,'0')}</span>
           <span className="fredoka" style={{ fontSize:15, color: caught?'var(--text-primary)':'var(--text-muted)' }}>{caught?PC.nameOf(id):'???'}</span>
           {caught && info.shiny && <span style={{ fontSize:13 }}>✨</span>}
+          {ready && <div style={{ width:8, height:8, borderRadius:'50%', background:'#22c55e', boxShadow:'0 0 5px #22c55e' }}/>}
         </div>
         {caught && feat && <div style={{ display:'flex', gap:5, marginTop:4 }}>{feat.types.map(t=><TypeBadge key={t} type={t}/>)}</div>}
       </div>

@@ -70,7 +70,51 @@
     150:{types:['psychic'],stats:s(106,110,90,154,90,130),evo:[150],flavor:"It was created by a scientist after years of horrific gene-splicing and DNA-engineering experiments."},
     151:{types:['psychic'],stats:s(100,100,100,100,100,100),evo:[151],flavor:"So rare that it is still said to be a mirage by many experts. Only a few people have seen it worldwide."},
   };
-  const ENCOUNTER_POOL = Object.keys(FEATURE).map(Number);
+  // Rarity tiers — controls encounter weight and catch rate
+  // tier: 1=common 2=uncommon 3=rare 4=ultrarare 5=epic 6=legendary
+  const RARITY = {
+    1:{ label:'Comune',      weight:48, catchRate:0.95 },
+    2:{ label:'Non comune',  weight:27, catchRate:0.85 },
+    3:{ label:'Raro',        weight:14, catchRate:0.70 },
+    4:{ label:'Ultra Raro',  weight:7,  catchRate:0.55 },
+    5:{ label:'Epico',       weight:3,  catchRate:0.50 },
+    6:{ label:'Leggendario', weight:1,  catchRate:0.35 },
+  };
+
+  // Assign rarity tier to each featured Pokémon (stage 1=common/uncommon, stage2=rare, stage3=ultrarare, special=epic/legendary)
+  const FEAT_RARITY = {
+    1:2,  2:3,  3:4,  // Bulbasaur line
+    4:2,  5:3,  6:4,  // Charmander line
+    7:2,  8:3,  9:4,  // Squirtle line
+    25:2, 26:3,       // Pikachu line
+    35:2, 36:3,       // Clefairy line
+    37:2, 38:3,       // Vulpix line
+    39:1, 40:3,       // Jigglypuff line
+    43:1, 44:2, 45:3, // Oddish line
+    58:2, 59:3,       // Growlithe line
+    92:2, 93:3, 94:4, // Gastly line
+    129:1, 130:4,     // Magikarp line
+    131:5,            // Lapras
+    133:2, 134:4, 135:4, 136:4, // Eevee line
+    143:5,            // Snorlax
+    147:3, 148:4, 149:5, // Dratini line
+    150:6, 151:6,     // Legendaries
+  };
+
+  // Build weighted encounter pool
+  const ENCOUNTER_POOL = [];
+  Object.keys(FEATURE).map(Number).forEach(id => {
+    const tier = FEAT_RARITY[id] || 2;
+    const w = RARITY[tier].weight;
+    for (let i = 0; i < w; i++) ENCOUNTER_POOL.push(id);
+  });
+
+  // Type → stone mapping (dual-types count for both)
+  const TYPE_TO_STONE = {
+    fire:'fire', water:'water', electric:'thunder',
+    grass:'leaf', fairy:'moon', normal:'moon',
+    psychic:'sun',
+  };
 
   // Stones: 2x5 grid
   const STONES = [
@@ -146,10 +190,13 @@
 
   window.PC = {
     TYPE_COLORS, REGIONS, TOTAL, KANTO, nameOf, FEATURE, ENCOUNTER_POOL,
+    RARITY, FEAT_RARITY, TYPE_TO_STONE,
     STONES, BALLS, AVATARS, SKINS, artUrl, spriteUrl, fetchDetail,
     typeColor: t => TYPE_COLORS[t] || '#888',
     stoneOf: k => STONES.find(s => s.key === k),
     titleCase: t => t.charAt(0).toUpperCase() + t.slice(1),
     avatarUrl: f => 'https://pokemon.fandom.com/wiki/Special:FilePath/' + encodeURIComponent(f) + '?width=240',
+    rarityOf: id => RARITY[FEAT_RARITY[id] || 2],
+    catchRate: id => (RARITY[FEAT_RARITY[id] || 2]).catchRate,
   };
 })();

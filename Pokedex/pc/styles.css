@@ -143,4 +143,7 @@ input { font-family:var(--font-body); }
 @keyframes mon-pop { 0%{ transform:scale(.05); opacity:0;} 100%{ transform:scale(1); opacity:1;} }
 @keyframes burst-break { 0%{ transform:scale(1);} 40%{ transform:scale(1.25);} 100%{ transform:scale(1.6); opacity:0;} }
 @keyframes screen-shimmer { 0%,100%{ opacity:0;} 50%{ opacity:.5;} }
-@keyframes gotcha-in { 0%{ transform:scale(.3); opacity:0;} 55%{ transform:scale(1.12);} 100%{ transform:scale(1); opacity:1;} }
+@keyframes ball-idle{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-6px) rotate(6deg)}}
+@keyframes ball-arc{0%{transform:translate(-50%,-50%) translateY(80px) scale(.5);opacity:0}60%{opacity:1}100%{transform:translate(-50%,-50%) translateY(0) scale(.65);opacity:1}}
+@keyframes mon-flee{0%{transform:translateX(0);opacity:1}100%{transform:translateX(160px);opacity:0}}
+@keyframes ring-pulse-shrink{0%{transform:scale(1.6);opacity:.15}100%{transform:scale(1);opacity:1}}

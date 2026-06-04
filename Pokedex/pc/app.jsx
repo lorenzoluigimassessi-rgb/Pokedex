@@ -30,14 +30,15 @@ function makeEncounter(n) {
 function App() {
   const saved = loadState();
   const [trainer, setTrainer] = useState(saved ? saved.trainer : null);
-  const [screen, setScreen] = useState('catch');
+  const [screen, setScreen] = useState('pokedex');
   const [caught, setCaught] = useState(saved ? saved.caught : seedCaught());
   const [stonesInv, setStonesInv] = useState(saved ? saved.stonesInv : { fire:2, water:1, thunder:1, leaf:1 });
+  const [typeCounts, setTypeCounts] = useState(saved ? (saved.typeCounts || {}) : {});
   const [catches, setCatches] = useState(saved ? saved.catches : 0);
   const [encounter, setEncounter] = useState(null);
   const [encN, setEncN] = useState(0);
   const [detailId, setDetailId] = useState(null);
-  const [stoneModal, setStoneModal] = useState(false);
+  const [stoneEarned, setStoneEarned] = useState(null); // key of stone just earned
   const [toast, setToast] = useState(null);
 
   // first encounter
@@ -46,8 +47,8 @@ function App() {
   // persist
   useEffect(() => {
     if (!trainer) return;
-    try { localStorage.setItem(KEY, JSON.stringify({ trainer, caught, stonesInv, catches })); } catch(e){}
-  }, [trainer, caught, stonesInv, catches]);
+    try { localStorage.setItem(KEY, JSON.stringify({ trainer, caught, stonesInv, typeCounts, catches })); } catch(e){}
+  }, [trainer, caught, stonesInv, typeCounts, catches]);
 
   const skin = trainer ? trainer.skin : 'classic';
   useEffect(() => {
@@ -59,30 +60,59 @@ function App() {
 
   const stonesTotal = Object.values(stonesInv).reduce((a,b)=>a+b, 0);
 
+  // Evolution threshold check — returns true if player can evolve `id`
+  function canEvolve(id) {
+    const feat = PC.FEATURE[id];
+    if (!feat || !feat.evo || feat.evo.length < 2) return false;
+    const idx = feat.evo.indexOf(id);
+    if (idx < 0 || idx >= feat.evo.length - 1) return false;
+    const isTwo = feat.evo.length === 2;
+    const needed = isTwo ? 10 : 5;
+    const cnt = caught[id] ? caught[id].count : 0;
+    if (cnt < needed) return false;
+    if (feat.stone && !feat.branch) {
+      return (stonesInv[feat.stone] || 0) > 0;
+    }
+    return true;
+  }
+
   function nextEncounter() { const n = encN + 1; setEncN(n); setEncounter(makeEncounter(n)); }
 
   function onResolve(didCatch) {
     if (didCatch && encounter) {
-      const { id, shiny } = encounter;
+      const { id, shiny, types } = encounter;
       setCaught(prev => {
         const cur = prev[id];
         return { ...prev, [id]: { count: (cur ? cur.count : 0) + 1, shiny: (cur && cur.shiny) || shiny } };
       });
-      const newCount = catches + 1;
-      setCatches(newCount);
-      if (newCount % 5 === 0) { setStoneModal(true); return; } // pause for reward; encounter advances after choose
+      setCatches(c => c + 1);
+      // update type counters, award stones at 10
+      setTypeCounts(prev => {
+        const next = { ...prev };
+        const earned = [];
+        types.forEach(t => {
+          const sk = PC.TYPE_TO_STONE[t];
+          if (!sk) return;
+          next[sk] = (next[sk] || 0) + 1;
+          if (next[sk] >= 10) { next[sk] = 0; earned.push(sk); }
+        });
+        if (earned.length > 0) {
+          setStonesInv(s => {
+            const ns = { ...s };
+            earned.forEach(sk => { ns[sk] = (ns[sk] || 0) + 1; });
+            return ns;
+          });
+          setStoneEarned(earned[0]);
+          setTimeout(() => setStoneEarned(null), 3000);
+        }
+        return next;
+      });
     }
     nextEncounter();
   }
 
-  function chooseStone(sk) {
-    setStonesInv(prev => ({ ...prev, [sk]: (prev[sk]||0) + 1 }));
-    setStoneModal(false);
-    nextEncounter();
-  }
-
   function evolve(fromId, toId, sk) {
-    setStonesInv(prev => ({ ...prev, [sk]: Math.max(0, (prev[sk]||0) - 1) }));
+    if (sk) setStonesInv(prev => ({ ...prev, [sk]: Math.max(0, (prev[sk]||0) - 1) }));
     setCaught(prev => {
       const tgt = prev[toId];
       return { ...prev, [toId]: { count: (tgt ? tgt.count : 0) + 1, shiny: tgt ? tgt.shiny : false } };
@@ -93,24 +123,25 @@ function App() {
   }
 
   if (!trainer) {
-    return <FTE onComplete={(t)=>{ setTrainer(t); setScreen('catch'); }}/>;
+    return <FTE onComplete={(t)=>{ setTrainer(t); setScreen('pokedex'); }}/>;
   }
 
   return (
     <>
       {screen === 'catch'
-        ? <CatchView encounter={encounter} trainer={trainer} stats={{ catches: Object.keys(caught).length, stones: stonesTotal }}
+        ? <CatchView encounter={encounter} trainer={trainer}
+            stonesInv={stonesInv} typeCounts={typeCounts} stoneEarned={stoneEarned}
             onResolve={onResolve} onOpenDex={()=>setScreen('pokedex')}/>
-        : <PokedexView trainer={trainer} caught={caught} stats={{ catches: Object.keys(caught).length, stones: stonesTotal }}
+        : <PokedexView trainer={trainer} caught={caught} canEvolve={canEvolve}
+            stats={{ catches: Object.keys(caught).length, stones: stonesTotal }}
             skin={skin} onSetSkin={(s)=>setTrainer(t=>({ ...t, skin:s }))}
             onOpenCatch={()=>setScreen('catch')} onOpenDetail={(id)=>setDetailId(id)}/>}
 
       {detailId != null && (
-        <DetailOverlay id={detailId} info={caught[detailId]} stonesInv={stonesInv}
-          onClose={()=>setDetailId(null)} onEvolve={evolve}/>
+        <DetailOverlay id={detailId} info={caught[detailId]} stonesInv={stonesInv} caught={caught}
+          onClose={()=>setDetailId(null)} onEvolve={evolve} onOpenCatch={()=>{ setDetailId(null); setScreen('catch'); }}/>
       )}
 
-      {stoneModal && <StoneModal onChoose={chooseStone}/>}
       {toast && <EvoToast from={toast.from} to={toast.to}/>}
     </>
   );
