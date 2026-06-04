@@ -252,7 +252,14 @@ function createGridCard(entry, caught) {
     ${caught && caught.count > 1 ? `<span class="pdx-card-count">×${caught.count}</span>` : ''}
   `;
 
-  card.addEventListener('click', () => showDetail(container, entry.id, collection[entry.id] || collection[String(entry.id)]));
+  card.addEventListener('click', async () => {
+    try {
+      await showDetail(container, entry.id, collection[entry.id] || collection[String(entry.id)]);
+    } catch(e) {
+      console.error('showDetail error:', e);
+      alert('Errore: ' + e.message);
+    }
+  });
   return card;
 }
 
