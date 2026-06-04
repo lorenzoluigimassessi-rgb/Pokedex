@@ -10,121 +10,90 @@ const TYPE_COLOURS = {
   steel: '#b8b8d0', fairy: '#ee99ac',
 };
 
-export async function showDetail(container, pokemonId, caught, onNavCatch) {
+export async function showDetail(container, pokemonId, caught) {
   const overlay = document.createElement('div');
   overlay.className = 'pdx-detail-overlay';
-  overlay.innerHTML = `<div class="pdx-detail-backdrop"></div><div class="pdx-detail-card"><div class="pdx-detail-loading">Loading...</div></div>`;
+  overlay.innerHTML = `<div class="pdx-detail-backdrop"></div><div class="pdx-detail-card"><div class="pdx-detail-loading">Caricamento...</div></div>`;
   container.appendChild(overlay);
 
   overlay.querySelector('.pdx-detail-backdrop').addEventListener('click', () => closeDetail(overlay));
 
   try {
     const data = await api.getFullPokemon(pokemonId);
-    renderDetail(overlay, data, caught, onNavCatch);
+    renderDetail(overlay, data, caught);
   } catch {
-    overlay.querySelector('.pdx-detail-card').innerHTML = `<div class="pdx-detail-content"><p style="text-align:center;padding:40px;color:var(--text-muted)">Failed to load data.</p></div>`;
+    overlay.querySelector('.pdx-detail-card').innerHTML = `<div class="pdx-detail-content"><p style="text-align:center;padding:40px;color:var(--text-muted)">Impossibile caricare i dati.</p></div>`;
   }
 }
 
-function renderDetail(overlay, data, caught, onNavCatch) {
+function renderDetail(overlay, data, caught) {
   const collection = storage.getCollection();
-  const catchData = collection[data.id];
-  const isCaught = !!catchData;
+  const catchData = collection[data.id] || { count: 1, shiny: false };
   const isShiny = catchData?.shiny;
 
-  const sprite = isCaught
-    ? (isShiny && data.spriteShiny ? data.spriteShiny : data.artwork || data.sprite)
-    : data.artwork || data.sprite;
+  const sprite = isShiny && data.spriteShiny ? data.spriteShiny : data.artwork || data.sprite;
 
   const num = `#${String(data.id).padStart(3, '0')}`;
   const mainType = data.types[0] || 'normal';
   const tc = TYPE_COLOURS[mainType] || '#a8a878';
 
-  const typeBadges = isCaught ? data.types.map(t =>
+  const typeBadges = data.types.map(t =>
     `<span class="type-badge" style="background:${TYPE_COLOURS[t] || '#888'}">${t}</span>`
-  ).join('') : '';
+  ).join('');
 
   const card = overlay.querySelector('.pdx-detail-card');
   card.className = `pdx-detail-card${isShiny ? ' shiny' : ''}`;
 
-  if (isCaught) {
-    const movesHtml = (data.moves && data.moves.length > 0)
-      ? data.moves.map(m => `<span class="pdx-move-badge">${m.name}</span>`).join('')
-      : '<span style="color:var(--text-muted);font-size:13px">—</span>';
+  const movesHtml = (data.moves && data.moves.length > 0)
+    ? data.moves.map(m => `<span class="pdx-move-badge">${m.name}</span>`).join('')
+    : '<span style="color:var(--text-muted);font-size:13px">—</span>';
 
-    const statsHtml = data.stats.map(s => {
-      const pct = Math.min((s.value / 180) * 100, 100);
-      return `<div class="pdx-stat-row">
-        <span class="pdx-stat-name">${formatStatName(s.name)}</span>
-        <div class="pdx-stat-track"><div class="pdx-stat-fill" style="width:${pct}%;background:${tc}"></div></div>
-        <span class="pdx-stat-val">${s.value}</span>
-      </div>`;
-    }).join('');
+  const statsHtml = data.stats.map(s => {
+    const pct = Math.min((s.value / 180) * 100, 100);
+    return `<div class="pdx-stat-row">
+      <span class="pdx-stat-name">${formatStatName(s.name)}</span>
+      <div class="pdx-stat-track"><div class="pdx-stat-fill" style="width:${pct}%;background:${tc}"></div></div>
+      <span class="pdx-stat-val">${s.value}</span>
+    </div>`;
+  }).join('');
 
-    card.innerHTML = `
-      <div class="pdx-detail-hero">
-        <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
-        <div class="pdx-detail-handle" id="detail-close"></div>
-        <div class="pdx-detail-artwork">
-          <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
-          <img src="${sprite}" alt="${data.name}">
-        </div>
-        <div class="pdx-detail-identity">
-          <div class="pdx-detail-num">${num}</div>
-          <h2 class="pdx-detail-name fredoka">${data.name}</h2>
-          <div class="pdx-detail-badges">
-            ${typeBadges}
-            ${catchData.count > 1 ? `<span class="pdx-detail-count-badge">×${catchData.count} catturato</span>` : ''}
-            ${isShiny ? '<span class="pdx-detail-shiny-badge">✨ Shiny</span>' : ''}
-          </div>
+  card.innerHTML = `
+    <div class="pdx-detail-hero">
+      <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
+      <div class="pdx-detail-handle" id="detail-close"></div>
+      <div class="pdx-detail-artwork">
+        <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
+        <img src="${sprite}" alt="${data.name}">
+      </div>
+      <div class="pdx-detail-identity">
+        <div class="pdx-detail-num">${num}</div>
+        <h2 class="pdx-detail-name fredoka">${data.name}</h2>
+        <div class="pdx-detail-badges">
+          ${typeBadges}
+          ${catchData.count > 1 ? `<span class="pdx-detail-count-badge">×${catchData.count} catturato</span>` : ''}
+          ${isShiny ? '<span class="pdx-detail-shiny-badge">✨ Shiny</span>' : ''}
         </div>
       </div>
-      <div class="pdx-detail-content scroll">
-        ${data.flavorText ? `<div class="pdx-section"><p class="pdx-flavor">${data.flavorText}</p></div>` : ''}
-        <div class="pdx-section">
-          <div class="pdx-section-title">Statistiche Base</div>
-          <div class="pdx-stats">${statsHtml}</div>
-        </div>
-        <div class="pdx-section">
-          <div class="pdx-section-title">Mosse</div>
-          <div class="pdx-moves">${movesHtml}</div>
-        </div>
-        <div class="pdx-section" id="detail-evo-section">
-          <div class="pdx-section-title">Evoluzione</div>
-          <div class="pdx-evo-chain" id="detail-evo-chain">Caricamento...</div>
-        </div>
+    </div>
+    <div class="pdx-detail-content scroll">
+      ${data.flavorText ? `<div class="pdx-section"><p class="pdx-flavor">${data.flavorText}</p></div>` : ''}
+      <div class="pdx-section">
+        <div class="pdx-section-title">Statistiche Base</div>
+        <div class="pdx-stats">${statsHtml}</div>
       </div>
-    `;
-  } else {
-    card.innerHTML = `
-      <div class="pdx-detail-hero">
-        <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
-        <div class="pdx-detail-handle" id="detail-close"></div>
-        <div class="pdx-detail-artwork silhouette">
-          <img src="${sprite}" alt="unknown">
-        </div>
-        <div class="pdx-detail-identity">
-          <div class="pdx-detail-num">${num}</div>
-          <h2 class="pdx-detail-name fredoka">???</h2>
-        </div>
+      <div class="pdx-section">
+        <div class="pdx-section-title">Mosse</div>
+        <div class="pdx-moves">${movesHtml}</div>
       </div>
-      <div class="pdx-detail-content scroll">
-        <div style="text-align:center;padding:32px 0 16px">
-          <p style="color:var(--text-muted);font-weight:700;font-size:15px;margin-bottom:24px">Non hai ancora catturato questo Pokémon.</p>
-          <button class="btn-primary pdx-catch-cta" id="detail-catch-cta">Vai a catturarlo!</button>
-        </div>
+      <div class="pdx-section" id="detail-evo-section">
+        <div class="pdx-section-title">Evoluzione</div>
+        <div class="pdx-evo-chain" id="detail-evo-chain">Caricamento...</div>
       </div>
-    `;
-  }
+    </div>
+  `;
 
   document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
-
-  const catchCta = document.getElementById('detail-catch-cta');
-  if (catchCta) {
-    catchCta.addEventListener('click', () => { closeDetail(overlay); onNavCatch(); });
-  }
-
-  if (isCaught) loadEvoChain(data, overlay, onNavCatch);
+  loadEvoChain(data, overlay, null);
 }
 
 async function loadEvoChain(data, overlay, onNavCatch) {

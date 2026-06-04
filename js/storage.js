@@ -101,4 +101,24 @@ export const storage = {
 
   // Check if FTE completed
   isOnboarded() { return !!this.getTrainer(); },
+
+  // Region
+  getCurrentRegion() { return getItem('region') || 'kanto'; },
+  setCurrentRegion(r) { setItem('region', r); },
+
+  // Pre-populate all Pokémon in a region as caught
+  populateRegion(regionKey) {
+    const REGIONS = {
+      kanto:[1,151], johto:[152,251], hoenn:[252,386], sinnoh:[387,493],
+      unova:[494,649], kalos:[650,721], alola:[722,809], galar:[810,905], paldea:[906,1025]
+    };
+    const range = REGIONS[regionKey];
+    if (!range) return;
+    const col = this.getCollection();
+    let changed = false;
+    for (let i = range[0]; i <= range[1]; i++) {
+      if (!col[i]) { col[i] = { count: 1, shiny: false, caughtAt: Date.now() }; changed = true; }
+    }
+    if (changed) this.setCollection(col);
+  },
 };

@@ -52,9 +52,9 @@ let observer = null;
 let container = null;
 let onNavCatch = null;
 
-export async function renderPokedexView(el, navCatchCallback) {
+export async function renderPokedexView(el) {
   container = el;
-  onNavCatch = navCatchCallback;
+  onNavCatch = null;
 
   const trainer = storage.getTrainer();
   const collection = storage.getCollection();
@@ -100,13 +100,9 @@ export async function renderPokedexView(el, navCatchCallback) {
       </div>
       <div class="pdx-grid grid scroll" id="pdx-grid"></div>
       <div id="pdx-sentinel" class="pdx-sentinel"></div>
-      <button class="pdx-fab" id="pdx-catch-fab">
-        <span class="ball-icon ball-poke"></span> CATTURA!
-      </button>
     </div>
   `;
 
-  document.getElementById('pdx-catch-fab').addEventListener('click', onNavCatch);
   document.getElementById('pdx-avatar-btn').addEventListener('click', () => showAvatarSheet(container, trainer, colors));
 
   container.querySelectorAll('.pill').forEach(btn => {
@@ -255,7 +251,7 @@ function createGridCard(entry, caught) {
     ${caught && caught.count > 1 ? `<span class="pdx-card-count">×${caught.count}</span>` : ''}
   `;
 
-  card.addEventListener('click', () => showDetail(container, entry.id, caught, onNavCatch));
+  card.addEventListener('click', () => showDetail(container, entry.id, collection[entry.id]));
   return card;
 }
 
@@ -269,6 +265,8 @@ const TYPE_COLOURS_MAP = {
 
 function onRegionChange(region) {
   currentRegion = region;
+  storage.setCurrentRegion(region);
+  storage.populateRegion(region);
   container.querySelectorAll('.pill').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.region === region);
   });
