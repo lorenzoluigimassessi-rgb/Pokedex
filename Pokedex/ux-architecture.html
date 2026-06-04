@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PokéCatch — UX Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --accent:#ff6b6b; --gold:#ffd93d; --skin:#cc0000;
+  --bg-catch:#1a1a2e; --bg-dex:#f5f2eb;
+  --text-primary:#2d2d2d; --text-light:#f0f0f0; --text-muted:#8a8a99;
+  --font-d:'Fredoka One',sans-serif; --font-b:'Nunito',sans-serif;
+  --fire:#F08030; --water:#6890F0; --electric:#F8D030; --grass:#78C850;
+  --poison:#A040A0; --psychic:#F85888; --dragon:#7038F8; --normal:#A8A878;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-b);background:#0a0a14;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+/* ── CANVAS (flow diagram) ── */
+#canvas{padding:40px 60px 80px;min-width:1400px;}
+
+/* ── SECTION LABELS ── */
+.flow-label{font-family:var(--font-d);font-size:13px;color:rgba(255,255,255,.35);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+
+/* ── ROW layout ── */
+.row{display:flex;gap:48px;align-items:flex-start;margin-bottom:56px;}
+
+/* ── ARROW connectors ── */
+.arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding-top:120px;flex-shrink:0;}
+.arrow-v{display:flex;flex-direction:column;align-items:center;gap:4px;margin:8px auto;}
+.arrow svg{flex-shrink:0;}
+.arrow-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.45);
+  letter-spacing:.5px;text-align:center;max-width:70px;line-height:1.3;}
+
+/* ── PHONE SHELL ── */
+.phone{width:240px;flex-shrink:0;border-radius:32px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.07);
+  position:relative;}
+.phone-label{font-family:var(--font-d);font-size:13px;color:rgba(255,255,255,.5);
+  text-align:center;margin-bottom:8px;letter-spacing:.5px;}
+
+/* ── SCREEN INNER ── */
+.screen{display:flex;flex-direction:column;overflow:hidden;}
+
+/* shared header */
+.s-header{display:flex;align-items:center;justify-content:space-between;padding:20px 14px 10px;flex-shrink:0;}
+.s-title{font-family:var(--font-d);font-size:18px;}
+.btn{border:none;cursor:pointer;font-family:var(--font-b);font-weight:800;border-radius:999px;}
+.btn-red{background:var(--accent);color:#fff;padding:8px 18px;font-size:13px;
+  box-shadow:0 6px 16px rgba(255,107,107,.45);}
+.btn-ghost{background:rgba(255,255,255,.09);color:var(--text-light);border:1.5px solid rgba(255,255,255,.18);padding:7px 14px;font-size:12px;}
+.btn-gold{background:var(--gold);color:#2d2d2d;padding:9px 18px;font-size:14px;
+  box-shadow:0 6px 16px rgba(255,217,61,.4);}
+.type-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;
+  font-size:10px;font-weight:800;color:#fff;letter-spacing:.3px;}
+
+/* ── CATCH SCREEN ── */
+.catch-screen{background:radial-gradient(130% 70% at 50% 30%,#F0803033 0%,var(--bg-catch) 55%,#0f1428 100%);
+  height:520px;}
+.catch-mon-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;}
+.catch-mon-sprite{width:110px;height:110px;background:rgba(255,255,255,.04);border-radius:50%;
+  display:grid;place-items:center;position:relative;}
+.catch-mon-sprite img{width:90px;height:90px;object-fit:contain;image-rendering:pixelated;
+  animation:floaty 3s ease infinite;}
+.rarity-pill{padding:4px 14px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:1px;
+  background:rgba(240,120,30,.25);color:#F08030;border:1px solid #F08030;margin-top:2px;}
+.rarity-pill.legendary{background:rgba(255,217,61,.2);color:var(--gold);border-color:var(--gold);
+  animation:shimmer-pill 2s ease infinite;}
+.stone-strip{display:flex;gap:6px;padding:6px 14px;background:rgba(0,0,0,.2);flex-shrink:0;}
+.stone-chip{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.06);
+  border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800;}
+.type-counter{padding:8px 14px;flex-shrink:0;}
+.type-counter-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.type-counter-label{font-size:10px;font-weight:800;width:44px;color:rgba(240,240,240,.7);}
+.type-counter-bar{flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;}
+.type-counter-fill{height:100%;border-radius:999px;}
+.type-counter-val{font-size:10px;font-weight:800;color:rgba(240,240,240,.5);width:26px;text-align:right;}
+.catch-footer{padding:10px 14px 16px;flex-shrink:0;}
+
+/* ── POKÉDEX SCREEN ── */
+.dex-screen{background:var(--bg-dex);height:520px;color:var(--text-primary);}
+.dex-header{background:#fff;border-bottom:3px solid var(--skin);padding:14px 14px 10px;flex-shrink:0;}
+.progress-bar-wrap{margin-top:8px;display:flex;align-items:center;gap:8px;}
+.progress-bar{flex:1;height:8px;border-radius:999px;background:rgba(0,0,0,.1);overflow:hidden;}
+.progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#e8514f);}
+.region-pills{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;flex-shrink:0;}
+.region-pills::-webkit-scrollbar{display:none;}
+.pill{height:28px;padding:0 12px;border-radius:999px;font-size:11px;font-weight:800;
+  background:rgba(0,0,0,.06);color:var(--text-muted);border:none;cursor:pointer;white-space:nowrap;}
+.pill.active{background:var(--accent);color:#fff;}
+.dex-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 12px 70px;overflow-y:auto;flex:1;}
+.dex-grid::-webkit-scrollbar{display:none;}
+.grid-card{background:#fff;border-radius:10px;padding:6px 3px 5px;display:flex;flex-direction:column;
+  align-items:center;gap:1px;position:relative;box-shadow:0 3px 10px rgba(40,30,20,.1);cursor:pointer;}
+.grid-card:active{transform:scale(.95);}
+.grid-card .num{position:absolute;top:4px;left:5px;font-size:8px;font-weight:800;color:var(--text-muted);}
+.grid-card img{width:44px;height:44px;object-fit:contain;image-rendering:pixelated;}
+.grid-card .mon-name{font-family:var(--font-d);font-size:9px;color:var(--text-primary);}
+.grid-card .silhouette{width:44px;height:44px;object-fit:contain;image-rendering:pixelated;
+  filter:brightness(0) saturate(0);opacity:.7;}
+.grid-card .ready-badge{position:absolute;top:3px;right:3px;width:10px;height:10px;
+  border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;}
+.grid-card .chain-badge{position:absolute;bottom:3px;right:3px;font-size:8px;}
+.dex-fab{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+  height:42px;padding:0 22px;border-radius:999px;background:var(--accent);color:#fff;
+  font-family:var(--font-d);font-size:15px;box-shadow:0 8px 20px rgba(255,107,107,.5);
+  border:none;cursor:pointer;display:flex;align-items:center;gap:8px;z-index:5;}
+
+/* ── DETAIL SHEET ── */
+.sheet-wrap{position:absolute;inset:0;z-index:20;}
+.sheet-backdrop{position:absolute;inset:0;background:rgba(10,8,20,.5);backdrop-filter:blur(2px);}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:88%;background:var(--bg-dex);
+  border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;
+  animation:sheet-up .3s ease;}
+.sheet-handle{width:36px;height:4px;border-radius:999px;background:rgba(0,0,0,.15);margin:8px auto 4px;}
+.sheet-scroll{flex:1;overflow-y:auto;padding:0 16px 24px;}
+.sheet-scroll::-webkit-scrollbar{display:none;}
+.sheet-art{display:grid;place-items:center;padding:10px 0 4px;position:relative;}
+.sheet-art::before{content:'';position:absolute;width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(#F0803040,transparent 68%);}
+.sheet-art img{width:110px;height:110px;object-fit:contain;position:relative;}
+.sheet-name{text-align:center;margin-bottom:12px;}
+.sheet-name h2{font-family:var(--font-d);font-size:22px;color:var(--text-primary);}
+.sheet-name .num{font-size:11px;font-weight:800;color:var(--text-muted);}
+.section-title{font-family:var(--font-d);font-size:12px;color:var(--text-primary);
+  border-left:3px solid var(--accent);padding-left:7px;margin-bottom:8px;}
+.stat-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.stat-label{width:44px;font-size:10px;font-weight:800;color:var(--text-muted);}
+.stat-val{width:24px;font-size:11px;font-weight:800;text-align:right;}
+.stat-bar{flex:1;height:6px;border-radius:999px;background:rgba(0,0,0,.08);overflow:hidden;}
+.stat-fill{height:100%;border-radius:999px;background:var(--fire);}
+.evo-chain{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;}
+.evo-node{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.evo-node img{width:40px;height:40px;object-fit:contain;image-rendering:pixelated;}
+.evo-node.current img{filter:drop-shadow(0 0 6px var(--fire));}
+.evo-node span{font-size:8px;font-weight:800;color:var(--text-muted);}
+.evo-node.current span{color:var(--text-primary);}
+.evo-arrow{color:var(--text-muted);font-size:14px;}
+.evolve-btn{width:100%;height:44px;border-radius:999px;border:2px solid var(--fire);
+  background:rgba(240,128,48,.12);color:var(--text-primary);font-family:var(--font-d);
+  font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;}
+.evolve-btn.needs-more{opacity:.45;cursor:not-allowed;}
+.need-label{font-size:10px;color:var(--text-muted);font-weight:700;text-align:center;margin-top:4px;}
+
+/* ── EVO ANIMATION SCREEN ── */
+.evo-screen{background:radial-gradient(circle at 50% 45%,#2a2350,#0f1428);
+  height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.evo-flash{width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08);
+  display:grid;place-items:center;position:relative;animation:evo-pulse 2s ease infinite;}
+.evo-flash img{width:100px;height:100px;object-fit:contain;image-rendering:pixelated;}
+.evo-flash::after{content:'';position:absolute;inset:-16px;border-radius:50%;
+  border:2px solid rgba(255,217,61,.3);animation:ring-expand 2s ease infinite;}
+
+/* ── STONE SHEET ── */
+.stone-sheet{position:absolute;inset:0;z-index:20;}
+.stone-sheet-inner{position:absolute;left:0;right:0;bottom:0;height:72%;
+  background:#1e1e2a;border-radius:20px 20px 0 0;display:flex;flex-direction:column;
+  padding:0 16px 20px;animation:sheet-up .3s ease;}
+.stone-big{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 0 10px;}
+.stone-svg{width:64px;height:64px;}
+.stone-uses{display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
+.stone-uses::-webkit-scrollbar{display:none;}
+.stone-mon-row{display:flex;align-items:center;gap:10px;padding:8px 10px;
+  background:rgba(255,255,255,.05);border-radius:10px;cursor:pointer;}
+.stone-mon-row img{width:36px;height:36px;object-fit:contain;image-rendering:pixelated;}
+.stone-mon-row span{font-family:var(--font-d);font-size:13px;color:var(--text-light);}
+.stone-mon-row .arrow-r{margin-left:auto;color:rgba(255,255,255,.3);font-size:16px;}
+
+/* ── COMPLETION SCREEN ── */
+.complete-screen{background:radial-gradient(circle at 50% 40%,#1a1060,#0f1428);
+  height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  overflow:hidden;position:relative;}
+.star{position:absolute;font-size:18px;animation:star-fall linear infinite;}
+
+/* ── FLOW DIAGRAM TITLE ── */
+.page-title{font-family:var(--font-d);font-size:28px;color:#fff;padding:32px 60px 0;
+  display:flex;align-items:center;gap:12px;}
+.page-sub{font-size:14px;font-weight:700;color:rgba(255,255,255,.4);padding:6px 60px 28px;
+  font-family:var(--font-b);}
+
+/* ── CONNECTOR LINES (SVG overlay approach) ── */
+.connector{stroke:rgba(255,255,255,.2);stroke-width:1.5;fill:none;stroke-dasharray:5 4;}
+.connector-hot{stroke:var(--accent);stroke-width:2;fill:none;}
+
+/* ── ANNOTATIONS ── */
+.annotation{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;
+  color:rgba(255,255,255,.5);max-width:160px;line-height:1.5;}
+.annotation b{color:rgba(255,255,255,.8);}
+
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes sheet-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes shimmer-pill{0%,100%{opacity:.8}50%{opacity:1;box-shadow:0 0 10px var(--gold)}}
+@keyframes evo-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,217,61,.3)}50%{box-shadow:0 0 0 20px rgba(255,217,61,0)}}
+@keyframes ring-expand{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.5);opacity:0}}
+@keyframes star-fall{0%{transform:translateY(-20px);opacity:1}100%{transform:translateY(540px);opacity:0}}
+</style>
+</head>
+<body>
+
+<div class="page-title">
+  <svg width="28" height="28" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#f5f5f5" stroke="#222" stroke-width="4"/><path d="M4 50 a46 46 0 0 1 92 0 Z" fill="#ff6b6b" stroke="#222" stroke-width="4"/><rect x="2" y="44" width="96" height="12" fill="#222"/><circle cx="50" cy="50" r="13" fill="#fff" stroke="#222" stroke-width="4"/></svg>
+  PokéCatch — UX Architecture
+</div>
+<div class="page-sub">Tap highlighted elements to navigate between screens</div>
+
+<div id="canvas">
+
+  <!-- ROW 1: FTE → Catch Screen -->
+  <div class="flow-label">ONBOARDING</div>
+  <div class="row" style="align-items:flex-end;">
+
+    <!-- FTE -->
+    <div>
+      <div class="phone-label">First-Time Experience</div>
+      <div class="phone" style="background:#16213e;">
+        <div class="screen" style="height:520px;background:radial-gradient(120% 80% at 50% 0%,#2a2350,#16213e 55%,#0f1428);padding:40px 20px 24px;align-items:center;justify-content:center;gap:16px;">
+          <div style="animation:floaty 3s ease infinite;">
+            <svg width="80" height="80" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#f5f5f5" stroke="#222" stroke-width="4"/><path d="M4 50 a46 46 0 0 1 92 0 Z" fill="#ff6b6b" stroke="#222" stroke-width="4"/><rect x="2" y="44" width="96" height="12" fill="#222"/><circle cx="50" cy="50" r="13" fill="#fff" stroke="#222" stroke-width="4"/></svg>
+          </div>
+          <div style="font-family:var(--font-d);font-size:36px;background:linear-gradient(180deg,#fff,#ffd93d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">PokéCatch</div>
+          <div style="font-size:12px;color:rgba(240,240,240,.6);font-weight:600;">Catch them. Collect them. All yours.</div>
+          <button class="btn btn-red" onclick="showScreen('catch')" style="margin-top:16px;width:100%;">Get Started</button>
+          <div style="margin-top:24px;">
+            <div style="font-size:11px;color:rgba(255,255,255,.4);font-weight:800;margin-bottom:10px;text-align:center;">CHOOSE YOUR TRAINER</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#cfe3f5,#e9dfce);border:2px solid var(--accent);"></div>
+                <span style="font-size:9px;font-weight:800;color:var(--accent);">Red</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#cfe3f5,#e9dfce);border:2px solid transparent;"></div>
+                <span style="font-size:9px;font-weight:800;color:rgba(240,240,240,.5);">Blue</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#cfe3f5,#e9dfce);border:2px solid transparent;"></div>
+                <span style="font-size:9px;font-weight:800;color:rgba(240,240,240,.5);">May</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#cfe3f5,#e9dfce);border:2px solid transparent;"></div>
+                <span style="font-size:9px;font-weight:800;color:rgba(240,240,240,.5);">Dawn</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="arrow">
+      <div class="arrow-label">Complete setup</div>
+      <svg width="48" height="20"><defs><marker id="ah" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,.4)"/></marker></defs><line x1="0" y1="10" x2="42" y2="10" stroke="rgba(255,255,255,.4)" stroke-width="1.5" marker-end="url(#ah)" stroke-dasharray="4 3"/></svg>
+    </div>
+
+    <!-- CATCH SCREEN -->
+    <div id="screen-catch">
+      <div class="phone-label">Catch Screen</div>
+      <div class="phone">
+        <div class="screen catch-screen">
+          <!-- header -->
+          <div class="s-header" style="padding-top:18px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(160deg,#cfe3f5,#e9dfce);"></div>
+              <div>
+                <div style="font-size:8px;color:rgba(240,240,240,.5);font-weight:800;letter-spacing:.5px;">TRAINER</div>
+                <div class="s-title" style="font-size:13px;">Red</div>
+              </div>
+            </div>
+            <button class="btn btn-ghost" onclick="showScreen('dex')" style="font-size:10px;height:30px;padding:0 12px;">Pokédex ›</button>
+          </div>
+          <!-- stone strip -->
+          <div class="stone-strip">
+            <div class="stone-chip">🔥 ×2</div>
+            <div class="stone-chip">💧 ×1</div>
+            <div class="stone-chip">⚡ ×3</div>
+            <div class="stone-chip" onclick="showScreen('stone')" style="cursor:pointer;border:1px solid rgba(255,255,255,.2);">🌿 ×0 ›</div>
+          </div>
+          <!-- mon area -->
+          <div class="catch-mon-area">
+            <div style="position:absolute;width:160px;height:50px;border-radius:50%;background:radial-gradient(#F0803055,transparent 70%);top:55%;filter:blur(4px);"></div>
+            <div class="catch-mon-sprite">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" style="width:110px;height:110px;image-rendering:auto;"/>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
+              <span style="font-family:var(--font-d);font-size:18px;color:#fff;">Charizard</span>
+            </div>
+            <div style="display:flex;gap:5px;">
+              <span class="type-badge" style="background:var(--fire);">Fire</span>
+              <span class="type-badge" style="background:#A890F0;">Flying</span>
+            </div>
+            <div class="rarity-pill">ULTRA RARE</div>
+          </div>
+          <!-- type counters -->
+          <div class="type-counter">
+            <div class="type-counter-row">
+              <span class="type-counter-label">🔥 Fire</span>
+              <div class="type-counter-bar"><div class="type-counter-fill" style="width:80%;background:var(--fire);"></div></div>
+              <span class="type-counter-val">8/10</span>
+            </div>
+            <div class="type-counter-row">
+              <span class="type-counter-label">🌿 Leaf</span>
+              <div class="type-counter-bar"><div class="type-counter-fill" style="width:40%;background:var(--grass);"></div></div>
+              <span class="type-counter-val">4/10</span>
+            </div>
+          </div>
+          <!-- catch button -->
+          <div class="catch-footer">
+            <button class="btn btn-red" style="width:100%;height:44px;font-family:var(--font-d);font-size:17px;" onclick="showScreen('catch-result')">CATCH!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow down to result -->
+    <div class="arrow">
+      <div class="arrow-label">Tap CATCH!</div>
+      <svg width="48" height="20"><line x1="0" y1="10" x2="42" y2="10" stroke="var(--accent)" stroke-width="2" marker-end="url(#ah)" stroke-dasharray="4 3"/></svg>
+    </div>
+
+    <!-- CATCH RESULT -->
+    <div>
+      <div class="phone-label">Catch Result</div>
+      <div class="phone">
+        <div class="screen catch-screen" style="align-items:center;justify-content:center;gap:10px;">
+          <div style="position:relative;display:inline-block;">
+            <svg width="80" height="80" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#f5f5f5" stroke="#222" stroke-width="4"/><path d="M4 50 a46 46 0 0 1 92 0 Z" fill="#ff6b6b" stroke="#222" stroke-width="4"/><rect x="2" y="44" width="96" height="12" fill="#222"/><circle cx="50" cy="50" r="13" fill="#fff" stroke="#222" stroke-width="4"/></svg>
+            <span style="position:absolute;top:-8px;right:-8px;font-size:18px;animation:floaty 1s ease infinite;">⭐</span>
+            <span style="position:absolute;top:-8px;left:-8px;font-size:18px;animation:floaty 1.2s ease infinite;">⭐</span>
+          </div>
+          <div style="font-family:var(--font-d);font-size:30px;color:var(--gold);">Gotcha!</div>
+          <div style="font-weight:700;color:#fff;font-size:13px;">Charizard was caught!</div>
+          <div style="background:rgba(240,128,48,.15);border:1px solid var(--fire);border-radius:10px;padding:8px 16px;text-align:center;margin-top:4px;">
+            <div style="font-size:9px;font-weight:800;color:rgba(240,240,240,.5);letter-spacing:1px;">TYPE COUNTER</div>
+            <div style="font-size:12px;font-weight:800;color:var(--fire);">🔥 Fire 9/10</div>
+          </div>
+          <div style="font-size:11px;color:rgba(240,240,240,.4);font-weight:700;margin-top:8px;">Next encounter in 1.5s…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- annotation -->
+    <div style="padding-top:80px;">
+      <div class="annotation">
+        <b>Catch rate</b> is silent & tier-based:<br/>
+        Common 95% → Legendary 35%.<br/><br/>
+        <b>Fled</b>: mon darts off-screen, auto-advance after 1s.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 2: Pokédex + Detail Sheet -->
+  <div class="flow-label">POKÉDEX & EVOLUTION</div>
+  <div class="row">
+
+    <!-- POKÉDEX -->
+    <div id="screen-dex">
+      <div class="phone-label">Pokédex Screen</div>
+      <div class="phone" style="background:var(--bg-dex);">
+        <div class="screen dex-screen" style="position:relative;">
+          <div class="dex-header">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:22px;height:22px;border-radius:50%;background:var(--skin);"></div>
+              <div style="font-family:var(--font-d);font-size:18px;color:var(--text-primary);flex:1;">Pokédex</div>
+              <div style="display:flex;gap:4px;">
+                <div style="width:16px;height:16px;border-radius:4px;background:#cc0000;border:2px solid #2d2d2d;"></div>
+                <div style="width:16px;height:16px;border-radius:4px;background:#3b82f6;"></div>
+                <div style="width:16px;height:16px;border-radius:4px;background:#22c55e;"></div>
+              </div>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar"><div class="progress-fill" style="width:13%;"></div></div>
+              <span style="font-family:var(--font-d);font-size:12px;color:var(--text-primary);">135<span style="opacity:.4;">/1025</span></span>
+            </div>
+          </div>
+          <div class="region-pills">
+            <button class="pill active">Kanto</button>
+            <button class="pill">Johto</button>
+            <button class="pill">Hoenn</button>
+            <button class="pill">Sinnoh</button>
+          </div>
+          <div class="dex-grid">
+            <!-- caught with ready badge -->
+            <div class="grid-card" onclick="showScreen('detail')">
+              <div class="ready-badge" title="Ready to evolve!"></div>
+              <div class="num">#001</div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"/>
+              <span class="mon-name">Bulbasaur</span>
+              <span style="font-size:8px;font-weight:800;color:var(--accent);">×5</span>
+            </div>
+            <!-- locked -->
+            <div class="grid-card">
+              <div class="num">#002</div>
+              <img class="silhouette" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"/>
+              <span class="mon-name" style="color:var(--text-muted);letter-spacing:1px;">???</span>
+            </div>
+            <!-- caught with chain -->
+            <div class="grid-card">
+              <div class="chain-badge">⛓</div>
+              <div class="num">#004</div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"/>
+              <span class="mon-name">Charmander</span>
+            </div>
+            <div class="grid-card">
+              <div class="num">#005</div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"/>
+              <span class="mon-name">Charmeleon</span>
+            </div>
+            <div class="grid-card">
+              <div class="num">#006</div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"/>
+              <span class="mon-name">Charizard</span>
+              <span style="font-size:7px;font-weight:800;color:#A890F0;">⚡ Wild</span>
+            </div>
+            <div class="grid-card">
+              <div class="num">#007</div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"/>
+              <span class="mon-name">Squirtle</span>
+            </div>
+            <div class="grid-card">
+              <div class="num">#008</div>
+              <img class="silhouette" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/8.png"/>
+              <span class="mon-name" style="color:var(--text-muted);letter-spacing:1px;">???</span>
+            </div>
+            <div class="grid-card">
+              <div class="num">#025</div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"/>
+              <span class="mon-name">Pikachu</span>
+              <span style="font-size:8px;">✨</span>
+            </div>
+            <!-- mega locked gold -->
+            <div class="grid-card" style="background:#fffbe6;border:1px solid var(--gold);">
+              <div class="num" style="color:var(--gold);">#006M</div>
+              <img class="silhouette" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png" style="filter:brightness(0) sepia(1) saturate(3) hue-rotate(10deg);opacity:.7;"/>
+              <span class="mon-name" style="color:var(--gold);letter-spacing:0;">Mega ✦</span>
+            </div>
+            <div class="grid-card">
+              <div class="num">#133</div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png"/>
+              <span class="mon-name">Eevee</span>
+              <span style="font-size:8px;font-weight:800;color:var(--accent);">×10</span>
+            </div>
+            <div class="grid-card">
+              <div class="num">#150</div>
+              <img class="silhouette" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png"/>
+              <span class="mon-name" style="color:var(--text-muted);letter-spacing:1px;">???</span>
+            </div>
+            <div class="grid-card">
+              <div class="num">#151</div>
+              <img class="silhouette" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png"/>
+              <span class="mon-name" style="color:var(--text-muted);letter-spacing:1px;">???</span>
+            </div>
+          </div>
+          <button class="dex-fab" onclick="showScreen('catch')">
+            <svg width="20" height="20" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#f5f5f5" stroke="#fff" stroke-width="4"/><path d="M4 50 a46 46 0 0 1 92 0 Z" fill="rgba(255,255,255,.6)"/><rect x="2" y="44" width="96" height="12" fill="#fff"/><circle cx="50" cy="50" r="13" fill="rgba(255,107,107,.8)" stroke="#fff" stroke-width="3"/></svg>
+            CATCH!
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="arrow">
+      <div class="arrow-label">Tap card</div>
+      <svg width="48" height="20"><line x1="0" y1="10" x2="42" y2="10" stroke="rgba(255,255,255,.4)" stroke-width="1.5" marker-end="url(#ah)" stroke-dasharray="4 3"/></svg>
+    </div>
+
+    <!-- DETAIL SHEET -->
+    <div id="screen-detail">
+      <div class="phone-label">Detail Sheet</div>
+      <div class="phone" style="background:var(--bg-dex);">
+        <div style="position:relative;height:520px;background:var(--bg-dex);">
+          <!-- blurred dex behind -->
+          <div style="position:absolute;inset:0;opacity:.3;overflow:hidden;">
+            <div style="background:var(--bg-dex);height:100%;"></div>
+          </div>
+          <div class="sheet-wrap" style="position:absolute;inset:0;">
+            <div class="sheet-backdrop" onclick="showScreen('dex')"></div>
+            <div class="sheet">
+              <div class="sheet-handle"></div>
+              <div class="sheet-scroll">
+                <div class="sheet-art">
+                  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" style="width:110px;height:110px;object-fit:contain;position:relative;"/>
+                </div>
+                <div class="sheet-name">
+                  <div class="num">#001</div>
+                  <h2>Bulbasaur</h2>
+                  <div style="display:flex;gap:6px;justify-content:center;margin-top:4px;">
+                    <span class="type-badge" style="background:var(--grass);">Grass</span>
+                    <span class="type-badge" style="background:var(--poison);">Poison</span>
+                    <span style="background:rgba(255,107,107,.12);color:var(--accent);padding:3px 10px;border-radius:999px;font-size:10px;font-weight:800;">×5 caught</span>
+                  </div>
+                </div>
+                <!-- stats -->
+                <div style="margin-bottom:14px;">
+                  <div class="section-title">Base Stats</div>
+                  <div style="margin-top:8px;">
+                    <div class="stat-row"><span class="stat-label">HP</span><span class="stat-val">45</span><div class="stat-bar"><div class="stat-fill" style="width:25%;background:#78C850;"></div></div></div>
+                    <div class="stat-row"><span class="stat-label">Attack</span><span class="stat-val">49</span><div class="stat-bar"><div class="stat-fill" style="width:27%;background:#78C850;"></div></div></div>
+                    <div class="stat-row"><span class="stat-label">Sp.Atk</span><span class="stat-val">65</span><div class="stat-bar"><div class="stat-fill" style="width:36%;background:#78C850;"></div></div></div>
+                  </div>
+                </div>
+                <!-- evo chain -->
+                <div style="margin-bottom:14px;">
+                  <div class="section-title">Evolution Line</div>
+                  <div class="evo-chain" style="margin-top:10px;">
+                    <div class="evo-node current">
+                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"/>
+                      <span style="color:var(--text-primary);">Bulbasaur</span>
+                      <span style="font-size:7px;color:var(--accent);">×5</span>
+                    </div>
+                    <span class="evo-arrow">→</span>
+                    <div class="evo-node">
+                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png" style="filter:brightness(0) saturate(0);opacity:.5;"/>
+                      <span>Ivysaur</span>
+                      <span style="font-size:7px;color:var(--text-muted);">×0</span>
+                    </div>
+                    <span class="evo-arrow">→</span>
+                    <div class="evo-node">
+                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png" style="filter:brightness(0) saturate(0);opacity:.5;"/>
+                      <span>Venusaur</span>
+                      <span style="font-size:7px;color:var(--text-muted);">×0</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- evolve action -->
+                <div class="section-title">Evolve</div>
+                <button class="evolve-btn" onclick="showScreen('evo')" style="margin-top:8px;">
+                  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png" style="width:28px;height:28px;object-fit:contain;image-rendering:pixelated;"/>
+                  Evolve → Ivysaur
+                </button>
+                <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-align:center;margin-top:4px;">✓ 5/5 Bulbasaur — Ready!</div>
+                <!-- stone example dimmed -->
+                <button class="evolve-btn needs-more" style="margin-top:8px;border-color:var(--grass);">
+                  <span style="font-size:18px;">🌿</span> Leaf Stone needed
+                </button>
+                <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-align:center;margin-top:4px;">Need 1 Leaf Stone (have 0)</div>
+                <!-- flavor -->
+                <p style="margin-top:16px;font-style:italic;color:var(--text-muted);font-size:11px;line-height:1.6;text-align:center;">"A strange seed was planted on its back at birth."</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="arrow">
+      <div class="arrow-label">Tap Evolve</div>
+      <svg width="48" height="20"><line x1="0" y1="10" x2="42" y2="10" stroke="var(--gold)" stroke-width="2" marker-end="url(#ah)" stroke-dasharray="4 3"/></svg>
+    </div>
+
+    <!-- EVO ANIMATION -->
+    <div id="screen-evo">
+      <div class="phone-label">Evolution Animation</div>
+      <div class="phone">
+        <div class="screen evo-screen">
+          <div style="font-size:12px;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:2px;">EVOLVING…</div>
+          <div class="evo-flash">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png" style="width:100px;height:100px;object-fit:contain;image-rendering:auto;"/>
+          </div>
+          <div style="font-family:var(--font-d);font-size:26px;color:var(--gold);animation:floaty 2s ease infinite;">Bulbasaur</div>
+          <div style="font-size:20px;color:rgba(255,255,255,.4);">evolved into</div>
+          <div style="font-family:var(--font-d);font-size:32px;color:#fff;">Ivysaur!</div>
+          <div style="display:flex;gap:5px;margin-top:4px;">
+            <span class="type-badge" style="background:var(--grass);">Grass</span>
+            <span class="type-badge" style="background:var(--poison);">Poison</span>
+          </div>
+          <div style="margin-top:16px;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 20px;text-align:center;">
+            <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:800;letter-spacing:1px;">POKÉDEX UPDATED</div>
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-top:2px;">#002 Ivysaur unlocked ✓</div>
+          </div>
+          <button class="btn btn-ghost" onclick="showScreen('detail')" style="margin-top:16px;">View in Pokédex</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- annotation -->
+    <div style="padding-top:60px;">
+      <div class="annotation">
+        <b>◆ Evolved</b> badge added to card.<br/><br/>
+        <b>⚡ Wild</b> badge for wild-caught evolved forms.<br/><br/>
+        <b>⛓ Chain</b> badge when full line is complete.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 3: Stone Sheet + Completion -->
+  <div class="flow-label">STONES & COMPLETION</div>
+  <div class="row">
+
+    <!-- STONE SHEET -->
+    <div id="screen-stone">
+      <div class="phone-label">Stone Detail Sheet</div>
+      <div class="phone" style="background:var(--bg-dex);">
+        <div style="position:relative;height:520px;background:var(--bg-dex);">
+          <div class="stone-sheet">
+            <div onclick="showScreen('catch')" style="position:absolute;inset:0;background:rgba(10,8,20,.5);backdrop-filter:blur(2px);"></div>
+            <div class="stone-sheet-inner">
+              <div class="sheet-handle" style="background:rgba(255,255,255,.15);"></div>
+              <div class="stone-big">
+                <svg class="stone-svg" viewBox="0 0 64 64"><defs><linearGradient id="g-fire" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a5c"/><stop offset="1" stop-color="#f0683c"/></linearGradient></defs><polygon points="32,6 50,22 32,58 14,22" fill="url(#g-fire)" stroke="rgba(255,255,255,.5)" stroke-width="1.4"/><polygon points="32,6 50,22 32,28 14,22" fill="#fff" opacity=".28"/><polygon points="14,22 32,28 32,58" fill="#000" opacity=".12"/></svg>
+                <div style="font-family:var(--font-d);font-size:22px;color:#fff;">Fire Stone</div>
+                <div style="font-size:12px;font-weight:800;color:rgba(255,255,255,.5);">You have: <span style="color:var(--fire);">×2</span></div>
+                <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-align:center;padding:0 20px;">Earn more by catching 10 Fire-type Pokémon</div>
+              </div>
+              <div style="font-family:var(--font-d);font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px;padding-left:2px;">Evolves:</div>
+              <div class="stone-uses">
+                <div class="stone-mon-row" onclick="showScreen('detail')">
+                  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/37.png"/>
+                  <div><div style="font-family:var(--font-d);font-size:13px;color:#fff;">Vulpix</div><div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:700;">→ Ninetales</div></div>
+                  <span class="arrow-r">›</span>
+                </div>
+                <div class="stone-mon-row" onclick="showScreen('detail')">
+                  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/58.png"/>
+                  <div><div style="font-family:var(--font-d);font-size:13px;color:#fff;">Growlithe</div><div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:700;">→ Arcanine</div></div>
+                  <span class="arrow-r">›</span>
+                </div>
+                <div class="stone-mon-row" onclick="showScreen('detail')">
+                  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png"/>
+                  <div><div style="font-family:var(--font-d);font-size:13px;color:#fff;">Eevee</div><div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:700;">→ Flareon</div></div>
+                  <span class="arrow-r">›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="arrow" style="padding-top:140px;">
+      <div class="arrow-label">Tap Pokémon row</div>
+      <svg width="48" height="20"><line x1="0" y1="10" x2="42" y2="10" stroke="rgba(255,255,255,.4)" stroke-width="1.5" marker-end="url(#ah)" stroke-dasharray="4 3"/></svg>
+    </div>
+
+    <!-- re-entry to detail -->
+    <div style="padding-top:100px;">
+      <div class="annotation" style="text-align:center;padding:20px;">
+        <div style="font-size:22px;margin-bottom:8px;">↑</div>
+        <b>Opens Detail Sheet</b><br/>for that Pokémon
+      </div>
+    </div>
+
+    <div style="padding-top:60px;display:flex;flex-direction:column;gap:32px;">
+      <!-- COMPLETION SCREEN -->
+      <div id="screen-complete">
+        <div class="phone-label">Completion Screen</div>
+        <div class="phone">
+          <div class="screen complete-screen">
+            <!-- falling stars -->
+            <span class="star" style="left:10%;animation-duration:2.1s;animation-delay:0s;">⭐</span>
+            <span class="star" style="left:30%;animation-duration:1.8s;animation-delay:.4s;">✨</span>
+            <span class="star" style="left:55%;animation-duration:2.4s;animation-delay:.2s;">⭐</span>
+            <span class="star" style="left:75%;animation-duration:1.9s;animation-delay:.7s;">✨</span>
+            <span class="star" style="left:88%;animation-duration:2.2s;animation-delay:.1s;">⭐</span>
+            <svg width="90" height="90" viewBox="0 0 100 100" style="filter:drop-shadow(0 0 20px var(--gold));">
+              <circle cx="50" cy="50" r="46" fill="#f5f5f5" stroke="var(--gold)" stroke-width="4"/>
+              <path d="M4 50 a46 46 0 0 1 92 0 Z" fill="var(--gold)" stroke="var(--gold)" stroke-width="4"/>
+              <rect x="2" y="44" width="96" height="12" fill="#b8860b"/>
+              <circle cx="50" cy="50" r="13" fill="#fff" stroke="#b8860b" stroke-width="4"/>
+            </svg>
+            <div style="font-family:var(--font-d);font-size:28px;color:var(--gold);text-align:center;line-height:1.2;">You caught<br/>them all!</div>
+            <div style="font-size:13px;color:rgba(255,255,255,.6);font-weight:700;">Red — 1025/1025</div>
+            <div style="font-size:32px;margin-top:4px;">🏆</div>
+            <button class="btn btn-ghost" style="margin-top:12px;">Keep Collecting</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- annotation -->
+    <div style="padding-top:60px;">
+      <div class="annotation">
+        <b>Stone inventory</b> accessible from the strip at top of Catch Screen.<br/><br/>
+        <b>Type counter</b> resets after each stone earned.<br/><br/>
+        <b>Completion</b> fires once, state saved in localStorage.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- NAV LEGEND -->
+<div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(20,18,36,.9);border:1px solid rgba(255,255,255,.1);border-radius:14px;
+  padding:10px 20px;display:flex;gap:20px;align-items:center;backdrop-filter:blur(8px);">
+  <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:rgba(255,255,255,.5);">
+    <svg width="28" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/></svg>
+    Primary action
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:rgba(255,255,255,.5);">
+    <svg width="28" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke="var(--gold)" stroke-width="2" stroke-dasharray="4 3"/></svg>
+    Evolution flow
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:rgba(255,255,255,.5);">
+    <svg width="28" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+    Navigation
+  </div>
+  <div style="width:1px;height:16px;background:rgba(255,255,255,.1);"></div>
+  <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.35);">Tap highlighted elements to interact</div>
+</div>
+
+<script>
+function showScreen(name) {
+  const screens = {
+    catch: 'screen-catch',
+    dex: 'screen-dex',
+    detail: 'screen-detail',
+    evo: 'screen-evo',
+    stone: 'screen-stone',
+    complete: 'screen-complete',
+    'catch-result': null,
+  };
+  // scroll the target into view
+  const id = screens[name];
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  }
+}
+</script>
+</body>
+</html>

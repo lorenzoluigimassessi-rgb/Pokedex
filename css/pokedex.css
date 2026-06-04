@@ -8,7 +8,6 @@
   flex-direction: column;
   border-radius: var(--frame-radius);
   box-shadow: var(--frame-shadow);
-  overflow: hidden;
 }
 
 /* Header — sticky */
@@ -247,7 +246,7 @@
   scrollbar-width: none;
   flex-shrink: 0;
   position: sticky;
-  top: 0;
+  top: var(--header-height, 0px);
   z-index: 9;
   background: var(--bg-pokedex);
   box-shadow: 0 2px 8px rgba(0,0,0,.06);

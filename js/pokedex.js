@@ -113,6 +113,12 @@ export async function renderPokedexView(el, navCatchCallback) {
     btn.addEventListener('click', () => onRegionChange(btn.dataset.region));
   });
 
+  // Set header height for pills sticky offset
+  requestAnimationFrame(() => {
+    const header = container.querySelector('.pdx-header');
+    if (header) document.documentElement.style.setProperty('--header-height', header.offsetHeight + 'px');
+  });
+
   await loadEntries();
 }
 
