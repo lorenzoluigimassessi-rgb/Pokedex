@@ -281,6 +281,8 @@ async function loadSiblingForms(data, overlay) {
   if (!formsSection || !formsChain) return;
 
   if (siblings.length > 0) {
+    formsSection.style.display = 'block';
+    formsSection.querySelector('.pdx-section-title').textContent = 'Altre Forme';
 
     const nodesEl = document.createElement('div');
     nodesEl.className = 'pdx-forms-nodes';
@@ -306,9 +308,6 @@ async function loadSiblingForms(data, overlay) {
     });
     formsChain.appendChild(nodesEl);
   }
-
-  formsSection.style.display = 'block';
-  formsSection.querySelector('.pdx-section-title').textContent = 'Altre Forme';
 }
 
 async function loadSpecialForms(data, overlay) {
