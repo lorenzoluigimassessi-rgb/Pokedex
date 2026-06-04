@@ -221,9 +221,13 @@ function renderGrid() {
 
   if (observer) observer.disconnect();
   const sentinel = document.getElementById('pdx-sentinel');
+  let regionalRendered = false;
   observer = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting && rendered < displayedEntries.length) renderNextBatch();
-    else if (entries[0].isIntersecting && rendered >= displayedEntries.length) renderRegionalForms(grid);
+    else if (entries[0].isIntersecting && rendered >= displayedEntries.length && !regionalRendered) {
+      regionalRendered = true;
+      renderRegionalForms(grid);
+    }
   }, { rootMargin: '200px' });
   observer.observe(sentinel);
 }
@@ -241,11 +245,13 @@ function renderNextBatch() {
 
 function renderRegionalForms(grid) {
   if (currentRegion === 'special' || currentRegion === 'all') return;
+  if (grid.querySelector('.pdx-regional-divider')) return; // already rendered
   const forms = REGIONAL_BY_REGION[currentRegion];
   if (!forms || forms.length === 0) return;
 
   // divider
   const divider = document.createElement('div');
+  divider.className = 'pdx-regional-divider';
   divider.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:16px 4px 8px;';
   divider.innerHTML = '<div style="flex:1;height:1px;background:rgba(0,0,0,.1)"></div><span style="font-size:11px;font-weight:800;color:var(--text-muted);white-space:nowrap;letter-spacing:.5px">FORME REGIONALI</span><div style="flex:1;height:1px;background:rgba(0,0,0,.1)"></div>';
   grid.appendChild(divider);
