@@ -1,42 +1,34 @@
 /* ===== PokéDex — browse-only app ===== */
-const KEY = 'pokedex_v1';
+const KEY = 'pokedex_v2';
 
 function loadState() {
   try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch(e) {}
   return null;
 }
 
-// Pre-populate all Pokémon in a region range as caught
-function makeCaught(lo, hi) {
-  const c = {};
-  for (let i = lo; i <= hi; i++) c[i] = { count: 1, shiny: false };
-  return c;
+function populateRegion(existing, regionKey) {
+  const reg = PC.REGIONS.find(r => r.key === regionKey);
+  if (!reg) return existing;
+  const [lo, hi] = reg.key === 'all' ? [1, 1025] : reg.range;
+  const next = { ...existing };
+  for (let i = lo; i <= hi; i++) {
+    if (!next[i]) next[i] = { count: 1, shiny: false };
+  }
+  return next;
 }
 
 function App() {
   const saved = loadState();
   const [trainer, setTrainer] = useState(saved ? saved.trainer : null);
   const [region, setRegion] = useState(saved ? (saved.region || 'kanto') : 'kanto');
-  const [caught, setCaught] = useState(() => {
-    if (saved && saved.caught) return saved.caught;
-    const reg = PC.REGIONS.find(r => r.key === 'kanto');
-    return makeCaught(reg.range[0], reg.range[1]);
-  });
+  const [caught, setCaught] = useState(() => populateRegion(saved ? saved.caught || {} : {}, saved ? (saved.region || 'kanto') : 'kanto'));
   const [detailId, setDetailId] = useState(null);
+
   const skin = trainer ? trainer.skin : 'classic';
 
-  // When region changes, ensure all Pokémon in that region are populated
+  // populate new region when it changes
   useEffect(() => {
-    const reg = PC.REGIONS.find(r => r.key === region);
-    if (!reg) return;
-    const [lo, hi] = reg.key === 'all' ? [1, 1025] : reg.range;
-    setCaught(prev => {
-      const next = { ...prev };
-      for (let i = lo; i <= hi; i++) {
-        if (!next[i]) next[i] = { count: 1, shiny: false };
-      }
-      return next;
-    });
+    setCaught(prev => populateRegion(prev, region));
   }, [region]);
 
   useEffect(() => {
@@ -60,14 +52,19 @@ function App() {
     <>
       <PokedexView
         trainer={trainer} caught={caught}
-        region={region} onSetRegion={setRegion}
+        canEvolve={() => false}
+        stats={{ catches: Object.keys(caught).length, stones: 0 }}
+        region={region} onSetRegion={r => setRegion(r)}
         skin={skin} onSetSkin={s => setTrainer(t => ({ ...t, skin: s }))}
+        onOpenCatch={() => {}}
         onOpenDetail={id => setDetailId(id)}
       />
       {detailId != null && (
         <DetailOverlay
-          id={detailId} info={caught[detailId]}
+          id={detailId} info={caught[detailId]} stonesInv={{}} caught={caught}
           onClose={() => setDetailId(null)}
+          onEvolve={() => {}}
+          onOpenCatch={() => {}}
         />
       )}
     </>
