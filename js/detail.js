@@ -32,9 +32,8 @@ export async function showDetail(container, pokemonId, caught) {
     renderDetail(overlay, data, caught);
   } catch(e) {
     console.error('showDetail error:', pokemonId, e);
-    alert('Errore: ' + e.message + ' | id: ' + pokemonId);
     const card = overlay.querySelector('.pdx-detail-card');
-    card.innerHTML = `<div class="pdx-detail-content"><p style="text-align:center;padding:40px;color:var(--text-muted)">Impossibile caricare i dati.<br><small style="font-size:11px;opacity:.5">${e.message}</small></p><button style="display:block;margin:0 auto;padding:10px 24px;border-radius:99px;background:var(--accent);color:#fff;border:none;font-weight:800;cursor:pointer" onclick="this.closest('.pdx-detail-overlay').remove()">Chiudi</button></div>`;
+    card.innerHTML = `<div class="pdx-detail-content"><p style="text-align:center;padding:40px;color:var(--text-muted)">Impossibile caricare i dati.</p><button style="display:block;margin:0 auto;padding:10px 24px;border-radius:99px;background:var(--accent);color:#fff;border:none;font-weight:800;cursor:pointer" onclick="this.closest('.pdx-detail-overlay').remove()">Chiudi</button></div>`;
   }
 }
 
@@ -98,7 +97,7 @@ function renderDetail(overlay, data, caught) {
     const heroHtml = `
       <div class="pdx-detail-hero">
         <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
-        ${isTablet ? '' : '<div class="pdx-detail-handle"></div>'}
+        ${isTablet ? '' : '<div class="pdx-detail-handle" id="detail-close"></div>'}
         <div class="pdx-detail-artwork">
           <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
           <img src="${getSprite()}" alt="${data.name}">
@@ -127,7 +126,7 @@ function renderDetail(overlay, data, caught) {
         </div>`;
     } else {
       card.innerHTML = `
-        <div class="pdx-detail-handle"></div>
+        <div class="pdx-detail-handle" id="detail-close"></div>
         ${heroHtml}
         ${contentHtml}`;
     }
