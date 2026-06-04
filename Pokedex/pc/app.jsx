@@ -39,6 +39,9 @@ function App() {
   const [detailId, setDetailId] = useState(null);
   const [stoneEarned, setStoneEarned] = useState(null); // key of stone just earned
   const [toast, setToast] = useState(null);
+  const [evoScreen, setEvoScreen] = useState(null); // { fromId, toId }
+  const [stoneSheet, setStoneSheet] = useState(null); // stone key
+  const [completed, setCompleted] = useState(saved ? saved.completed : false);
 
   // first encounter
   useEffect(() => { if (!encounter) setEncounter(makeEncounter(0)); }, []);
@@ -46,8 +49,8 @@ function App() {
   // persist
   useEffect(() => {
     if (!trainer) return;
-    try { localStorage.setItem(KEY, JSON.stringify({ trainer, caught, stonesInv, typeCounts, catches })); } catch(e){}
-  }, [trainer, caught, stonesInv, typeCounts, catches]);
+    try { localStorage.setItem(KEY, JSON.stringify({ trainer, caught, stonesInv, typeCounts, catches, completed })); } catch(e){}
+  }, [trainer, caught, stonesInv, typeCounts, catches, completed]);
 
   const skin = trainer ? trainer.skin : 'classic';
   useEffect(() => {
@@ -85,8 +88,12 @@ function App() {
     if (didCatch && encounter) {
       const { id, shiny, types } = encounter;
       setCaught(prev => {
-        const cur = prev[id];
-        return { ...prev, [id]: { count: (cur ? cur.count : 0) + 1, shiny: (cur && cur.shiny) || shiny } };
+        const next = { ...prev, [id]: { count: (prev[id] ? prev[id].count : 0) + 1, shiny: (prev[id] && prev[id].shiny) || shiny } };
+        // check completion — all FEATURE caught
+        if (!completed && Object.keys(PC.FEATURE).every(k => next[Number(k)])) {
+          setCompleted(true);
+        }
+        return next;
       });
       setCatches(c => c + 1);
       // update type counters, award stones at 10
@@ -120,9 +127,8 @@ function App() {
       const tgt = prev[toId];
       return { ...prev, [toId]: { count: (tgt ? tgt.count : 0) + 1, shiny: tgt ? tgt.shiny : false } };
     });
-    setToast({ from: fromId, to: toId });
-    setTimeout(() => setToast(null), 3400);
-    setDetailId(toId);
+    setDetailId(null);
+    setEvoScreen({ fromId, toId });
   }
 
   if (!trainer) {
@@ -134,7 +140,7 @@ function App() {
       {screen === 'catch'
         ? <CatchView encounter={encounter} trainer={trainer}
             stonesInv={stonesInv} typeCounts={typeCounts} stoneEarned={stoneEarned}
-            onResolve={onResolve} onOpenDex={()=>setScreen('pokedex')}/>
+            onResolve={onResolve} onOpenDex={()=>setScreen('pokedex')} onOpenStone={(sk)=>setStoneSheet(sk)}/>
         : <PokedexView trainer={trainer} caught={caught} canEvolve={canEvolve}
             stats={{ catches: Object.keys(caught).length, stones: stonesTotal }}
             skin={skin} onSetSkin={(s)=>setTrainer(t=>({ ...t, skin:s }))}
@@ -145,7 +151,7 @@ function App() {
           onClose={()=>setDetailId(null)} onEvolve={evolve} onOpenCatch={()=>{ setDetailId(null); setScreen('catch'); }}/>
       )}
 
-      {toast && <EvoToast from={toast.from} to={toast.to}/>}
+
     </>
   );
 }

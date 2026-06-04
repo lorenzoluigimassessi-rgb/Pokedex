@@ -1,5 +1,5 @@
 /* ===== Catch View — swipe-to-throw, 3 attempts, pulsing ring ===== */
-function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onResolve, onOpenDex }) {
+function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onResolve, onOpenDex, onOpenStone }) {
   const [phase, setPhase] = useState('idle');
   const [attempts, setAttempts] = useState(3);
   const [throwQuality, setThrowQuality] = useState('');
@@ -122,10 +122,12 @@ function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onR
           const count = stonesInv[sk] || 0;
           if (count === 0) return null;
           return (
-            <div key={sk} style={{ display:'flex', alignItems:'center', gap:3, background:'rgba(255,255,255,.08)',
-              borderRadius:999, padding:'3px 9px', fontSize:11, fontWeight:800 }}>
+            <button key={sk} onClick={() => onOpenStone(sk)}
+              style={{ display:'flex', alignItems:'center', gap:3, background:'rgba(255,255,255,.08)',
+                borderRadius:999, padding:'3px 9px', fontSize:11, fontWeight:800,
+                border:'none', cursor:'pointer', color:'var(--text-light)' }}>
               {stoneEmoji[sk]} ×{count}
-            </div>
+            </button>
           );
         })}
         {/* stone earned toast */}

@@ -147,3 +147,6 @@ input { font-family:var(--font-body); }
 @keyframes ball-arc{0%{transform:translate(-50%,-50%) translateY(80px) scale(.5);opacity:0}60%{opacity:1}100%{transform:translate(-50%,-50%) translateY(0) scale(.65);opacity:1}}
 @keyframes mon-flee{0%{transform:translateX(0);opacity:1}100%{transform:translateX(160px);opacity:0}}
 @keyframes ring-pulse-shrink{0%{transform:scale(1.6);opacity:.15}100%{transform:scale(1);opacity:1}}
+@keyframes evo-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,217,61,.35)}50%{box-shadow:0 0 0 22px rgba(255,217,61,0)}}
+@keyframes ring-expand{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.6);opacity:0}}
+@keyframes star-fall{0%{transform:translateY(-20px);opacity:1}100%{transform:translateY(880px);opacity:0}}
