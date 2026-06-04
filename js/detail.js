@@ -280,28 +280,7 @@ async function loadSiblingForms(data, overlay) {
   const formsChain = document.getElementById('detail-forms-chain');
   if (!formsSection || !formsChain) return;
 
-  // show base pokemon link
-  const baseRow = document.createElement('div');
-  baseRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:14px;cursor:pointer;';
-  const baseSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png`;
-  baseRow.innerHTML = `
-    <div class="pdx-evo-circle" style="width:52px;height:52px">
-      <img src="${baseSpriteUrl}" style="width:40px;height:40px;object-fit:contain;image-rendering:pixelated">
-    </div>
-    <span style="font-size:13px;font-weight:800;color:var(--text-primary)">Forma base</span>
-    <span style="font-size:12px;color:var(--text-muted);margin-left:auto">›</span>`;
-  baseRow.addEventListener('click', () => {
-    closeDetail(overlay);
-    const container = overlay.parentElement;
-    setTimeout(() => showDetail(container, baseId), 320);
-  });
-  formsChain.appendChild(baseRow);
-
   if (siblings.length > 0) {
-    const sibLabel = document.createElement('div');
-    sibLabel.className = 'pdx-forms-mechanic-label';
-    sibLabel.textContent = 'Altre forme';
-    formsChain.appendChild(sibLabel);
 
     const nodesEl = document.createElement('div');
     nodesEl.className = 'pdx-forms-nodes';
@@ -329,7 +308,7 @@ async function loadSiblingForms(data, overlay) {
   }
 
   formsSection.style.display = 'block';
-  formsSection.querySelector('.pdx-section-title').textContent = 'Forme collegate';
+  formsSection.querySelector('.pdx-section-title').textContent = 'Altre Forme';
 }
 
 async function loadSpecialForms(data, overlay) {
