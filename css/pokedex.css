@@ -741,12 +741,6 @@
   justify-content: center;
   margin-top: 10px;
 }
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
 
 .pdx-evo-base-row {
   display: flex;
@@ -847,5 +841,100 @@
 
 @media (min-width: 768px) {
   .pdx-grid.grid { grid-template-columns: repeat(6, 1fr); }
-  .pdx-detail-card { height: auto; max-height: 90vh; max-width: 520px; left: 50%; right: auto; transform: translateX(-50%); border-radius: 28px; }
+
+  /* Option C — full screen detail on iPad */
+  .pdx-detail-overlay { animation: none; }
+  .pdx-detail-backdrop { display: none; }
+
+  .pdx-detail-card {
+    position: fixed;
+    inset: 0;
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    border-radius: 0;
+    animation: fade-in 0.22s ease;
+    transform: none !important;
+  }
+
+  .pdx-detail-topbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 28px;
+    background: #fff;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    flex-shrink: 0;
+    z-index: 3;
+  }
+
+  .pdx-detail-back {
+    background: rgba(0,0,0,.06);
+    border: none;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .pdx-detail-topbar-name {
+    font-size: 22px;
+    color: var(--text-primary);
+    text-transform: capitalize;
+  }
+
+  .pdx-detail-topbar-num {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  .pdx-detail-body-tablet {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .pdx-detail-handle { display: none; }
+
+  .pdx-detail-hero {
+    width: 38%;
+    min-width: 280px;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(0,0,0,.07);
+    border-radius: 0;
+    padding: 40px 28px;
+    justify-content: center;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .pdx-detail-hero-bg {
+    border-radius: 0;
+    opacity: 0.14;
+  }
+
+  .pdx-detail-artwork { width: 230px; height: 230px; }
+  .pdx-detail-artwork img { width: 220px; height: 220px; }
+  .pdx-detail-identity { padding: 18px 0 0; }
+  .pdx-detail-name { font-size: 38px; }
+
+  .pdx-detail-content {
+    flex: 1;
+    padding: 28px 36px 48px;
+    overflow-y: auto;
+  }
+
+  .pdx-flavor { font-size: 15px; text-align: left; }
+  .pdx-section-title { font-size: 14px; }
+  .pdx-move-badge { font-size: 14px; padding: 8px 18px; }
+  .pdx-stat-row { grid-template-columns: 76px 1fr 38px; }
+  .pdx-stat-name { font-size: 12px; }
+  .pdx-stat-val { font-size: 14px; }
+  .pdx-evo-circle { width: 76px; height: 76px; }
+  .pdx-evo-node .pdx-evo-circle img { width: 58px; height: 58px; }
 }

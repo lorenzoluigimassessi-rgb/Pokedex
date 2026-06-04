@@ -54,6 +54,7 @@ function renderDetail(overlay, data, caught) {
   }
 
   function render() {
+    const isTablet = window.innerWidth >= 768;
     card.className = `pdx-detail-card${isShiny ? ' shiny' : ''}`;
 
     const movesHtml = (data.moves && data.moves.length > 0)
@@ -69,24 +70,7 @@ function renderDetail(overlay, data, caught) {
       </div>`;
     }).join('');
 
-    card.innerHTML = `
-      <div class="pdx-detail-hero">
-        <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
-        <div class="pdx-detail-handle" id="detail-close"></div>
-        <div class="pdx-detail-artwork">
-          <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
-          <img src="${getSprite()}" alt="${data.name}">
-        </div>
-        <div class="pdx-detail-identity">
-          <div class="pdx-detail-num">${num}</div>
-          <h2 class="pdx-detail-name fredoka">${data.name}</h2>
-          <div class="pdx-detail-badges">
-            ${typeBadges}
-            ${catchData.count > 1 ? `<span class="pdx-detail-count-badge">×${catchData.count} catturato</span>` : ''}
-            ${isShiny ? '<span class="pdx-detail-shiny-badge">✨ Cromatico</span>' : ''}
-          </div>
-        </div>
-      </div>
+    const contentHtml = `
       <div class="pdx-detail-content scroll">
         ${data.flavorText ? `<div class="pdx-section"><p class="pdx-flavor">${data.flavorText}</p></div>` : ''}
         <div class="pdx-section">
@@ -105,11 +89,47 @@ function renderDetail(overlay, data, caught) {
           <div class="pdx-section-title">Evoluzioni Speciali</div>
           <div id="detail-forms-chain"></div>
         </div>
-      </div>
-    `;
+      </div>`;
+
+    const heroHtml = `
+      <div class="pdx-detail-hero">
+        <div class="pdx-detail-hero-bg" style="background:${tc}"></div>
+        ${isTablet ? '' : '<div class="pdx-detail-handle"></div>'}
+        <div class="pdx-detail-artwork">
+          <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
+          <img src="${getSprite()}" alt="${data.name}">
+        </div>
+        <div class="pdx-detail-identity">
+          <div class="pdx-detail-num">${num}</div>
+          <h2 class="pdx-detail-name fredoka">${data.name}</h2>
+          <div class="pdx-detail-badges">
+            ${typeBadges}
+            ${catchData.count > 1 ? `<span class="pdx-detail-count-badge">×${catchData.count} catturato</span>` : ''}
+            ${isShiny ? '<span class="pdx-detail-shiny-badge">✨ Cromatico</span>' : ''}
+          </div>
+        </div>
+      </div>`;
+
+    if (isTablet) {
+      card.innerHTML = `
+        <div class="pdx-detail-topbar">
+          <button id="detail-close" class="pdx-detail-back">← Pokédex</button>
+          <span class="pdx-detail-topbar-name fredoka">${data.name}</span>
+          <span class="pdx-detail-topbar-num">${num}</span>
+        </div>
+        <div class="pdx-detail-body-tablet">
+          ${heroHtml}
+          ${contentHtml}
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <div class="pdx-detail-handle"></div>
+        ${heroHtml}
+        ${contentHtml}`;
+    }
 
     document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
-    addSwipeToDismiss(card, overlay);
+    if (!isTablet) addSwipeToDismiss(card, overlay);
 
     // fetch Italian move names asynchronously
     if (data.moves && data.moves.length > 0) {
