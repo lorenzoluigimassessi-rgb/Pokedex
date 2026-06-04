@@ -301,18 +301,20 @@
   /* ---- Build region encounter pool — all ids in range, weighted by auto-rarity ---- */
   function buildEncounterPool(regionKey) {
     const reg = REGIONS.find(r => r.key === regionKey) || REGIONS.find(r => r.key === 'kanto');
-    const [lo, hi] = reg.key === 'all' ? [1, 151] : reg.range; // cap 'all' to kanto for now
+    const [lo, hi] = reg.range;
     const pool = [];
     for (let id = lo; id <= hi; id++) {
       const data = getDataSync(id);
       let tier;
-      if (data) {
-        tier = FEAT_RARITY[id] || rarityFromStage(data.stage || 1, data.isLegendary, data.isMythical);
+      if (FEAT_RARITY[id]) {
+        tier = FEAT_RARITY[id];
+      } else if (data) {
+        tier = rarityFromStage(data.stage || 1, data.isLegendary, data.isMythical);
       } else {
-        // not yet fetched — use position-based heuristic
-        // every 3rd id is treated as a line: base=common, mid=rare, final=ultrarare
-        const pos = ((id - lo) % 3);
-        tier = pos === 0 ? 1 : pos === 1 ? 3 : 4;
+        // not yet fetched — use simple positional heuristic within evolution lines
+        // Pokémon tend to come in groups of 2-3 in the dex: base=common, mid=rare, final=ultrarare
+        const posInGroup = (id - lo) % 3;
+        tier = posInGroup === 0 ? 1 : posInGroup === 1 ? 3 : 4;
       }
       const w = RARITY[tier].weight;
       for (let i = 0; i < w; i++) pool.push(id);
@@ -337,7 +339,7 @@
     STONES, BALLS, AVATARS, SKINS,
     artUrl, spriteUrl,
     fetchFullData, getDataSync, buildEncounterPool,
-    rarityOf, catchRate,
+    rarityOf, catchRate, rarityFromStage,
     typeColor: t => TYPE_COLORS[t] || '#888',
     stoneOf: k => STONES.find(s => s.key === k),
     titleCase: t => t.charAt(0).toUpperCase() + t.slice(1),

@@ -22,9 +22,7 @@ function makeEncounter(n, region) {
   const data = PC.getDataSync(id);
   const types = data ? data.types : ['normal'];
   const shiny = Math.random() < 1/11;
-  const rarity = PC.rarityOf(id);
-  const tier = rarity ? PC.RARITY[Object.keys(PC.RARITY).find(k => PC.RARITY[k] === rarity)] : 2;
-  const tierNum = PC.FEAT_RARITY[id] || (data ? (data.isLegendary || data.isMythical ? 6 : data.stage >= 3 ? 4 : data.stage === 2 ? 3 : 1) : 2);
+  const tierNum = PC.FEAT_RARITY[id] || (data ? PC.rarityFromStage(data.stage || 1, data.isLegendary, data.isMythical) : 2);
   const ball = tierNum >= 6 ? 'master' : tierNum >= 4 ? 'ultra' : tierNum >= 3 ? 'great' : 'poke';
   return { id, shiny, ball, types, _n: n };
 }

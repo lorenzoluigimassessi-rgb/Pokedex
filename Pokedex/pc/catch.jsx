@@ -43,6 +43,7 @@ function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onR
   const mainType = types[0] || 'normal';
   const tc = PC.typeColor(mainType);
   const rarity = PC.rarityOf(id);
+  const tierNum = Object.keys(PC.RARITY).find(k => PC.RARITY[k] === rarity) || 2;
   const after = (fn, ms) => { const t = setTimeout(fn, ms); timers.current.push(t); };
 
   function throwBall(quality) {
