@@ -118,13 +118,12 @@ export const api = {
   async getFullPokemon(id) {
     const isSlug = typeof id === 'string' && isNaN(id);
     if (isSlug) {
-      // forms don't have species — just fetch pokemon data
       const pokemon = await this.getPokemon(id);
       return { ...pokemon, flavorText: '', evolutionChainUrl: null, isForm: true };
     }
     const [pokemon, species] = await Promise.all([
       this.getPokemon(id),
-      this.getSpecies(id),
+      this.getSpecies(id).catch(() => ({})),
     ]);
     return { ...pokemon, ...species };
   },

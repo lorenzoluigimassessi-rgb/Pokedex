@@ -30,8 +30,10 @@ export async function showDetail(container, pokemonId, caught) {
     const data = await api.getFullPokemon(pokemonId);
     data._slug = typeof pokemonId === 'string' && isNaN(pokemonId) ? pokemonId : null;
     renderDetail(overlay, data, caught);
-  } catch {
-    overlay.querySelector('.pdx-detail-card').innerHTML = `<div class="pdx-detail-content"><p style="text-align:center;padding:40px;color:var(--text-muted)">Impossibile caricare i dati.</p></div>`;
+  } catch(e) {
+    console.error('showDetail error:', pokemonId, e);
+    const card = overlay.querySelector('.pdx-detail-card');
+    card.innerHTML = `<div class="pdx-detail-content"><p style="text-align:center;padding:40px;color:var(--text-muted)">Impossibile caricare i dati.<br><small style="font-size:11px;opacity:.5">${e.message}</small></p><button style="display:block;margin:0 auto;padding:10px 24px;border-radius:99px;background:var(--accent);color:#fff;border:none;font-weight:800;cursor:pointer" onclick="this.closest('.pdx-detail-overlay').remove()">Chiudi</button></div>`;
   }
 }
 
