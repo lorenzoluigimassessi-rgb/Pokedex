@@ -339,43 +339,28 @@ async function loadSpecialForms(data, overlay) {
   if (!section || !chainEl) return;
   section.style.display = 'block';
 
-  // group by mechanic
-  const byMechanic = {};
-  forms.forEach(f => {
-    if (!byMechanic[f.mechanic]) byMechanic[f.mechanic] = [];
-    byMechanic[f.mechanic].push(f);
-  });
+  // single horizontal scrollable row — all forms together
+  const nodesEl = document.createElement('div');
+  nodesEl.className = 'pdx-forms-nodes';
+  chainEl.appendChild(nodesEl);
 
-  for (const [mechanic, list] of Object.entries(byMechanic)) {
-    const label = MECHANIC_LABEL[mechanic] || mechanic;
-    const row = document.createElement('div');
-    row.className = 'pdx-forms-row';
-    row.innerHTML = `<div class="pdx-forms-mechanic-label">${label}</div>
-      <div class="pdx-forms-nodes" id="forms-nodes-${mechanic}"></div>`;
-    chainEl.appendChild(row);
-
-    const nodesEl = row.querySelector(`#forms-nodes-${mechanic}`);
-    for (const form of list) {
-      const node = document.createElement('div');
-      node.className = 'pdx-evo-node pdx-form-node';
-      node.style.cursor = 'pointer';
-      // use front_default sprite — official-artwork path doesn't work for form slugs
-      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.slug}.png`;
-      const fallbackUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.baseId}.png`;
-      node.innerHTML = `
-        <div class="pdx-evo-circle">
-          <img src="${spriteUrl}"
-            onerror="this.src='${fallbackUrl}'"
-            alt="${form.name}">
-        </div>
-        <span class="pdx-evo-label" style="text-align:center;line-height:1.2;max-width:72px;white-space:normal">${form.name}</span>`;
-      node.addEventListener('click', () => {
-        closeDetail(overlay);
-        const container = overlay.parentElement;
-        setTimeout(() => showDetail(container, form.slug), 320);
-      });
-      nodesEl.appendChild(node);
-    }
+  for (const form of forms) {
+    const node = document.createElement('div');
+    node.className = 'pdx-evo-node pdx-form-node';
+    node.style.cursor = 'pointer';
+    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.slug}.png`;
+    const fallbackUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.baseId}.png`;
+    node.innerHTML = `
+      <div class="pdx-evo-circle">
+        <img src="${spriteUrl}" onerror="this.src='${fallbackUrl}'" alt="${form.name}">
+      </div>
+      <span class="pdx-evo-label" style="text-align:center;line-height:1.2;max-width:72px;white-space:normal">${form.name}</span>`;
+    node.addEventListener('click', () => {
+      closeDetail(overlay);
+      const container = overlay.parentElement;
+      setTimeout(() => showDetail(container, form.slug), 320);
+    });
+    nodesEl.appendChild(node);
   }
 }
 
