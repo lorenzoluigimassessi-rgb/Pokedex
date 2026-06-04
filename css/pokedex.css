@@ -808,7 +808,20 @@
 .pdx-evo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 0; width: 100%; }
 .pdx-evo-grid .pdx-evo-node { width: 100%; }
 
-/* Section titles with left accent bar */
+.pdx-evo-chain-wrap { display: flex; justify-content: center; }
+
+/* Forms row — special + regional side by side */
+.pdx-forms-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.pdx-forms-row::-webkit-scrollbar { display: none; }
+.pdx-forms-row > div { flex-shrink: 0; }
 .pdx-section-title--special {
   border-left: 3px solid rgba(200,70,30,.45); padding-left: 7px;
   color: rgba(190,65,25,.8); font-family: var(--font-body);

@@ -86,15 +86,19 @@ function renderDetail(overlay, data, caught) {
         </div>
         <div class="pdx-section" id="detail-evo-section">
           <div class="pdx-section-title">Evoluzione</div>
-          <div id="detail-evo-chain">Caricamento...</div>
+          <div id="detail-evo-chain" class="pdx-evo-chain-wrap">Caricamento...</div>
         </div>
-        <div class="pdx-section pdx-section--special" id="detail-special-section" style="display:none">
-          <div class="pdx-section-title pdx-section-title--special">Evoluzioni Speciali</div>
-          <div class="pdx-special-pills" id="detail-special-pills"></div>
-        </div>
-        <div class="pdx-section pdx-section--regional" id="detail-regional-section" style="display:none">
-          <div class="pdx-section-title pdx-section-title--regional">Forme Regionali</div>
-          <div class="pdx-evo-line" id="detail-regional-chain"></div>
+        <div class="pdx-section" id="detail-forms-section" style="display:none">
+          <div class="pdx-forms-row">
+            <div id="detail-special-col" style="display:none">
+              <div class="pdx-section-title pdx-section-title--special">Evoluzioni Speciali</div>
+              <div class="pdx-special-pills" id="detail-special-pills"></div>
+            </div>
+            <div id="detail-regional-col" style="display:none">
+              <div class="pdx-section-title pdx-section-title--regional">Forme Regionali</div>
+              <div class="pdx-evo-line" id="detail-regional-chain"></div>
+            </div>
+          </div>
         </div>
       </div>`;
 
@@ -343,12 +347,13 @@ async function loadSpecialForms(data, overlay, tc) {
 }
 
 function renderSpecialPills(forms, currentSlug, tc, overlay) {
-  const section = document.getElementById('detail-special-section');
+  const formsSection = document.getElementById('detail-forms-section');
+  const col = document.getElementById('detail-special-col');
   const container = document.getElementById('detail-special-pills');
-  if (!section || !container) return;
-  section.style.display = 'block';
-  // set accent colour as CSS var on section
-  if (tc) section.style.setProperty('--special-tc', tc);
+  if (!col || !container) return;
+  formsSection.style.display = 'block';
+  col.style.display = 'block';
+  if (tc) col.style.setProperty('--special-tc', tc);
 
   forms.forEach(form => {
     const isCurrent = form.slug === currentSlug;
@@ -363,8 +368,8 @@ function renderSpecialPills(forms, currentSlug, tc, overlay) {
       pill.style.cursor = 'pointer';
       pill.addEventListener('click', () => {
         closeDetail(overlay);
-        const container = overlay.parentElement;
-        setTimeout(() => showDetail(container, form.slug), 320);
+        const cont = overlay.parentElement;
+        setTimeout(() => showDetail(cont, form.slug), 320);
       });
     }
     container.appendChild(pill);
@@ -567,10 +572,12 @@ function loadRegionalForms(data, overlay) {
 }
 
 function renderRegionalNodes(forms, currentSlug, overlay) {
-  const section = document.getElementById('detail-regional-section');
+  const formsSection = document.getElementById('detail-forms-section');
+  const col = document.getElementById('detail-regional-col');
   const container = document.getElementById('detail-regional-chain');
-  if (!section || !container) return;
-  section.style.display = 'block';
+  if (!col || !container) return;
+  formsSection.style.display = 'block';
+  col.style.display = 'block';
 
   forms.forEach((form, i) => {
     if (i > 0) {
