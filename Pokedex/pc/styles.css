@@ -1,0 +1,146 @@
+/* ===== PokéCatch — design tokens & base ===== */
+:root {
+  /* Palette */
+  --bg-catch: #1a1a2e;
+  --bg-catch-2: #16213e;
+  --bg-pokedex: #f5f2eb;
+  --bg-pokedex-dark: #1e1e2a;
+  --accent: #ff6b6b;
+  --accent-deep: #e8514f;
+  --gold: #ffd93d;
+  --text-primary: #2d2d2d;
+  --text-light: #f0f0f0;
+  --text-muted: #8a8a99;
+  --silhouette: #3a3a5c;
+  --card-light: #ffffff;
+  --card-shadow: 0 6px 20px rgba(40,30,20,.10);
+
+  /* Skin accents (overridden by [data-skin]) */
+  --skin: #cc0000;
+  --skin-soft: rgba(204,0,0,.14);
+  --frame-border: 6px solid #cc0000;
+  --frame-radius: 22px;
+  --frame-glow: none;
+
+  /* Type colors */
+  --t-normal:#A8A878; --t-fire:#F08030; --t-water:#6890F0; --t-electric:#F8D030;
+  --t-grass:#78C850; --t-ice:#98D8D8; --t-fighting:#C03028; --t-poison:#A040A0;
+  --t-ground:#E0C068; --t-flying:#A890F0; --t-psychic:#F85888; --t-bug:#A8B820;
+  --t-rock:#B8A038; --t-ghost:#705898; --t-dragon:#7038F8; --t-dark:#705848;
+  --t-steel:#B8B8D0; --t-fairy:#EE99AC;
+
+  /* Spacing (8px base) */
+  --s1:8px; --s2:16px; --s3:24px; --s4:32px;
+  --radius:12px; --radius-lg:20px; --radius-pill:999px;
+  --tap:48px;
+
+  --font-display:'Fredoka One', system-ui, sans-serif;
+  --font-body:'Nunito', system-ui, sans-serif;
+}
+
+[data-skin="classic"] {
+  --skin:#cc0000; --skin-soft:rgba(204,0,0,.13);
+  --frame-border:6px solid #cc0000; --frame-radius:22px; --frame-glow:none;
+}
+[data-skin="modern"] {
+  --skin:#3b82f6; --skin-soft:rgba(59,130,246,.14);
+  --frame-border:1.5px solid #3b82f6; --frame-radius:6px;
+  --frame-glow:0 0 0 1px rgba(59,130,246,.35), 0 0 22px rgba(59,130,246,.30);
+}
+[data-skin="retro"] {
+  --skin:#22c55e; --skin-soft:rgba(74,222,128,.15);
+  --frame-border:4px solid #4ade80; --frame-radius:0px; --frame-glow:0 4px 0 0 #166534;
+}
+
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; height:100%; }
+body {
+  font-family:var(--font-body);
+  background:#0e0e12;
+  display:flex; align-items:center; justify-content:center;
+  min-height:100vh; padding:20px; overflow:hidden;
+  color:var(--text-primary);
+}
+
+/* Device shell — 390x844, full-bleed screen (no bezel) */
+#stage {
+  width:390px; height:844px; max-height:calc(100vh - 40px);
+  position:relative; border-radius:42px; overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04);
+  background:#000;
+}
+#root { position:absolute; inset:0; overflow:hidden; }
+
+.screen { position:absolute; inset:0; display:flex; flex-direction:column; }
+
+/* Scroll regions */
+.scroll { overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
+.scroll::-webkit-scrollbar { width:0; height:0; }
+
+button { font-family:var(--font-body); cursor:pointer; border:none; background:none; color:inherit; }
+input { font-family:var(--font-body); }
+
+.fredoka { font-family:var(--font-display); font-weight:400; }
+
+/* Primary pill button */
+.btn-primary {
+  height:56px; border-radius:var(--radius-pill);
+  background:var(--accent); color:#fff;
+  font-family:var(--font-display); font-size:20px; letter-spacing:.5px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  box-shadow:0 8px 22px rgba(255,107,107,.42); transition:transform .12s ease, box-shadow .2s ease;
+  width:100%;
+}
+.btn-primary:active { transform:translateY(2px) scale(.99); box-shadow:0 4px 12px rgba(255,107,107,.4); }
+.btn-primary:disabled { opacity:.4; box-shadow:none; cursor:not-allowed; }
+
+.btn-ghost {
+  height:48px; border-radius:var(--radius-pill);
+  background:rgba(255,255,255,.07); color:var(--text-light);
+  border:1.5px solid rgba(255,255,255,.16);
+  font-family:var(--font-body); font-weight:700; font-size:15px;
+  display:flex; align-items:center; justify-content:center; gap:8px; padding:0 22px;
+  transition:background .15s ease, border-color .15s ease;
+}
+.btn-ghost:active { background:rgba(255,255,255,.13); }
+
+/* Type badge */
+.type-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 13px; border-radius:var(--radius-pill);
+  font-family:var(--font-body); font-weight:800; font-size:12px;
+  color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.25); letter-spacing:.4px;
+}
+
+/* Pills (region / sort) */
+.pill {
+  height:36px; padding:0 16px; border-radius:var(--radius-pill);
+  font-family:var(--font-body); font-weight:700; font-size:13px;
+  background:rgba(0,0,0,.05); color:var(--text-muted);
+  display:inline-flex; align-items:center; white-space:nowrap;
+  transition:all .15s ease; border:1.5px solid transparent;
+}
+.pill.active { background:var(--accent); color:#fff; }
+
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes pop-in { 0%{ transform:scale(.6); opacity:0;} 60%{transform:scale(1.06);} 100%{transform:scale(1); opacity:1;} }
+@keyframes float-y { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-10px);} }
+@keyframes wobble { 0%,100%{ transform:rotate(0);} 25%{ transform:rotate(-16deg);} 75%{ transform:rotate(16deg);} }
+@keyframes shimmer { 0%{ background-position:-200% 0;} 100%{ background-position:200% 0;} }
+@keyframes sheet-up { from{ transform:translateY(100%);} to{ transform:translateY(0);} }
+@keyframes fade-in { from{ opacity:0;} to{ opacity:1;} }
+@keyframes toast-in { 0%{ transform:translateY(-30px); opacity:0;} 12%{transform:translateY(0); opacity:1;} 88%{transform:translateY(0); opacity:1;} 100%{ transform:translateY(-30px); opacity:0;} }
+@keyframes star-burst { 0%{ transform:scale(0) rotate(0); opacity:0;} 40%{ opacity:1;} 100%{ transform:scale(1.4) rotate(40deg); opacity:0;} }
+@keyframes sparkle { 0%,100%{ opacity:.2; transform:scale(.7);} 50%{ opacity:1; transform:scale(1.2);} }
+
+.skel { background:linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.12) 37%, rgba(255,255,255,.04) 63%); background-size:200% 100%; animation:shimmer 1.3s ease infinite; }
+
+@keyframes ring-burst { 0%{ box-shadow:0 0 0 0 rgba(255,217,61,.55);} 100%{ box-shadow:0 0 0 120px rgba(255,217,61,0);} }
+@keyframes ring-shrink { from{ transform:translate(-50%,-50%) scale(2.6); opacity:.15;} to{ transform:translate(-50%,-50%) scale(1); opacity:1;} }
+@keyframes throw-up { 0%{ transform:translate(-50%,140px) scale(.4); } 70%{ transform:translate(-50%,-12px) scale(.62);} 100%{ transform:translate(-50%,0) scale(.6); } }
+@keyframes ball-drop { 0%{ transform:translateY(-90px); opacity:0;} 60%{ opacity:1;} 100%{ transform:translateY(0); opacity:1;} }
+@keyframes mon-shrink { from{ transform:scale(1); opacity:1;} to{ transform:scale(.05); opacity:0;} }
+@keyframes mon-pop { 0%{ transform:scale(.05); opacity:0;} 100%{ transform:scale(1); opacity:1;} }
+@keyframes burst-break { 0%{ transform:scale(1);} 40%{ transform:scale(1.25);} 100%{ transform:scale(1.6); opacity:0;} }
+@keyframes screen-shimmer { 0%,100%{ opacity:0;} 50%{ opacity:.5;} }
+@keyframes gotcha-in { 0%{ transform:scale(.3); opacity:0;} 55%{ transform:scale(1.12);} 100%{ transform:scale(1); opacity:1;} }
