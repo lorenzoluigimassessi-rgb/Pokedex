@@ -166,9 +166,12 @@ function renderDetail(overlay, data, caught) {
 
   render();
   if (data.isForm) {
-    // load evo chain from base pokemon, then show sibling forms
-    const baseId = Object.keys(FORMS_BY_BASE).find(bid =>
+    // load evo chain from base pokemon — check both special and regional form maps
+    let baseId = Object.keys(FORMS_BY_BASE).find(bid =>
       (FORMS_BY_BASE[bid] || []).some(f => f.slug === data._slug)
+    );
+    if (!baseId) baseId = Object.keys(REGIONAL_BY_BASE).find(bid =>
+      (REGIONAL_BY_BASE[bid] || []).some(f => f.slug === data._slug)
     );
     if (baseId) {
       api.getSpecies(parseInt(baseId)).then(species => {
@@ -288,15 +291,24 @@ function formatStatName(name) {
 }
 
 async function loadSiblingForms(data, overlay) {
-  // find the base pokemon id from forms map
   let baseId = null;
   let currentSlug = data._slug || data.id;
+  // check both special and regional maps
   for (const [bid, forms] of Object.entries(FORMS_BY_BASE)) {
     if (forms.some(f => f.slug === currentSlug)) { baseId = parseInt(bid); break; }
   }
+  if (!baseId) {
+    for (const [bid, forms] of Object.entries(REGIONAL_BY_BASE)) {
+      if (forms.some(f => f.slug === currentSlug)) { baseId = parseInt(bid); break; }
+    }
+  }
   if (!baseId) return;
 
-  const siblings = (FORMS_BY_BASE[baseId] || []).filter(f => f.slug !== currentSlug);
+  // combine siblings from both maps
+  const siblings = [
+    ...(FORMS_BY_BASE[baseId] || []),
+    ...(REGIONAL_BY_BASE[baseId] || [])
+  ].filter(f => f.slug !== currentSlug);
   const formsSection = document.getElementById('detail-forms-section');
   const formsChain = document.getElementById('detail-forms-chain');
   if (!formsSection || !formsChain) return;
