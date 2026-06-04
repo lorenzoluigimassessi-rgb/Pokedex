@@ -1,5 +1,6 @@
 import { api } from './api.js';
 import { storage } from './storage.js';
+import { FORMS_BY_BASE, MECHANIC_LABEL } from './forms.js';
 
 const TYPE_COLOURS = {
   normal: '#a8a878', fire: '#f08030', water: '#6890f0', grass: '#78c850',
@@ -92,6 +93,10 @@ function renderDetail(overlay, data, caught) {
           <div class="pdx-section-title">Evoluzione</div>
           <div class="pdx-evo-chain" id="detail-evo-chain">Caricamento...</div>
         </div>
+        <div class="pdx-section" id="detail-forms-section" style="display:none">
+          <div class="pdx-section-title">Evoluzioni Speciali</div>
+          <div id="detail-forms-chain"></div>
+        </div>
       </div>
     `;
 
@@ -110,6 +115,7 @@ function renderDetail(overlay, data, caught) {
 
   render();
   loadEvoChain(data, overlay);
+  loadSpecialForms(data, overlay);
 }
 
 async function loadEvoChain(data, overlay) {
@@ -212,6 +218,55 @@ function formatStatName(name) {
     'special-attack': 'Att. Sp.', 'special-defense': 'Dif. Sp.', 'speed': 'Velocità'
   };
   return map[name] || name;
+}
+
+async function loadSpecialForms(data, overlay) {
+  const baseId = data.id;
+  const forms = FORMS_BY_BASE[baseId];
+  if (!forms || forms.length === 0) return;
+
+  const section = document.getElementById('detail-forms-section');
+  const chainEl = document.getElementById('detail-forms-chain');
+  if (!section || !chainEl) return;
+  section.style.display = 'block';
+
+  // group by mechanic
+  const byMechanic = {};
+  forms.forEach(f => {
+    if (!byMechanic[f.mechanic]) byMechanic[f.mechanic] = [];
+    byMechanic[f.mechanic].push(f);
+  });
+
+  for (const [mechanic, list] of Object.entries(byMechanic)) {
+    const label = MECHANIC_LABEL[mechanic] || mechanic;
+    const row = document.createElement('div');
+    row.className = 'pdx-forms-row';
+    row.innerHTML = `<div class="pdx-forms-mechanic-label">${label}</div>
+      <div class="pdx-forms-nodes" id="forms-nodes-${mechanic}"></div>`;
+    chainEl.appendChild(row);
+
+    const nodesEl = row.querySelector(`#forms-nodes-${mechanic}`);
+    for (const form of list) {
+      const node = document.createElement('div');
+      node.className = 'pdx-evo-node pdx-form-node';
+      node.style.cursor = 'pointer';
+      // show name immediately, load sprite async
+      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${form.slug}.png`;
+      node.innerHTML = `
+        <div class="pdx-evo-circle">
+          <img src="${spriteUrl}"
+            onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png'"
+            alt="${form.name}">
+        </div>
+        <span class="pdx-evo-label">${form.name}</span>`;
+      node.addEventListener('click', () => {
+        closeDetail(overlay);
+        const container = overlay.parentElement;
+        setTimeout(() => showDetail(container, form.slug), 320);
+      });
+      nodesEl.appendChild(node);
+    }
+  }
 }
 
 function addSwipeToDismiss(card, overlay) {

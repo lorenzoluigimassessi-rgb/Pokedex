@@ -114,7 +114,14 @@ export const api = {
   },
 
   // Get both pokemon + species data in one call
+  // id can be a number or a slug string (e.g. 'charizard-mega-x')
   async getFullPokemon(id) {
+    const isSlug = typeof id === 'string' && isNaN(id);
+    if (isSlug) {
+      // forms don't have species — just fetch pokemon data
+      const pokemon = await this.getPokemon(id);
+      return { ...pokemon, flavorText: '', evolutionChainUrl: null, isForm: true };
+    }
     const [pokemon, species] = await Promise.all([
       this.getPokemon(id),
       this.getSpecies(id),

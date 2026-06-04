@@ -1,6 +1,7 @@
 import { storage } from './storage.js';
 import { showDetail } from './detail.js';
 import { AVATARS } from './fte.js';
+import { SPECIAL_FORMS } from './forms.js';
 
 const REGIONS = [
   { id: 'kanto', name: 'Kanto', range: [1, 151] },
@@ -97,6 +98,7 @@ export async function renderPokedexView(el) {
       </header>
       <div class="pdx-filters scroll" id="pdx-filters">
         ${REGIONS.map(r => `<button class="pill${r.id === currentRegion ? ' active' : ''}" data-region="${r.id}">${r.name}</button>`).join('')}
+        <button class="pill pill-special${currentRegion === 'special' ? ' active' : ''}" data-region="special">✨ Evoluzioni Speciali</button>
       </div>
       <div class="pdx-grid grid scroll" id="pdx-grid"></div>
       <div id="pdx-sentinel" class="pdx-sentinel"></div>
@@ -183,12 +185,16 @@ function showAvatarSheet(containerEl, trainer, currentColors) {
 }
 
 async function loadEntries() {
-  const region = REGIONS.find(r => r.id === currentRegion);
-  const [start, end] = region.range;
-  displayedEntries = Array.from({ length: end - start + 1 }, (_, i) => ({
-    id: start + i, num: i + 1, name: `pokemon-${start + i}`,
-  }));
-  displayedEntries.sort((a, b) => a.id - b.id);
+  if (currentRegion === 'special') {
+    displayedEntries = SPECIAL_FORMS.map(f => ({ id: f.slug, num: f.baseId, name: f.name, isForm: true }));
+  } else {
+    const region = REGIONS.find(r => r.id === currentRegion);
+    const [start, end] = region.range;
+    displayedEntries = Array.from({ length: end - start + 1 }, (_, i) => ({
+      id: start + i, num: i + 1, name: `pokemon-${start + i}`,
+    }));
+    displayedEntries.sort((a, b) => a.id - b.id);
+  }
   renderGrid();
 }
 
@@ -201,8 +207,10 @@ function renderGrid() {
   const collection = storage.getCollection();
   const totalCaught = Object.keys(collection).length;
   const total = displayedEntries.length;
-  document.getElementById('pdx-progress-text').innerHTML = `${totalCaught}<span>/${total}</span>`;
-  document.getElementById('pdx-fill').style.width = `${(totalCaught / total) * 100}%`;
+  document.getElementById('pdx-progress-text').innerHTML = currentRegion === 'special'
+    ? `${total}<span> forme</span>`
+    : `${totalCaught}<span>/${total}</span>`;
+  document.getElementById('pdx-fill').style.width = currentRegion === 'special' ? '100%' : `${(totalCaught / total) * 100}%`;
 
   renderNextBatch();
 
@@ -229,6 +237,19 @@ function createGridCard(entry, caught) {
   const card = document.createElement('button');
   card.className = 'pdx-card';
   card.dataset.id = entry.id;
+
+  // special form card
+  if (entry.isForm) {
+    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${entry.id}.png`;
+    card.innerHTML = `
+      <span class="pdx-card-num">#${String(entry.num).padStart(3,'0')}</span>
+      <img src="${spriteUrl}" alt="${entry.name}" loading="lazy" class="pdx-card-img"
+        onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.num}.png'">
+      <span class="pdx-card-name fredoka">${entry.name}</span>
+    `;
+    card.addEventListener('click', () => showDetail(container, entry.id));
+    return card;
+  }
 
   const cachedData = storage.getCachedPokemon(entry.id);
   const name = cachedData ? cachedData.name : null;
@@ -270,22 +291,13 @@ const TYPE_COLOURS_MAP = {
 function onRegionChange(region) {
   currentRegion = region;
   storage.setCurrentRegion(region);
-  storage.populateRegion(region);
+  if (region !== 'special') storage.populateRegion(region);
   container.querySelectorAll('.pill').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.region === region);
   });
   const pdxImg = document.getElementById('pdx-header-pdx-img');
-  if (pdxImg) {
-    pdxImg.src = REGION_PDX_IMG[region];
-    if (PDX_IMG_HAS_BG[region]) {
-      pdxImg.style.borderRadius = '8px';
-      pdxImg.style.background = 'rgba(0,0,0,.25)';
-      pdxImg.style.padding = '3px';
-    } else {
-      pdxImg.style.borderRadius = '';
-      pdxImg.style.background = '';
-      pdxImg.style.padding = '';
-    }
+  if (pdxImg && region !== 'special') {
+    pdxImg.src = REGION_PDX_IMG[region] || REGION_PDX_IMG['kanto'];
   }
   loadEntries();
 }

@@ -673,7 +673,43 @@
 }
 
 /* Evolution chain */
-.pdx-evo-chain {
+.pdx-forms-row {
+  margin-bottom: 14px;
+}
+
+.pdx-forms-mechanic-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.pdx-forms-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.pdx-form-node {
+  transition: transform .15s ease;
+}
+
+.pdx-form-node:active {
+  transform: scale(.93);
+}
+
+.pill-special {
+  background: linear-gradient(135deg, rgba(255,107,107,.15), rgba(255,217,61,.15));
+  border: 1.5px solid rgba(255,217,61,.4);
+}
+
+.pill-special.active {
+  background: linear-gradient(135deg, var(--accent), #f5b942);
+  border-color: transparent;
+}
   display: flex;
   align-items: center;
   gap: 4px;
