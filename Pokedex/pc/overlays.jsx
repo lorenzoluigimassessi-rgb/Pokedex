@@ -135,8 +135,21 @@ function DetailOverlay({ id, info, stonesInv, caught, onClose, onEvolve, onOpenC
                     </>
                   );
                 })() : (
-                  <div style={{ fontSize:12, fontWeight:700, color:'var(--text-muted)' }}>
-                    Cercalo durante le catture selvatiche.
+                  /* standalone or base-form uncaught */
+                  <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                    <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(100,100,200,.1)',
+                      display:'grid', placeItems:'center', flexShrink:0, fontSize:13 }}>⚡</div>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:800, color:'var(--text-primary)' }}>Trovalo allo stato selvatico</div>
+                      <div style={{ fontSize:11, color:'var(--text-muted)', fontWeight:700, marginTop:2 }}>
+                        {PC.rarityOf(id).label} — continua a cercare!
+                      </div>
+                      {feat && types.length > 0 && (
+                        <div style={{ display:'flex', gap:5, marginTop:6 }}>
+                          {types.map(t => <TypeBadge key={t} type={t}/>)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

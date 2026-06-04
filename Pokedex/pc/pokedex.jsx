@@ -47,7 +47,7 @@ function PokedexView({ trainer, caught, canEvolve, stats, skin, onSetSkin, onOpe
           </div>
         </div>
         <div style={{ marginTop:12 }}>
-          <ProgressBar value={caughtCount} total={PC.TOTAL}/>
+          <ProgressBar value={caughtCount} total={Object.keys(PC.FEATURE).length}/>
         </div>
       </header>
 

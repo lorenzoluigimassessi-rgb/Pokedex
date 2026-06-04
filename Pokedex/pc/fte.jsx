@@ -43,22 +43,22 @@ function FTE({ onComplete }) {
           </div>
           <h1 className="fredoka" style={{ fontSize:52, margin:'34px 0 6px', letterSpacing:'.5px',
             background:'linear-gradient(180deg,#fff,#ffd93d)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>PokéCatch</h1>
-          <p style={{ fontSize:15, color:'rgba(240,240,240,.7)', margin:'0 0 46px', fontWeight:600 }}>Catch them. Collect them. All yours.</p>
-          <button className="btn-primary" onClick={next}>Get Started</button>
+          <p style={{ fontSize:15, color:'rgba(240,240,240,.7)', margin:'0 0 46px', fontWeight:600 }}>Cattura. Colleziona. Tutto tuo.</p>
+          <button className="btn-primary" onClick={next}>Inizia!</button>
         </div>
       )}
 
       {/* STEP 1 — Name */}
       {step===1 && (
         <div style={{ flex:1, display:'flex', flexDirection:'column', padding:'76px 32px 24px', position:'relative', zIndex:1 }}>
-          <h2 className="fredoka" style={{ fontSize:30, lineHeight:1.15, margin:'0 0 10px' }}>What's your name,<br/>Trainer?</h2>
-          <p style={{ fontSize:14, color:'rgba(240,240,240,.6)', margin:'0 0 34px', fontWeight:600 }}>We'll put it on your Pokédex.</p>
-          <input value={name} onChange={e=>setName(e.target.value.slice(0,14))} autoFocus placeholder="Type your name"
+          <h2 className="fredoka" style={{ fontSize:30, lineHeight:1.15, margin:'0 0 10px' }}>Come ti chiami,<br/>Allenatore?</h2>
+          <p style={{ fontSize:14, color:'rgba(240,240,240,.6)', margin:'0 0 34px', fontWeight:600 }}>Lo metteremo sul tuo Pokédex.</p>
+          <input value={name} onChange={e=>setName(e.target.value.slice(0,14))} autoFocus placeholder="Scrivi il tuo nome"
             onKeyDown={e=>e.key==='Enter'&&name.trim()&&next()}
             style={{ height:60, borderRadius:16, border:'2px solid rgba(255,255,255,.16)', background:'rgba(255,255,255,.06)',
               color:'#fff', fontSize:22, fontFamily:'var(--font-display)', padding:'0 20px', outline:'none', textAlign:'center' }}/>
           <div style={{ flex:1 }}/>
-          <button className="btn-primary" onClick={next} disabled={!name.trim()}>Continue</button>
+          <button className="btn-primary" onClick={next} disabled={!name.trim()}>Continua</button>
           {dots}
         </div>
       )}
@@ -66,8 +66,8 @@ function FTE({ onComplete }) {
       {/* STEP 2 — Avatar */}
       {step===2 && (
         <div style={{ flex:1, display:'flex', flexDirection:'column', padding:'64px 28px 24px', position:'relative', zIndex:1 }}>
-          <h2 className="fredoka" style={{ fontSize:30, margin:'0 0 6px' }}>Choose your look</h2>
-          <p style={{ fontSize:14, color:'rgba(240,240,240,.6)', margin:'0 0 26px', fontWeight:600 }}>Pick your trainer.</p>
+          <h2 className="fredoka" style={{ fontSize:30, margin:'0 0 6px' }}>Scegli il tuo look</h2>
+          <p style={{ fontSize:14, color:'rgba(240,240,240,.6)', margin:'0 0 26px', fontWeight:600 }}>Scegli il tuo allenatore.</p>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14 }}>
             {PC.AVATARS.map(a => (
               <button key={a.key} onClick={()=>setAvatar(a.key)}
@@ -81,7 +81,7 @@ function FTE({ onComplete }) {
             ))}
           </div>
           <div style={{ flex:1 }}/>
-          <button className="btn-primary" onClick={next} disabled={!avatar}>Continue</button>
+          <button className="btn-primary" onClick={next} disabled={!avatar}>Continua</button>
           {dots}
         </div>
       )}
@@ -89,8 +89,8 @@ function FTE({ onComplete }) {
       {/* STEP 3 — Skin */}
       {step===3 && (
         <div style={{ flex:1, display:'flex', flexDirection:'column', padding:'56px 28px 24px', position:'relative', zIndex:1 }}>
-          <h2 className="fredoka" style={{ fontSize:30, margin:'0 0 6px' }}>Choose your Pokédex</h2>
-          <p style={{ fontSize:14, color:'rgba(240,240,240,.6)', margin:'0 0 22px', fontWeight:600 }}>You can change this later.</p>
+          <h2 className="fredoka" style={{ fontSize:30, margin:'0 0 6px' }}>Scegli il tuo Pokédex</h2>
+          <p style={{ fontSize:14, color:'rgba(240,240,240,.6)', margin:'0 0 22px', fontWeight:600 }}>Potrai cambiarlo in seguito.</p>
           <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
             {PC.SKINS.map(sk => (
               <button key={sk.key} onClick={()=>setSkin(sk.key)}
@@ -108,7 +108,7 @@ function FTE({ onComplete }) {
             ))}
           </div>
           <div style={{ flex:1 }}/>
-          <button className="btn-primary" onClick={finish} disabled={!skin}>Open my Pokédex</button>
+          <button className="btn-primary" onClick={finish} disabled={!skin}>Apri il mio Pokédex</button>
           {dots}
         </div>
       )}
@@ -125,7 +125,7 @@ function FTE({ onComplete }) {
               <div style={{ position:'absolute', inset:'-30px', borderRadius:'50%',
                 boxShadow:'0 0 0 0 rgba(255,217,61,.6)', animation:'ring-burst 1.5s ease forwards' }}/>
             </div>
-            <p className="fredoka" style={{ fontSize:24, marginTop:30, color:'var(--gold)' }}>Welcome, {name||'Trainer'}!</p>
+            <p className="fredoka" style={{ fontSize:24, marginTop:30, color:'var(--gold)' }}>Benvenuto, {name||'Allenatore'}!</p>
           </div>
         </div>
       )}

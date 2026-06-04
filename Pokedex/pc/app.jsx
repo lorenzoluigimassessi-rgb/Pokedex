@@ -1,5 +1,5 @@
 /* ===== PokéCatch — root app ===== */
-const KEY = 'pokecatch_v1';
+const KEY = 'pokecatch_v2';
 
 function loadState() {
   try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch(e){}
@@ -21,9 +21,8 @@ function makeEncounter(n) {
   const id = pool[Math.floor(Math.random() * pool.length)];
   const feat = PC.FEATURE[id];
   const shiny = Math.random() < 1/11;
-  let ball = 'poke';
-  const r = Math.random();
-  if (r > 0.97) ball = 'master'; else if (r > 0.86) ball = 'ultra'; else if (r > 0.62) ball = 'great';
+  const tier = PC.FEAT_RARITY[id] || 2;
+  const ball = tier >= 6 ? 'master' : tier >= 4 ? 'ultra' : tier >= 3 ? 'great' : 'poke';
   return { id, shiny, ball, types: feat.types, _n: n };
 }
 
@@ -31,7 +30,7 @@ function App() {
   const saved = loadState();
   const [trainer, setTrainer] = useState(saved ? saved.trainer : null);
   const [screen, setScreen] = useState('pokedex');
-  const [caught, setCaught] = useState(saved ? saved.caught : seedCaught());
+  const [caught, setCaught] = useState(saved ? saved.caught : {});
   const [stonesInv, setStonesInv] = useState(saved ? saved.stonesInv : { fire:2, water:1, thunder:1, leaf:1 });
   const [typeCounts, setTypeCounts] = useState(saved ? (saved.typeCounts || {}) : {});
   const [catches, setCatches] = useState(saved ? saved.catches : 0);
@@ -63,16 +62,20 @@ function App() {
   // Evolution threshold check — returns true if player can evolve `id`
   function canEvolve(id) {
     const feat = PC.FEATURE[id];
-    if (!feat || !feat.evo || feat.evo.length < 2) return false;
+    if (!feat) return false;
+    // branch evolution (Eevee): needs 10×
+    if (feat.branch) {
+      const cnt = caught[id] ? caught[id].count : 0;
+      if (cnt < 10) return false;
+      return feat.branch.some(([, sk]) => (stonesInv[sk] || 0) > 0);
+    }
+    if (!feat.evo || feat.evo.length < 2) return false;
     const idx = feat.evo.indexOf(id);
     if (idx < 0 || idx >= feat.evo.length - 1) return false;
-    const isTwo = feat.evo.length === 2;
-    const needed = isTwo ? 10 : 5;
+    const needed = feat.evo.length === 2 ? 10 : 5;
     const cnt = caught[id] ? caught[id].count : 0;
     if (cnt < needed) return false;
-    if (feat.stone && !feat.branch) {
-      return (stonesInv[feat.stone] || 0) > 0;
-    }
+    if (feat.stone) return (stonesInv[feat.stone] || 0) > 0;
     return true;
   }
 

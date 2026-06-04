@@ -1,12 +1,9 @@
 /* ===== Catch View — swipe-to-throw, 3 attempts, pulsing ring ===== */
 function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onResolve, onOpenDex }) {
-  // phase: idle | throwing | wobble | caught | fled
   const [phase, setPhase] = useState('idle');
   const [attempts, setAttempts] = useState(3);
   const [throwQuality, setThrowQuality] = useState('');
   const timers = useRef([]);
-
-  // drag state
   const ballRef = useRef(null);
   const dragStart = useRef(null);
 
@@ -15,8 +12,33 @@ function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onR
     timers.current.forEach(clearTimeout); timers.current = [];
   }, [encounter && encounter.id, encounter && encounter._n]);
 
+  // document-level listeners so drag works even when finger leaves the ball
+  useEffect(() => {
+    function onMove(e) {
+      if (!dragStart.current) return;
+      // optional: could show arc preview here
+    }
+    function onUp(e) {
+      if (phase !== 'idle' || !dragStart.current) return;
+      const endY = e.clientY ?? (e.changedTouches && e.changedTouches[0].clientY);
+      const dy = dragStart.current.y - endY;
+      dragStart.current = null;
+      if (dy < 40) return;
+      const quality = dy > 180 ? 'Eccellente!' : dy > 100 ? 'Ottimo!' : 'Bene!';
+      throwBall(quality);
+    }
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchend', onUp);
+    document.addEventListener('touchmove', onMove, { passive: true });
+    return () => {
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchend', onUp);
+      document.removeEventListener('touchmove', onMove);
+    };
+  }, [phase, attempts]);
+
   if (!encounter) return null;
-  const { id, shiny, types } = encounter;
+  const { id, shiny, ball, types } = encounter;
   const name = PC.nameOf(id);
   const mainType = types[0] || 'normal';
   const tc = PC.typeColor(mainType);
@@ -50,19 +72,10 @@ function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onR
     }, 500 + 1500);
   }
 
-  // — touch/mouse drag handlers —
+  // — ball drag start (just record Y) —
   function onPointerDown(e) {
     if (phase !== 'idle') return;
-    dragStart.current = { y: e.clientY || (e.touches && e.touches[0].clientY) };
-  }
-  function onPointerUp(e) {
-    if (phase !== 'idle' || !dragStart.current) return;
-    const endY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
-    const dy = dragStart.current.y - endY;
-    dragStart.current = null;
-    if (dy < 40) return; // too short, not a throw
-    const quality = dy > 180 ? 'Eccellente!' : dy > 100 ? 'Ottimo!' : 'Bene!';
-    throwBall(quality);
+    dragStart.current = { y: e.clientY ?? (e.touches && e.touches[0].clientY) };
   }
 
   // stone strip: show stones with count > 0
@@ -185,14 +198,14 @@ function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onR
         {phase === 'throwing' && (
           <div style={{ position:'absolute', left:'50%', top:'42%', transform:'translate(-50%,-50%)',
             animation:'ball-arc .5s ease forwards' }}>
-            <BallIcon type="poke" size={52}/>
+            <BallIcon type={ball} size={52}/>
           </div>
         )}
 
         {/* Wobble */}
         {phase === 'wobble' && (
           <div style={{ position:'absolute', left:'50%', top:'42%', transform:'translate(-50%,-50%)', textAlign:'center' }}>
-            <BallIcon type="poke" size={60} wobble/>
+            <BallIcon type={ball} size={60} wobble/>
             <div style={{ marginTop:12, color:'rgba(255,255,255,.7)', fontSize:20, letterSpacing:'4px' }}>···</div>
           </div>
         )}
@@ -265,12 +278,12 @@ function CatchView({ encounter, trainer, stonesInv, typeCounts, stoneEarned, onR
           )}
           {/* ball */}
           <div ref={ballRef}
-            onMouseDown={onPointerDown} onMouseUp={onPointerUp}
-            onTouchStart={onPointerDown} onTouchEnd={onPointerUp}
+            onMouseDown={onPointerDown}
+            onTouchStart={onPointerDown}
             style={{ cursor: phase==='idle' ? 'grab' : 'default',
               opacity: phase !== 'idle' ? 0.3 : 1, transition:'opacity .2s ease',
               animation: phase==='idle' ? 'ball-idle 2s ease infinite' : 'none' }}>
-            <BallIcon type="poke" size={64}/>
+            <BallIcon type={ball} size={64}/>
           </div>
         </div>
       )}
