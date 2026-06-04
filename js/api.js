@@ -28,7 +28,8 @@ function trimPokemon(raw) {
 
 // Extract essential fields from /pokemon-species/{id}
 function trimSpecies(raw) {
-  const flavorEntry = raw.flavor_text_entries.find(e => e.language.name === 'en');
+  const flavorEntry = raw.flavor_text_entries.find(e => e.language.name === 'it') ||
+    raw.flavor_text_entries.find(e => e.language.name === 'en');
   return {
     id: raw.id,
     name: raw.name,
@@ -54,12 +55,13 @@ export const api = {
   },
 
   async getSpecies(id) {
-    const cached = storage.getCachedSpecies(id);
+    const cacheKey = `species_it_${id}`;
+    const cached = storage.getCachedSpecies(cacheKey);
     if (cached) return cached;
 
     const raw = await fetchJSON(`${BASE}/pokemon-species/${id}`);
     const trimmed = trimSpecies(raw);
-    storage.setCachedSpecies(id, trimmed);
+    storage.setCachedSpecies(cacheKey, trimmed);
     return trimmed;
   },
 
