@@ -150,16 +150,9 @@
 /* Carousel — tablet fix */
 @media (min-width: 768px) {
   .pdx-avatar-sheet-carousel {
-    padding: 8px 0 12px;
-    scroll-padding: 0 50%;
-    justify-content: flex-start;
+    padding: 8px calc(50% - 120px) 12px;
     gap: 16px;
-  }
-  .pdx-avatar-sheet-carousel::before,
-  .pdx-avatar-sheet-carousel::after {
-    content: '';
-    flex-shrink: 0;
-    width: calc(50% - 120px);
+    height: 50vh;
   }
   .pdx-avatar-sheet-card {
     width: 240px;
@@ -170,15 +163,8 @@
 /* FTE carousel tablet fix */
 @media (min-width: 768px) {
   .fte-carousel {
-    padding: 10px 0 16px;
-    scroll-padding: 0 50%;
+    padding: 10px calc(50% - 140px) 16px;
     gap: 16px;
-  }
-  .fte-carousel::before,
-  .fte-carousel::after {
-    content: '';
-    flex-shrink: 0;
-    width: calc(50% - 140px);
   }
   .fte-carousel-card {
     width: 280px;
@@ -911,7 +897,7 @@
 
   .pdx-expand-btn {
     top: auto;
-    bottom: 16px;
+    bottom: 32px;
     right: auto;
     left: 50%;
     transform: translateX(-50%);

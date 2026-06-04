@@ -573,15 +573,8 @@
 /* Tablet fix — prevent carousel jumping */
 @media (min-width: 768px) {
   .fte-carousel {
-    padding: 10px 0 16px;
-    scroll-padding: 0 50%;
+    padding: 10px calc(50% - 140px) 16px;
     gap: 16px;
-  }
-  .fte-carousel::before,
-  .fte-carousel::after {
-    content: '';
-    flex-shrink: 0;
-    width: calc(50% - 140px);
   }
   .fte-carousel-card {
     width: 280px;

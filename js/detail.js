@@ -327,16 +327,16 @@ async function loadSiblingForms(data, overlay) {
 }
 
 async function loadSpecialForms(data, overlay) {
-  // find forms — check this pokemon's id AND the base of its evo chain
+  // check all IDs in the evolution chain — forms are keyed to the final form's base ID
   const idsToCheck = new Set([data.id]);
-  if (data.evo && data.evo.length > 0) idsToCheck.add(data.evo[0]); // add chain root
+  if (data.evo && data.evo.length > 0) {
+    data.evo.forEach(id => idsToCheck.add(id));
+  }
 
   let forms = null;
-  let resolvedBaseId = null;
   for (const id of idsToCheck) {
     if (FORMS_BY_BASE[id] && FORMS_BY_BASE[id].length > 0) {
       forms = FORMS_BY_BASE[id];
-      resolvedBaseId = id;
       break;
     }
   }
