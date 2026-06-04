@@ -231,15 +231,16 @@ function createGridCard(entry, caught) {
   card.dataset.id = entry.id;
 
   const cachedData = storage.getCachedPokemon(entry.id);
-  const name = caught && cachedData ? cachedData.name : null;
+  const name = cachedData ? cachedData.name : null;
   const num = `#${String(entry.id).padStart(3, '0')}`;
+  const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
 
+  // show sprite for all caught pokemon — use cached sprite if available, else direct URL
   let imgHtml;
-  if (caught && cachedData) {
-    const sprite = caught.shiny && cachedData.spriteShiny ? cachedData.spriteShiny : cachedData.sprite;
-    imgHtml = `<img src="${sprite}" alt="${name}" loading="lazy" class="pdx-card-img">`;
+  if (caught) {
+    const sprite = (caught.shiny && cachedData?.spriteShiny) ? cachedData.spriteShiny : (cachedData?.sprite || spriteUrl);
+    imgHtml = `<img src="${sprite}" alt="${name || entry.id}" loading="lazy" class="pdx-card-img">`;
   } else {
-    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
     imgHtml = `<div class="pdx-card-silhouette"><img src="${spriteUrl}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=placeholder>???</span>'"></div>`;
   }
 
@@ -247,7 +248,7 @@ function createGridCard(entry, caught) {
     <span class="pdx-card-num">${num}</span>
     ${caught?.shiny ? '<span class="pdx-card-shiny">✨</span>' : ''}
     ${imgHtml}
-    <span class="pdx-card-name fredoka ${!name ? 'uncaught' : ''}">${name || '???'}</span>
+    <span class="pdx-card-name fredoka ${!name ? 'loading-name' : ''}">${name || num}</span>
     ${caught && caught.count > 1 ? `<span class="pdx-card-count">×${caught.count}</span>` : ''}
   `;
 
