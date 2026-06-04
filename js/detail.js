@@ -451,7 +451,7 @@ function openViewer(data, container) {
   }
 
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;background:#0f1428;animation:fade-in .22s ease';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;background:#0f1428;animation:fade-in .22s ease';
 
   function render() {
     const glowColor = shiny ? '#ffd93d' : tc;
