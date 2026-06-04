@@ -48,7 +48,7 @@ function pdxImgStyle(region) {
 
 let currentRegion = 'kanto';
 let displayedEntries = [];
-let renderBatch = 50;
+let renderBatch = 100;
 let rendered = 0;
 let observer = null;
 let container = null;

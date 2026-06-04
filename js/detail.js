@@ -101,8 +101,8 @@ function renderDetail(overlay, data, caught) {
         <div class="pdx-detail-artwork">
           <div class="pdx-detail-artwork-glow" style="background:${tc}"></div>
           <img src="${getSprite()}" alt="${data.name}">
-          <button class="pdx-expand-btn" id="pdx-expand-btn" title="Visualizza">⤢</button>
         </div>
+        <button class="pdx-expand-btn" id="pdx-expand-btn" title="Visualizza">⤢</button>
         <div class="pdx-detail-identity">
           <div class="pdx-detail-num">${num}</div>
           <h2 class="pdx-detail-name fredoka">${data.name}</h2>
