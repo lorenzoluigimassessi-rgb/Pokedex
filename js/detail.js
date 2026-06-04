@@ -281,36 +281,50 @@ async function loadSpecialForms(data, overlay) {
 function addSwipeToDismiss(card, overlay) {
   let startY = null;
   let currentY = 0;
-  const handle = card.querySelector('.pdx-detail-handle');
-  if (!handle) return;
+  let dragging = false;
 
-  // only attach drag to the handle bar, not the whole card
-  handle.addEventListener('touchstart', e => {
+  // attach to the hero section (top ~200px) — easy to grab
+  const hero = card.querySelector('.pdx-detail-hero');
+  const trigger = hero || card;
+
+  trigger.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
+    currentY = 0;
+    dragging = false;
     card.style.transition = 'none';
   }, { passive: true });
 
-  handle.addEventListener('touchmove', e => {
+  // track on document so gesture works even if finger drifts off
+  function onMove(e) {
     if (startY === null) return;
     const dy = e.touches[0].clientY - startY;
-    if (dy < 0) return;
+    if (dy < 0) return; // no upward drag
+    dragging = true;
     currentY = dy;
     card.style.transform = `translateY(${dy}px)`;
-  }, { passive: true });
+  }
 
-  handle.addEventListener('touchend', () => {
+  function onEnd() {
     if (startY === null) return;
     startY = null;
-    if (currentY > 80) {
-      card.style.transition = 'transform 0.25s ease';
-      card.style.transform = `translateY(100%)`;
-      setTimeout(() => closeDetail(overlay), 250);
+    if (currentY > 100) {
+      card.style.transition = 'transform 0.28s ease';
+      card.style.transform = 'translateY(100%)';
+      setTimeout(() => closeDetail(overlay), 280);
     } else {
-      card.style.transition = 'transform 0.25s ease';
+      card.style.transition = 'transform 0.28s ease';
       card.style.transform = 'translateY(0)';
     }
     currentY = 0;
-  });
+    dragging = false;
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onEnd);
+  }
+
+  trigger.addEventListener('touchstart', () => {
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onEnd);
+  }, { passive: true });
 }
 
 function closeDetail(overlay) {
