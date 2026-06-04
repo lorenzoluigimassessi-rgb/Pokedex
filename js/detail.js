@@ -537,7 +537,8 @@ function openViewer(data, container) {
   }
 
   render();
-  container.appendChild(overlay);
+  console.log('openViewer: appending to', container, 'overlay:', overlay);
+  document.body.appendChild(overlay);
 }
 
 function closeDetail(overlay) {
