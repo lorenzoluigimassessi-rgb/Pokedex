@@ -94,7 +94,7 @@ export async function renderPokedexView(el) {
         </div>
         <div class="pdx-progress">
           <div class="pdx-progress-bar"><div class="pdx-progress-fill" id="pdx-fill"></div></div>
-          <span class="pdx-progress-text fredoka" id="pdx-progress-text">${totalCaught}<span>/...</span></span>
+          <span class="pdx-progress-text fredoka" id="pdx-progress-text">151<span>/1025</span></span>
         </div>
       </header>
       <div class="pdx-filters scroll" id="pdx-filters">
@@ -210,8 +210,8 @@ function renderGrid() {
   const total = displayedEntries.length;
   document.getElementById('pdx-progress-text').innerHTML = currentRegion === 'special'
     ? `${total}<span> forme</span>`
-    : `${totalCaught}<span>/${total}</span>`;
-  document.getElementById('pdx-fill').style.width = currentRegion === 'special' ? '100%' : `${(totalCaught / total) * 100}%`;
+    : `${total}<span>/1025</span>`;
+  document.getElementById('pdx-fill').style.width = currentRegion === 'special' ? '100%' : `${(total / 1025) * 100}%`;
 
   renderNextBatch();
 
