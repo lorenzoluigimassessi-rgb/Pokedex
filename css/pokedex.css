@@ -150,8 +150,16 @@
 /* Carousel — tablet fix */
 @media (min-width: 768px) {
   .pdx-avatar-sheet-carousel {
-    padding: 8px calc(50% - 140px) 12px;
-    height: 50vh;
+    padding: 8px 0 12px;
+    scroll-padding: 0 50%;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+  .pdx-avatar-sheet-carousel::before,
+  .pdx-avatar-sheet-carousel::after {
+    content: '';
+    flex-shrink: 0;
+    width: calc(50% - 120px);
   }
   .pdx-avatar-sheet-card {
     width: 240px;
@@ -162,11 +170,19 @@
 /* FTE carousel tablet fix */
 @media (min-width: 768px) {
   .fte-carousel {
-    padding: 8px calc(50% - 140px) 12px;
+    padding: 10px 0 16px;
+    scroll-padding: 0 50%;
+    gap: 16px;
+  }
+  .fte-carousel::before,
+  .fte-carousel::after {
+    content: '';
+    flex-shrink: 0;
+    width: calc(50% - 140px);
   }
   .fte-carousel-card {
-    width: 240px;
-    max-width: 240px;
+    width: 280px;
+    max-width: 280px;
   }
 }
 
@@ -894,11 +910,11 @@
   .pdx-grid.grid { grid-template-columns: repeat(6, 1fr); }
 
   .pdx-expand-btn {
-    top: 50%;
+    top: auto;
+    bottom: 16px;
     right: auto;
     left: 50%;
-    transform: translate(-50%, -50%);
-    bottom: auto;
+    transform: translateX(-50%);
     width: auto;
     height: 36px;
     border-radius: 999px;
@@ -907,14 +923,9 @@
     font-weight: 800;
     gap: 6px;
     white-space: nowrap;
-    opacity: 0;
-    transition: opacity .2s ease, transform .15s ease;
-  }
-  .pdx-detail-hero:hover .pdx-expand-btn,
-  .pdx-detail-hero:focus-within .pdx-expand-btn {
     opacity: 1;
   }
-  .pdx-expand-btn:active { transform: translate(-50%,-50%) scale(.95); }
+  .pdx-expand-btn:active { transform: translateX(-50%) scale(.95); }
 
   /* Option C — full screen detail on iPad */
   .pdx-detail-overlay { animation: none; }
