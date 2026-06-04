@@ -1,10 +1,9 @@
 import { api } from './api.js';
 import { storage } from './storage.js';
 import { showDetail } from './detail.js';
-import { POKEDEX_MODELS } from './fte.js';
+import { POKEDEX_MODELS, AVATARS } from './fte.js';
 
 const REGIONS = [
-  { id: 'all', name: 'All', range: null },
   { id: 'kanto', name: 'Kanto', range: [1, 151] },
   { id: 'johto', name: 'Johto', range: [152, 251] },
   { id: 'hoenn', name: 'Hoenn', range: [252, 386] },
@@ -15,6 +14,19 @@ const REGIONS = [
   { id: 'galar', name: 'Galar', range: [810, 905] },
   { id: 'paldea', name: 'Paldea', range: [906, 1025] },
 ];
+
+// Map region id → Pokédex model image
+const REGION_PDX_IMG = {
+  kanto:  'assets/pokedex/Kanto Pokedex.png',
+  johto:  'assets/pokedex/Johto Pokedex.webp',
+  hoenn:  'assets/pokedex/Hoenn Pokedex.webp',
+  sinnoh: 'assets/pokedex/Sinnoh Pokedex.jpeg',
+  unova:  'assets/pokedex/Unova pokedex.png',
+  kalos:  'assets/pokedex/Kalos Pokedex.png',
+  alola:  'assets/pokedex/Alola pokedex.png',
+  galar:  'assets/pokedex/Rotom_Phone.webp',
+  paldea: 'assets/pokedex/Rotom_Phone.webp',
+};
 
 let currentRegion = 'kanto';
 let currentSort = 'num';
@@ -34,8 +46,8 @@ export async function renderPokedexView(el, navCatchCallback) {
   const collection = storage.getCollection();
   const totalCaught = Object.keys(collection).length;
   const skin = trainer.skin || 'classic';
+  const avatar = AVATARS.find(a => a.id === trainer.avatar) || AVATARS[0];
 
-  // Apply model
   document.getElementById('app').setAttribute('data-pokedex', skin);
 
   container.innerHTML = `
@@ -43,13 +55,11 @@ export async function renderPokedexView(el, navCatchCallback) {
       <div class="pdx-skin-frame"></div>
       <header class="pdx-header">
         <div class="pdx-header-row">
-          <div class="pdx-header-dot"></div>
-          <h1 class="fredoka">Pokédex</h1>
-          <div class="pdx-skin-switcher">
-            ${POKEDEX_MODELS.map(m => `
-              <button class="pdx-skin-dot${skin === m.id ? ' active' : ''}" data-skin="${m.id}" title="${m.name}" style="background:${m.accent}"></button>
-            `).join('')}
-          </div>
+          <button class="pdx-avatar-btn" id="pdx-avatar-btn">
+            <img src="assets/avatars/${avatar.file}" alt="${avatar.name}" onerror="this.style.display='none'">
+          </button>
+          <h1 class="fredoka">Pokédex di ${trainer.name || 'Allenatore'}</h1>
+          <img src="${REGION_PDX_IMG[currentRegion]}" alt="pokédex" class="pdx-header-pdx-img" id="pdx-header-pdx-img">
         </div>
         <div class="pdx-progress">
           <div class="pdx-progress-bar"><div class="pdx-progress-fill" id="pdx-fill"></div></div>
@@ -81,6 +91,7 @@ export async function renderPokedexView(el, navCatchCallback) {
 
   // Events
   document.getElementById('pdx-catch-fab').addEventListener('click', onNavCatch);
+  document.getElementById('pdx-avatar-btn').addEventListener('click', () => showAvatarSheet(container, trainer));
 
   container.querySelectorAll('.pill').forEach(btn => {
     btn.addEventListener('click', () => onRegionChange(btn.dataset.region));
@@ -91,9 +102,6 @@ export async function renderPokedexView(el, navCatchCallback) {
   container.querySelectorAll('.pdx-view-btn').forEach(btn => {
     btn.addEventListener('click', () => onViewChange(btn.dataset.view));
   });
-  container.querySelectorAll('.pdx-skin-dot').forEach(btn => {
-    btn.addEventListener('click', () => onSkinChange(btn.dataset.skin));
-  });
 
   await loadEntries();
 }
@@ -103,9 +111,57 @@ function onSkinChange(skinId) {
   trainer.skin = skinId;
   storage.setTrainer(trainer);
   document.getElementById('app').setAttribute('data-pokedex', skinId);
+}
 
-  container.querySelectorAll('.pdx-skin-dot').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.skin === skinId);
+function showAvatarSheet(containerEl, trainer) {
+  const sheet = document.createElement('div');
+  sheet.className = 'pdx-avatar-sheet-overlay';
+  sheet.innerHTML = `
+    <div class="pdx-avatar-sheet-backdrop"></div>
+    <div class="pdx-avatar-sheet">
+      <div class="pdx-avatar-sheet-handle"></div>
+      <h3 class="fredoka pdx-avatar-sheet-title">Cambia Allenatore</h3>
+      <div class="pdx-avatar-sheet-carousel" id="sheet-carousel">
+        ${AVATARS.map((a, i) => `
+          <div class="pdx-avatar-sheet-card${a.id === trainer.avatar ? ' center' : ''}" data-id="${a.id}" data-index="${i}">
+            <div class="pdx-avatar-sheet-card-inner" style="--cap:${a.cap}">
+              <img src="assets/avatars/${a.file}" alt="${a.name}" onerror="this.style.opacity='.3'">
+            </div>
+            <span class="fredoka pdx-avatar-sheet-name">${a.name}</span>
+          </div>
+        `).join('')}
+      </div>
+      <button class="btn-primary" id="sheet-confirm">Scegli</button>
+    </div>
+  `;
+  containerEl.appendChild(sheet);
+
+  const carousel = sheet.querySelector('#sheet-carousel');
+  const cards = carousel.querySelectorAll('.pdx-avatar-sheet-card');
+  let selectedId = trainer.avatar;
+
+  // Scroll to current avatar
+  const currentCard = carousel.querySelector('.center');
+  if (currentCard) setTimeout(() => currentCard.scrollIntoView({ inline: 'center', block: 'nearest' }), 50);
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.intersectionRatio >= 0.6) {
+        cards.forEach(c => c.classList.toggle('center', c === e.target));
+        selectedId = e.target.dataset.id;
+      }
+    });
+  }, { root: carousel, threshold: 0.6 });
+  cards.forEach(c => { io.observe(c); c.addEventListener('click', () => c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })); });
+
+  sheet.querySelector('.pdx-avatar-sheet-backdrop').addEventListener('click', () => sheet.remove());
+  sheet.querySelector('#sheet-confirm').addEventListener('click', () => {
+    trainer.avatar = selectedId;
+    storage.setTrainer(trainer);
+    const avatar = AVATARS.find(a => a.id === selectedId);
+    const btn = document.getElementById('pdx-avatar-btn');
+    if (btn && avatar) btn.querySelector('img').src = `assets/avatars/${avatar.file}`;
+    sheet.remove();
   });
 }
 
@@ -267,6 +323,8 @@ function onRegionChange(region) {
   container.querySelectorAll('.pill').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.region === region);
   });
+  const pdxImg = document.getElementById('pdx-header-pdx-img');
+  if (pdxImg) { pdxImg.src = REGION_PDX_IMG[region]; }
   loadEntries();
 }
 

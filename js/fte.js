@@ -206,7 +206,9 @@ function showOpening() {
     <div class="fte-screen">
       <div class="fte-opening">
         <div style="text-align:center">
-          <div class="fte-opening-device fte-open-${model.id}" style="--model-accent:${model.accent}"></div>
+          <div class="fte-opening-device">
+            <img src="${model.img}" alt="${model.name}" class="fte-opening-pdx-img">
+          </div>
           <p class="fte-opening-welcome fredoka">Benvenuto, ${trainerData.name || 'Allenatore'}!</p>
         </div>
       </div>
