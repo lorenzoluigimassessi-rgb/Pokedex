@@ -1,7 +1,7 @@
 import { api } from './api.js';
 import { storage } from './storage.js';
 import { showDetail } from './detail.js';
-import { POKEDEX_MODELS, AVATARS } from './fte.js';
+import { AVATARS } from './fte.js';
 
 const REGIONS = [
   { id: 'kanto', name: 'Kanto', range: [1, 151] },
@@ -15,7 +15,6 @@ const REGIONS = [
   { id: 'paldea', name: 'Paldea', range: [906, 1025] },
 ];
 
-// Map region id → Pokédex model image
 const REGION_PDX_IMG = {
   kanto:  'assets/pokedex/Kanto Pokedex.png',
   johto:  'assets/pokedex/Johto Pokedex.webp',
@@ -28,9 +27,18 @@ const REGION_PDX_IMG = {
   paldea: 'assets/pokedex/Rotom_Phone.webp',
 };
 
+// Avatar drives interface color
+const AVATAR_COLORS = {
+  rosso:     { color: '#e23b3b', dark: '#9a0000', shadow: '0 0 0 6px #9a0000, 0 0 0 10px #660000, 0 28px 60px rgba(0,0,0,.55)' },
+  blu:       { color: '#3b6fe2', dark: '#1a3fa0', shadow: '0 0 0 6px #1a3fa0, 0 0 0 10px #102060, 0 28px 60px rgba(0,0,0,.55)' },
+  verde:     { color: '#4aab3b', dark: '#2a7a1a', shadow: '0 0 0 6px #2a7a1a, 0 0 0 10px #1a5010, 0 28px 60px rgba(0,0,0,.55)' },
+  giallo:    { color: '#d4a800', dark: '#8a6400', shadow: '0 0 0 6px #8a6400, 0 0 0 10px #604400, 0 28px 60px rgba(0,0,0,.55)' },
+  oro:       { color: '#d4a017', dark: '#8a6400', shadow: '0 0 0 6px #8a6400, 0 0 0 10px #604400, 0 28px 60px rgba(0,0,0,.55)' },
+  argento:   { color: '#6a7fa8', dark: '#3a4f78', shadow: '0 0 0 6px #3a4f78, 0 0 0 10px #243058, 0 28px 60px rgba(0,0,0,.55)' },
+  cristallo: { color: '#3b8fe2', dark: '#1a5faa', shadow: '0 0 0 6px #1a5faa, 0 0 0 10px #103880, 0 28px 60px rgba(0,0,0,.55)' },
+};
+
 let currentRegion = 'kanto';
-let currentSort = 'num';
-let currentViewMode = 'grid';
 let displayedEntries = [];
 let renderBatch = 50;
 let rendered = 0;
@@ -45,14 +53,21 @@ export async function renderPokedexView(el, navCatchCallback) {
   const trainer = storage.getTrainer();
   const collection = storage.getCollection();
   const totalCaught = Object.keys(collection).length;
-  const skin = trainer.skin || 'classic';
   const avatar = AVATARS.find(a => a.id === trainer.avatar) || AVATARS[0];
+  const colors = AVATAR_COLORS[avatar.id] || AVATAR_COLORS.rosso;
 
-  document.getElementById('app').setAttribute('data-pokedex', skin);
+  // Apply avatar-driven colors
+  const app = document.getElementById('app');
+  app.style.setProperty('--skin', colors.color);
+  app.style.setProperty('--skin-dark', colors.dark);
+  app.style.setProperty('--frame-shadow', colors.shadow);
+  app.style.setProperty('--skin-header-bg', `linear-gradient(160deg, ${colors.color} 0%, ${colors.dark} 100%)`);
+  app.style.setProperty('--skin-soft', colors.color + '22');
+  app.style.setProperty('--accent', colors.color);
+  app.style.setProperty('--accent-deep', colors.dark);
 
   container.innerHTML = `
     <div class="view-pokedex">
-      <div class="pdx-skin-frame" style="display:none"></div>
       <header class="pdx-header">
         <div class="pdx-header-row">
           <button class="pdx-avatar-btn" id="pdx-avatar-btn">
@@ -72,19 +87,7 @@ export async function renderPokedexView(el, navCatchCallback) {
       <div class="pdx-filters scroll" id="pdx-filters">
         ${REGIONS.map(r => `<button class="pill${r.id === currentRegion ? ' active' : ''}" data-region="${r.id}">${r.name}</button>`).join('')}
       </div>
-      <div class="pdx-controls">
-        <div class="pdx-sort-group">
-          ${[['num', '#'], ['az', 'A→Z'], ['za', 'Z→A']].map(([k, l]) =>
-            `<button class="pdx-sort-btn${currentSort === k ? ' active' : ''}" data-sort="${k}">${l}</button>`
-          ).join('')}
-        </div>
-        <div class="pdx-view-toggle">
-          ${[['grid', '▦'], ['list', '≡']].map(([k, l]) =>
-            `<button class="pdx-view-btn${currentViewMode === k ? ' active' : ''}" data-view="${k}">${l}</button>`
-          ).join('')}
-        </div>
-      </div>
-      <div class="pdx-grid ${currentViewMode} scroll" id="pdx-grid"></div>
+      <div class="pdx-grid grid scroll" id="pdx-grid"></div>
       <div id="pdx-sentinel" class="pdx-sentinel"></div>
       <button class="pdx-fab" id="pdx-catch-fab">
         <span class="ball-icon ball-poke"></span> CATTURA!
@@ -92,31 +95,17 @@ export async function renderPokedexView(el, navCatchCallback) {
     </div>
   `;
 
-  // Events
   document.getElementById('pdx-catch-fab').addEventListener('click', onNavCatch);
-  document.getElementById('pdx-avatar-btn').addEventListener('click', () => showAvatarSheet(container, trainer));
+  document.getElementById('pdx-avatar-btn').addEventListener('click', () => showAvatarSheet(container, trainer, colors));
 
   container.querySelectorAll('.pill').forEach(btn => {
     btn.addEventListener('click', () => onRegionChange(btn.dataset.region));
-  });
-  container.querySelectorAll('.pdx-sort-btn').forEach(btn => {
-    btn.addEventListener('click', () => onSortChange(btn.dataset.sort));
-  });
-  container.querySelectorAll('.pdx-view-btn').forEach(btn => {
-    btn.addEventListener('click', () => onViewChange(btn.dataset.view));
   });
 
   await loadEntries();
 }
 
-function onSkinChange(skinId) {
-  const trainer = storage.getTrainer();
-  trainer.skin = skinId;
-  storage.setTrainer(trainer);
-  document.getElementById('app').setAttribute('data-pokedex', skinId);
-}
-
-function showAvatarSheet(containerEl, trainer) {
+function showAvatarSheet(containerEl, trainer, currentColors) {
   const sheet = document.createElement('div');
   sheet.className = 'pdx-avatar-sheet-overlay';
   sheet.innerHTML = `
@@ -143,7 +132,6 @@ function showAvatarSheet(containerEl, trainer) {
   const cards = carousel.querySelectorAll('.pdx-avatar-sheet-card');
   let selectedId = trainer.avatar;
 
-  // Scroll to current avatar
   const currentCard = carousel.querySelector('.center');
   if (currentCard) setTimeout(() => currentCard.scrollIntoView({ inline: 'center', block: 'nearest' }), 50);
 
@@ -155,63 +143,37 @@ function showAvatarSheet(containerEl, trainer) {
       }
     });
   }, { root: carousel, threshold: 0.6 });
-  cards.forEach(c => { io.observe(c); c.addEventListener('click', () => c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })); });
+
+  cards.forEach(c => {
+    io.observe(c);
+    c.addEventListener('click', () => c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }));
+  });
 
   sheet.querySelector('.pdx-avatar-sheet-backdrop').addEventListener('click', () => sheet.remove());
   sheet.querySelector('#sheet-confirm').addEventListener('click', () => {
     trainer.avatar = selectedId;
     storage.setTrainer(trainer);
-    const avatar = AVATARS.find(a => a.id === selectedId);
-    const btn = document.getElementById('pdx-avatar-btn');
-    if (btn && avatar) btn.querySelector('img').src = `assets/avatars/${avatar.file}`;
     sheet.remove();
+    // Re-render to apply new avatar colors
+    renderPokedexView(containerEl, onNavCatch);
   });
 }
 
 async function loadEntries() {
   const region = REGIONS.find(r => r.id === currentRegion);
-  if (!region.range) {
-    displayedEntries = Array.from({ length: api.MAX_POKEMON_ID }, (_, i) => ({
-      id: i + 1, num: i + 1, name: `pokemon-${i + 1}`,
-    }));
-  } else {
-    const [start, end] = region.range;
-    displayedEntries = Array.from({ length: end - start + 1 }, (_, i) => ({
-      id: start + i, num: i + 1, name: `pokemon-${start + i}`,
-    }));
-  }
-
-  applySort();
+  const [start, end] = region.range;
+  displayedEntries = Array.from({ length: end - start + 1 }, (_, i) => ({
+    id: start + i, num: i + 1, name: `pokemon-${start + i}`,
+  }));
+  displayedEntries.sort((a, b) => a.id - b.id);
   renderGrid();
-}
-
-function applySort() {
-  const col = storage.getCollection();
-  switch (currentSort) {
-    case 'az':
-      displayedEntries.sort((a, b) => getDisplayName(a, col).localeCompare(getDisplayName(b, col)));
-      break;
-    case 'za':
-      displayedEntries.sort((a, b) => getDisplayName(b, col).localeCompare(getDisplayName(a, col)));
-      break;
-    default:
-      displayedEntries.sort((a, b) => a.id - b.id);
-  }
-}
-
-function getDisplayName(entry, collection) {
-  if (collection[entry.id]) {
-    const cached = storage.getCachedPokemon(entry.id);
-    return cached?.name || entry.name;
-  }
-  return 'zzz';
 }
 
 function renderGrid() {
   rendered = 0;
   const grid = document.getElementById('pdx-grid');
   grid.innerHTML = '';
-  grid.className = `pdx-grid ${currentViewMode} scroll`;
+  grid.className = 'pdx-grid grid scroll';
 
   const collection = storage.getCollection();
   const totalCaught = Object.keys(collection).length;
@@ -233,11 +195,9 @@ function renderNextBatch() {
   const grid = document.getElementById('pdx-grid');
   const collection = storage.getCollection();
   const end = Math.min(rendered + renderBatch, displayedEntries.length);
-
   for (let i = rendered; i < end; i++) {
     const entry = displayedEntries[i];
-    const caught = collection[entry.id];
-    grid.appendChild(currentViewMode === 'grid' ? createGridCard(entry, caught) : createListRow(entry, caught));
+    grid.appendChild(createGridCard(entry, collection[entry.id]));
   }
   rendered = end;
 }
@@ -256,7 +216,6 @@ function createGridCard(entry, caught) {
     const sprite = caught.shiny && cachedData.spriteShiny ? cachedData.spriteShiny : cachedData.sprite;
     imgHtml = `<img src="${sprite}" alt="${name}" loading="lazy" class="pdx-card-img">`;
   } else {
-    // Silhouette using sprite URL with CSS filter
     const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
     imgHtml = `<div class="pdx-card-silhouette"><img src="${spriteUrl}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=placeholder>???</span>'"></div>`;
   }
@@ -267,46 +226,6 @@ function createGridCard(entry, caught) {
     ${imgHtml}
     <span class="pdx-card-name fredoka ${!name ? 'uncaught' : ''}">${name || '???'}</span>
     ${caught && caught.count > 1 ? `<span class="pdx-card-count">×${caught.count}</span>` : ''}
-  `;
-
-  card.addEventListener('click', () => showDetail(container, entry.id, caught, onNavCatch));
-  return card;
-}
-
-function createListRow(entry, caught) {
-  const card = document.createElement('button');
-  card.className = 'pdx-card';
-  card.dataset.id = entry.id;
-
-  const cachedData = storage.getCachedPokemon(entry.id);
-  const name = caught && cachedData ? cachedData.name : null;
-  const num = `#${String(entry.id).padStart(3, '0')}`;
-
-  let imgHtml;
-  if (caught && cachedData) {
-    const sprite = caught.shiny && cachedData.spriteShiny ? cachedData.spriteShiny : cachedData.sprite;
-    imgHtml = `<img src="${sprite}" alt="${name}" loading="lazy" class="pdx-card-img">`;
-  } else {
-    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
-    imgHtml = `<div class="pdx-card-silhouette"><img src="${spriteUrl}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=placeholder>?</span>'"></div>`;
-  }
-
-  const typeBadges = caught && cachedData ? cachedData.types.map(t =>
-    `<span class="type-badge" style="background:${TYPE_COLOURS_MAP[t] || '#888'}">${t}</span>`
-  ).join('') : '';
-
-  card.innerHTML = `
-    ${imgHtml}
-    <div class="pdx-card-info">
-      <div class="pdx-card-info-row">
-        <span class="pdx-card-num">${num}</span>
-        <span class="pdx-card-name fredoka ${!name ? 'uncaught' : ''}">${name || '???'}</span>
-        ${caught?.shiny ? '<span style="font-size:13px">✨</span>' : ''}
-      </div>
-      ${typeBadges ? `<div class="pdx-card-types">${typeBadges}</div>` : ''}
-    </div>
-    ${caught && caught.count > 1 ? `<span class="pdx-card-count">×${caught.count}</span>` : ''}
-    <span class="pdx-card-chevron">›</span>
   `;
 
   card.addEventListener('click', () => showDetail(container, entry.id, caught, onNavCatch));
@@ -327,23 +246,6 @@ function onRegionChange(region) {
     btn.classList.toggle('active', btn.dataset.region === region);
   });
   const pdxImg = document.getElementById('pdx-header-pdx-img');
-  if (pdxImg) { pdxImg.src = REGION_PDX_IMG[region]; }
+  if (pdxImg) pdxImg.src = REGION_PDX_IMG[region];
   loadEntries();
-}
-
-function onSortChange(sort) {
-  currentSort = sort;
-  container.querySelectorAll('.pdx-sort-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.sort === sort);
-  });
-  applySort();
-  renderGrid();
-}
-
-function onViewChange(mode) {
-  currentViewMode = mode;
-  container.querySelectorAll('.pdx-view-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.view === mode);
-  });
-  renderGrid();
 }
