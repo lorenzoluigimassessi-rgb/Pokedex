@@ -92,6 +92,7 @@ function renderDetail(overlay, data, caught) {
   `;
 
   document.getElementById('detail-close').addEventListener('click', () => closeDetail(overlay));
+  addSwipeToDismiss(card, overlay);
   loadEvoChain(data, overlay);
 }
 
@@ -152,6 +153,38 @@ function formatStatName(name) {
     'special-attack': 'Att. Sp.', 'special-defense': 'Dif. Sp.', 'speed': 'Velocità'
   };
   return map[name] || name;
+}
+
+function addSwipeToDismiss(card, overlay) {
+  let startY = null;
+  let currentY = 0;
+
+  card.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    card.style.transition = 'none';
+  }, { passive: true });
+
+  card.addEventListener('touchmove', e => {
+    if (startY === null) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy < 0) return; // don't allow dragging up
+    currentY = dy;
+    card.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+
+  card.addEventListener('touchend', () => {
+    if (startY === null) return;
+    startY = null;
+    if (currentY > 120) {
+      card.style.transition = 'transform 0.25s ease';
+      card.style.transform = `translateY(100%)`;
+      setTimeout(() => closeDetail(overlay), 250);
+    } else {
+      card.style.transition = 'transform 0.25s ease';
+      card.style.transform = 'translateY(0)';
+    }
+    currentY = 0;
+  });
 }
 
 function closeDetail(overlay) {
