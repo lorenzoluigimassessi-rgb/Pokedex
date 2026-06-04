@@ -41,8 +41,7 @@ function showStep() {
     case 0: showSplash(); break;
     case 1: showName(); break;
     case 2: showAvatar(); break;
-    case 3: showSkin(); break;
-    case 4: showOpening(); break;
+    case 3: showOpening(); break;
   }
 }
 
@@ -53,8 +52,8 @@ function renderStars() {
 }
 
 function renderDots(current) {
-  return `<div class="fte-dots">${[0, 1, 2, 3].map(i =>
-    `<span class="fte-dot${i <= current ? ' active' : ''}${i === Math.min(current, 3) ? ' current' : ''}" style="width:${i === Math.min(current, 3) ? '22px' : '7px'}"></span>`
+  return `<div class="fte-dots">${[0, 1, 2].map(i =>
+    `<span class="fte-dot${i <= current ? ' active' : ''}${i === Math.min(current, 2) ? ' current' : ''}" style="width:${i === Math.min(current, 2) ? '22px' : '7px'}"></span>`
   ).join('')}</div>`;
 }
 
@@ -158,7 +157,15 @@ function showAvatar() {
   });
 
   updateActive(0);
-  document.getElementById('fte-avatar-next').addEventListener('click', next);
+  document.getElementById('fte-avatar-next').addEventListener('click', () => {
+    // assign skin based on avatar choice
+    const skinMap = {
+      rosso:'classic', blu:'classic', verde:'classic', giallo:'classic',
+      oro:'johto', argento:'johto', cristallo:'johto'
+    };
+    trainerData.skin = skinMap[trainerData.avatar] || 'classic';
+    next();
+  });
 }
 
 function showSkin() {
@@ -201,23 +208,21 @@ function showSkin() {
 }
 
 function showOpening() {
-  const model = POKEDEX_MODELS.find(m => m.id === trainerData.skin) || POKEDEX_MODELS[0];
   container.innerHTML = `
     <div class="fte-screen">
       <div class="fte-opening">
         <div style="text-align:center">
-          <div class="fte-opening-device">
-            <img src="${model.img}" alt="${model.name}" class="fte-opening-pdx-img">
+          <div class="pokeball-wrap" style="margin:0 auto 24px">
+            <div class="pokeball-spin"></div>
           </div>
           <p class="fte-opening-welcome fredoka">Benvenuto, ${trainerData.name || 'Allenatore'}!</p>
         </div>
       </div>
     </div>
   `;
-
   storage.setTrainer(trainerData);
   document.getElementById('app').setAttribute('data-pokedex', trainerData.skin);
-  setTimeout(() => { if (onComplete) onComplete(); }, 2200);
+  setTimeout(() => { if (onComplete) onComplete(); }, 2000);
 }
 
 function next() {
