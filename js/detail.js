@@ -185,24 +185,27 @@ function formatStatName(name) {
 function addSwipeToDismiss(card, overlay) {
   let startY = null;
   let currentY = 0;
+  const handle = card.querySelector('.pdx-detail-handle');
+  if (!handle) return;
 
-  card.addEventListener('touchstart', e => {
+  // only attach drag to the handle bar, not the whole card
+  handle.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
     card.style.transition = 'none';
   }, { passive: true });
 
-  card.addEventListener('touchmove', e => {
+  handle.addEventListener('touchmove', e => {
     if (startY === null) return;
     const dy = e.touches[0].clientY - startY;
-    if (dy < 0) return; // don't allow dragging up
+    if (dy < 0) return;
     currentY = dy;
     card.style.transform = `translateY(${dy}px)`;
   }, { passive: true });
 
-  card.addEventListener('touchend', () => {
+  handle.addEventListener('touchend', () => {
     if (startY === null) return;
     startY = null;
-    if (currentY > 120) {
+    if (currentY > 80) {
       card.style.transition = 'transform 0.25s ease';
       card.style.transform = `translateY(100%)`;
       setTimeout(() => closeDetail(overlay), 250);
