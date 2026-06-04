@@ -536,13 +536,8 @@ function openViewer(data, container) {
     }, { passive: true });
   }
 
-  try {
-    render();
-  } catch(e) {
-    alert('render error: ' + e.message);
-    return;
-  }
   document.body.appendChild(overlay);
+  render();
 }
 
 function closeDetail(overlay) {
