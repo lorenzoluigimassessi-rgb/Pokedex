@@ -117,7 +117,7 @@ export const storage = {
     const col = this.getCollection();
     let changed = false;
     for (let i = range[0]; i <= range[1]; i++) {
-      if (!col[i]) { col[i] = { count: 1, shiny: false, caughtAt: Date.now() }; changed = true; }
+      if (!col[i] && !col[String(i)]) { col[String(i)] = { count: 1, shiny: false, caughtAt: Date.now() }; changed = true; }
     }
     if (changed) this.setCollection(col);
   },
