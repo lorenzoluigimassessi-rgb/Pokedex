@@ -92,7 +92,7 @@ function showName() {
   const input = document.getElementById('fte-name-input');
   const btn = document.getElementById('fte-name-btn');
   input.addEventListener('input', () => { btn.disabled = input.value.trim().length < 2; });
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && input.value.trim()) next(); });
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && input.value.trim()) { trainerData.name = input.value.trim(); next(); } });
   btn.addEventListener('click', () => { trainerData.name = input.value.trim(); next(); });
   input.focus();
 }
