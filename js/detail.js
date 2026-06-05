@@ -503,15 +503,16 @@ function addSwipeToDismiss(card, overlay) {
     startY = e.touches[0].clientY;
     currentY = 0;
     card.style.transition = 'none';
+    e.stopPropagation();
   }, { passive: true });
 
   function onMove(e) {
     if (startY === null) return;
     const dy = e.touches[0].clientY - startY;
     if (dy < 0) return;
+    e.preventDefault();
     currentY = dy;
     card.style.transform = `translateY(${dy}px)`;
-    // fade backdrop as card moves down
     const backdrop = overlay.querySelector('.pdx-detail-backdrop');
     if (backdrop) backdrop.style.opacity = String(1 - Math.min(dy / 300, 0.8));
   }
@@ -540,7 +541,7 @@ function addSwipeToDismiss(card, overlay) {
   }
 
   trigger.addEventListener('touchstart', () => {
-    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('touchend', onEnd);
   }, { passive: true });
 }
