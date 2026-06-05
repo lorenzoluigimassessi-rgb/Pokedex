@@ -817,11 +817,11 @@
 .pdx-evo-eevee-arrow { flex-shrink: 0; padding-bottom: 14px; }
 .pdx-evo-grid {
   display: grid;
-  grid-template-columns: repeat(4, 68px);
-  gap: 4px 0;
+  grid-template-columns: repeat(4, 82px);
+  gap: 12px 6px;
   flex-shrink: 0;
 }
-.pdx-evo-grid .pdx-evo-node { width: 68px; }
+.pdx-evo-grid .pdx-evo-node { width: 82px; }
 
 .pdx-evo-chain-wrap { display: flex; justify-content: flex-start; }
 
