@@ -560,9 +560,11 @@
 
 .fte-opening-welcome {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 42px;
   margin-top: 30px;
   color: var(--gold);
+  text-align: center;
+  line-height: 1.2;
 }
 
 /* FTE button wrapper */
