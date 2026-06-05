@@ -12,7 +12,7 @@
 
 /* Header — sticky */
 .pdx-header {
-  padding: 48px 18px 18px;
+  padding: 18px 18px 18px;
   background: var(--skin-header-bg);
   position: sticky;
   top: 0;
