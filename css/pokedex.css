@@ -314,6 +314,8 @@
   transition: transform 0.12s ease;
   position: relative;
   min-height: 100px;
+  min-width: 0;
+  overflow: hidden;
 }
 .pdx-card:active { transform: scale(0.95); }
 
