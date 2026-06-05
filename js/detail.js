@@ -90,13 +90,13 @@ function renderDetail(overlay, data, caught) {
         </div>
         <div class="pdx-section" id="detail-forms-section" style="display:none">
           <div class="pdx-forms-row">
-            <div id="detail-special-col" style="display:none">
-              <div class="pdx-section-title pdx-section-title--special">Evoluzioni Speciali</div>
-              <div class="pdx-special-pills" id="detail-special-pills"></div>
-            </div>
             <div id="detail-regional-col" style="display:none">
               <div class="pdx-section-title pdx-section-title--regional">Forme Regionali</div>
               <div class="pdx-evo-line" id="detail-regional-chain"></div>
+            </div>
+            <div id="detail-special-col" style="display:none">
+              <div class="pdx-section-title pdx-section-title--special">Evoluzioni Speciali</div>
+              <div class="pdx-special-pills" id="detail-special-pills"></div>
             </div>
           </div>
         </div>
@@ -580,12 +580,6 @@ function renderRegionalNodes(forms, currentSlug, overlay) {
   col.style.display = 'block';
 
   forms.forEach((form, i) => {
-    if (i > 0) {
-      const dot = document.createElement('span');
-      dot.className = 'pdx-evo-arrow';
-      dot.textContent = '·';
-      container.appendChild(dot);
-    }
     const node = document.createElement('div');
     node.className = `pdx-evo-node pdx-regional-node${form.slug === currentSlug ? ' current' : ''}`;
     node.style.cursor = 'pointer';

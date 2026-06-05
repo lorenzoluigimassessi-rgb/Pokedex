@@ -808,7 +808,7 @@
 .pdx-evo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 0; width: 100%; }
 .pdx-evo-grid .pdx-evo-node { width: 100%; }
 
-.pdx-evo-chain-wrap { display: flex; justify-content: center; }
+.pdx-evo-chain-wrap { display: flex; justify-content: flex-start; }
 
 /* Forms row — special + regional side by side */
 .pdx-forms-row {
