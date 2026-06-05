@@ -147,7 +147,7 @@ function renderDetail(overlay, data, caught) {
     const isTabletBtn = window.innerWidth >= 768;
     expandBtn.className = 'pdx-expand-btn';
     expandBtn.title = 'Visualizza';
-    expandBtn.innerHTML = isTabletBtn ? '⤢ Espandi' : '⤢';
+    expandBtn.innerHTML = isTabletBtn ? '⤢ Espandi' : '⤢';
     expandBtn.addEventListener('click', e => {
       e.stopPropagation();
       const viewerContainer = overlay.closest('#app') || overlay.parentElement;
