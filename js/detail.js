@@ -246,14 +246,14 @@ function renderEvoChain(node, collection, currentId) {
   const base = lines[0][0];
   const branches = lines.map(line => line.slice(1)); // each branch path after base
 
-  // Eevee-style: many single-step branches → 4x2 grid
+  // Eevee-style: many single-step branches → base left + arrow + 4×2 grid right
   const allSingleStep = branches.every(b => b.length === 1);
   if (allSingleStep && branches.length >= 5) {
     const baseHtml = renderEvoNode(base, collection, currentId);
     const gridItems = branches.map(b => renderEvoNode(b[0], collection, currentId)).join('');
     return `<div class="pdx-evo-eevee">
-      <div class="pdx-evo-line pdx-evo-line--base">${baseHtml}</div>
-      <span class="pdx-evo-down-arrow">↓</span>
+      <div class="pdx-evo-node-wrap">${baseHtml}</div>
+      <span class="pdx-evo-arrow pdx-evo-eevee-arrow">→</span>
       <div class="pdx-evo-grid">${gridItems}</div>
     </div>`;
   }

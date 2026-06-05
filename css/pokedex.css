@@ -802,11 +802,26 @@
 .pdx-evo-fork-branches { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 .pdx-evo-branch-row { display: flex; align-items: center; gap: 0; }
 
-/* Eevee grid */
-.pdx-evo-eevee { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0 8px; }
-.pdx-evo-down-arrow { color: var(--text-muted); font-size: 14px; line-height: 1; }
-.pdx-evo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 0; width: 100%; }
-.pdx-evo-grid .pdx-evo-node { width: 100%; }
+/* Eevee grid — base left + arrow + 4×2 grid, all horizontal */
+.pdx-evo-eevee {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 4px 0 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.pdx-evo-eevee::-webkit-scrollbar { display: none; }
+.pdx-evo-node-wrap { flex-shrink: 0; }
+.pdx-evo-eevee-arrow { flex-shrink: 0; padding-bottom: 14px; }
+.pdx-evo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 68px);
+  gap: 4px 0;
+  flex-shrink: 0;
+}
+.pdx-evo-grid .pdx-evo-node { width: 68px; }
 
 .pdx-evo-chain-wrap { display: flex; justify-content: flex-start; }
 
