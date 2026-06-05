@@ -346,21 +346,8 @@ async function loadSiblingForms(data, overlay, tc) {
 }
 
 async function loadSpecialForms(data, overlay, tc) {
-  const idsToCheck = new Set([Number(data.id)]);
-  try {
-    const sp = await api.getSpecies(data.id);
-    if (sp && sp.evolutionChainUrl) {
-      const chainId = parseInt(sp.evolutionChainUrl.split('/').filter(Boolean).pop());
-      const chain = await api.getEvolutionChain(chainId);
-      function collectIds(n) { idsToCheck.add(parseInt(n.id)); (n.evolvesTo||[]).forEach(collectIds); }
-      collectIds(chain);
-    }
-  } catch(e) {}
-
-  let forms = null;
-  for (const id of idsToCheck) {
-    if (FORMS_BY_BASE[id] && FORMS_BY_BASE[id].length > 0) { forms = FORMS_BY_BASE[id]; break; }
-  }
+  // Only show special forms keyed directly to this exact Pokémon, not the whole evo chain
+  const forms = FORMS_BY_BASE[Number(data.id)];
   if (!forms || forms.length === 0) return;
   renderSpecialPills(forms, null, tc, overlay);
 }
