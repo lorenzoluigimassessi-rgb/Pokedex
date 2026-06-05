@@ -264,7 +264,7 @@ function renderDetail(overlay, data, caught) {
       if (baseId) {
         api.getSpecies(parseInt(baseId)).then(species => {
           if (species && species.evolutionChainUrl) {
-            loadEvoChain({ ...data, id: parseInt(baseId), evolutionChainUrl: species.evolutionChainUrl }, overlay);
+            loadEvoChain({ ...data, id: parseInt(baseId), evolutionChainUrl: species.evolutionChainUrl }, overlay, data.id);
           }
         });
         loadSiblingForms(data, overlay, tc);
@@ -321,7 +321,7 @@ function renderEvoChainRemapped(node, currentSlug) {
   </div>`;
 }
 
-async function loadEvoChain(data, overlay) {
+async function loadEvoChain(data, overlay, skipId = null) {
   const chainEl = document.getElementById('detail-evo-chain');
   if (!chainEl || !data.evolutionChainUrl) {
     if (chainEl) chainEl.textContent = 'Nessuna';
@@ -332,20 +332,22 @@ async function loadEvoChain(data, overlay) {
     const chain = await api.getEvolutionChain(chainId);
     const collection = storage.getCollection();
     chainEl.innerHTML = renderEvoChain(chain, collection, data.id);
+    // skipId: the form's own numeric ID — no node to skip (all are navigable)
+    // data.id: the base ID used to render "current" highlight
     chainEl.querySelectorAll('.pdx-evo-node[data-id]').forEach(node => {
       const id = parseInt(node.dataset.id);
-      if (id === data.id) return;
+      // only skip if it's the currently-open base pokemon (not a special form)
+      if (id === data.id && skipId === null) return;
       node.style.cursor = 'pointer';
       node.addEventListener('click', () => {
-        closeDetail(overlay);
         const container = overlay.parentElement;
+        closeDetail(overlay);
         setTimeout(() => showDetail(container, id, collection[id] || collection[String(id)]), 320);
       });
     });
   } catch {
     chainEl.textContent = 'Impossibile caricare';
   }
-  // return chainEl so callers can .then() after chain is rendered
 }
 
 function renderEvoChain(node, collection, currentId) {
