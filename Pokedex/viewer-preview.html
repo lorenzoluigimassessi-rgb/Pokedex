@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Viewer — Final Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: #0a0a14; color: #fff; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 40px; }
+h1 { font-family: 'Fredoka One', sans-serif; font-size: 26px; }
+.subtitle { font-size: 13px; color: rgba(255,255,255,.4); font-weight: 700; margin-top: 4px; text-align: center; }
+
+.phone {
+  width: 375px; height: 720px;
+  border-radius: 44px; overflow: hidden; position: relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.08);
+  flex-shrink: 0;
+}
+
+/* ── DETAIL CARD ── */
+.detail-card {
+  position: absolute; left: 0; right: 0; bottom: 0; top: 60px;
+  background: #f5f2eb; border-radius: 28px 28px 0 0;
+  display: flex; flex-direction: column; overflow: hidden; color: #2d2d2d;
+}
+.handle { width: 40px; height: 4px; border-radius: 99px; background: rgba(0,0,0,.12); margin: 10px auto 0; flex-shrink: 0; }
+.hero { position: relative; padding: 10px 20px 0; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.hero-bg { position: absolute; inset: 0; border-radius: 28px 28px 60% 60% / 28px 28px 40px 40px; background: #f08030; opacity: .14; }
+.hero img { width: 140px; height: 140px; object-fit: contain; position: relative; z-index: 1; filter: drop-shadow(0 6px 14px rgba(0,0,0,.18)); }
+.expand-btn {
+  position: absolute; top: 14px; right: 14px; z-index: 5;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,.75); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+.d-name { font-family: 'Fredoka One', sans-serif; font-size: 26px; position: relative; z-index: 1; margin-top: 6px; text-transform: capitalize; }
+.d-num { font-size: 11px; font-weight: 800; color: #8a8a99; position: relative; z-index: 1; }
+.d-badges { display: flex; gap: 6px; position: relative; z-index: 1; margin: 6px 0 12px; }
+.badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; color: #fff; }
+.d-content { flex: 1; padding: 0 20px 20px; overflow-y: auto; }
+.sec { font-size: 11px; font-weight: 800; color: #2d2d2d; border-left: 3px solid #e23b3b; padding-left: 7px; margin: 14px 0 8px; text-transform: uppercase; letter-spacing: .5px; }
+.flavor { font-size: 12px; line-height: 1.6; color: #2d2d2d; font-style: italic; background: rgba(0,0,0,.04); border-radius: 10px; padding: 10px 12px; }
+.stat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.sn { width: 52px; font-size: 10px; font-weight: 800; color: #8a8a99; }
+.st { flex: 1; height: 5px; border-radius: 99px; background: rgba(0,0,0,.08); overflow: hidden; }
+.sf { height: 100%; border-radius: 99px; background: #f08030; }
+.sv { width: 24px; font-size: 11px; font-weight: 800; color: #2d2d2d; text-align: right; }
+
+/* ── VIEWER ── */
+.viewer {
+  position: absolute; inset: 0; z-index: 50;
+  display: flex; flex-direction: column; background: #0f1428;
+  animation: fadeIn .22s ease;
+}
+.v-bg { position: absolute; inset: 0; pointer-events: none; transition: background .5s ease; }
+
+/* topbar */
+.v-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 52px 22px 12px; position: relative; z-index: 2;
+}
+.v-close {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,.1); border: none; color: #fff;
+  font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.v-title { font-family: 'Fredoka One', sans-serif; font-size: 20px; color: #fff; text-transform: capitalize; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+
+/* shiny toggle — pill */
+.shiny-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.18);
+  border-radius: 999px; padding: 7px 14px;
+  font-size: 12px; font-weight: 800; color: rgba(255,255,255,.55);
+  cursor: pointer; transition: all .2s ease; user-select: none;
+}
+.shiny-pill.on {
+  background: rgba(255,217,61,.2); border-color: #ffd93d;
+  color: #ffd93d; box-shadow: 0 0 14px rgba(255,217,61,.3);
+}
+
+/* stage */
+.v-stage {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 1;
+}
+.v-stage img {
+  max-width: 260px; max-height: 260px; object-fit: contain;
+  filter: drop-shadow(0 16px 40px rgba(0,0,0,.5));
+  transition: opacity .25s ease;
+}
+.v-stage img.pix { image-rendering: pixelated; max-width: 210px; max-height: 210px; }
+
+/* sparkles */
+.sp-wrap { position: absolute; inset: 0; pointer-events: none; display: none; }
+.sp-wrap span { position: absolute; animation: sparkle 1.8s ease infinite; opacity: 0; font-size: 17px; }
+
+/* sound button */
+.sound-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin: 0 auto 4px;
+  background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.15);
+  border-radius: 999px; padding: 8px 22px;
+  font-size: 13px; font-weight: 800; color: rgba(255,255,255,.6);
+  cursor: pointer; transition: all .2s ease; position: relative; z-index: 2;
+}
+.sound-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+.sound-btn.playing {
+  background: rgba(255,255,255,.15); color: #fff;
+  border-color: rgba(255,255,255,.4);
+  box-shadow: 0 0 14px rgba(255,255,255,.15);
+}
+
+/* mode pills */
+.v-modes {
+  padding: 0 28px 10px; display: flex; gap: 10px;
+  justify-content: center; position: relative; z-index: 2;
+}
+.v-mode {
+  flex: 1; height: 46px; border-radius: 999px;
+  border: 2px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06); color: rgba(255,255,255,.5);
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
+  cursor: pointer; transition: all .2s ease;
+}
+.v-mode.active {
+  background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.5);
+  color: #fff;
+}
+
+/* bottom */
+.v-bottom {
+  padding: 8px 22px 36px; display: flex; align-items: center;
+  justify-content: space-between; position: relative; z-index: 2;
+}
+.v-name { font-family: 'Fredoka One', sans-serif; font-size: 28px; color: #fff; text-transform: capitalize; line-height: 1; }
+.v-num { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.4); margin-top: 3px; }
+
+@keyframes fadeIn { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
+@keyframes sparkle { 0%,100%{opacity:.1;transform:scale(.6)} 50%{opacity:1;transform:scale(1.2)} }
+@keyframes soundPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+
+.phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.phone-label { font-family: 'Fredoka One', sans-serif; font-size: 15px; color: rgba(255,255,255,.45); }
+.desc { max-width: 375px; text-align: center; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.35); line-height: 1.6; }
+.desc b { color: rgba(255,255,255,.75); }
+.row { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+</style>
+</head>
+<body>
+
+<div style="text-align:center">
+  <h1>Viewer — Final Design</h1>
+  <p class="subtitle">Tap ⤢ on each card to open the viewer · All interactions work</p>
+</div>
+
+<div class="row">
+
+  <!-- ── PHONE 1: Normal ── -->
+  <div class="phone-wrap">
+    <div class="phone-label">Normal</div>
+    <div class="phone" style="background:#f5f2eb">
+      <div class="detail-card">
+        <div class="handle"></div>
+        <div class="hero">
+          <div class="hero-bg"></div>
+          <button class="expand-btn" onclick="openViewer('v1');event.stopPropagation()">⤢</button>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"/>
+          <div class="d-name">Charizard</div>
+          <div class="d-num">#006</div>
+          <div class="d-badges">
+            <span class="badge" style="background:#f08030">Fuoco</span>
+            <span class="badge" style="background:#a890f0">Volante</span>
+          </div>
+        </div>
+        <div class="d-content">
+          <div class="sec">Descrizione</div>
+          <div class="flavor">"Sputa fiamme abbastanza calde da sciogliere i massi. Può causare incendi boschivi soffiando fiamme."</div>
+          <div class="sec">Statistiche Base</div>
+          <div class="stat-row"><span class="sn">PS</span><div class="st"><div class="sf" style="width:43%"></div></div><span class="sv">78</span></div>
+          <div class="stat-row"><span class="sn">Attacco</span><div class="st"><div class="sf" style="width:47%"></div></div><span class="sv">84</span></div>
+          <div class="stat-row"><span class="sn">Difesa</span><div class="st"><div class="sf" style="width:43%"></div></div><span class="sv">78</span></div>
+          <div class="stat-row"><span class="sn">Velocità</span><div class="st"><div class="sf" style="width:56%"></div></div><span class="sv">100</span></div>
+        </div>
+      </div>
+      <!-- Viewer 1 -->
+      <div class="viewer" id="v1" style="display:none">
+        <div class="v-bg" id="bg1" style="background:radial-gradient(ellipse 80% 60% at 50% 40%,#f0803044 0%,transparent 70%)"></div>
+        <div class="v-topbar">
+          <button class="v-close" onclick="closeViewer('v1')">✕</button>
+          <span class="v-title">Charizard</span>
+          <button class="shiny-pill" id="sp1" onclick="toggleShiny(1)">✨ Shiny</button>
+        </div>
+        <div class="v-stage">
+          <div class="sp-wrap" id="spw1">
+            <span style="left:25%;top:18%;animation-delay:.1s">✨</span>
+            <span style="left:68%;top:26%;font-size:13px;animation-delay:.5s">✨</span>
+            <span style="left:16%;top:60%;font-size:15px;animation-delay:.3s">✨</span>
+            <span style="left:74%;top:66%;font-size:12px;animation-delay:.8s">✨</span>
+            <span style="left:50%;top:10%;font-size:11px;animation-delay:.6s">✨</span>
+          </div>
+          <img id="img1" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/6.png"/>
+        </div>
+        <button class="sound-btn" id="snd1" onclick="playSound(1,6)">🔊 Ascolta il verso</button>
+        <div class="v-modes">
+          <button class="v-mode active" id="m1h" onclick="setMode(1,'home')">🏠 HOME</button>
+          <button class="v-mode" id="m1a" onclick="setMode(1,'anim')">🎬 Animato</button>
+        </div>
+        <div class="v-bottom">
+          <div><div class="v-name">Charizard</div><div class="v-num">#006</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="badge" style="background:#f08030">Fuoco</span>
+            <span class="badge" style="background:#a890f0">Volante</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">Tap <b>⤢</b> to open viewer.<br/>Toggle <b>✨ Shiny</b> · Tap <b>🔊</b> to hear the cry.</div>
+  </div>
+
+  <!-- ── PHONE 2: Shiny Gyarados ── -->
+  <div class="phone-wrap">
+    <div class="phone-label">Shiny mode</div>
+    <div class="phone" style="background:#f5f2eb">
+      <div class="detail-card">
+        <div class="handle"></div>
+        <div class="hero" style="--tc:#6890f0">
+          <div class="hero-bg" style="background:#6890f0"></div>
+          <button class="expand-btn" onclick="openViewer('v2');event.stopPropagation()">⤢</button>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png"/>
+          <div class="d-name">Gyarados</div>
+          <div class="d-num">#130</div>
+          <div class="d-badges">
+            <span class="badge" style="background:#6890f0">Acqua</span>
+            <span class="badge" style="background:#a890f0">Volante</span>
+          </div>
+        </div>
+        <div class="d-content">
+          <div class="sec">Descrizione</div>
+          <div class="flavor">"Una volta che inizia a infuriare, la sua furia non si placa finché non ha distrutto tutto ciò che lo circonda."</div>
+          <div class="sec">Statistiche Base</div>
+          <div class="stat-row"><span class="sn">Attacco</span><div class="st"><div class="sf" style="width:69%;background:#6890f0"></div></div><span class="sv">125</span></div>
+          <div class="stat-row"><span class="sn">PS</span><div class="st"><div class="sf" style="width:53%;background:#6890f0"></div></div><span class="sv">95</span></div>
+        </div>
+      </div>
+      <!-- Viewer 2 — starts in shiny mode -->
+      <div class="viewer" id="v2" style="display:none">
+        <div class="v-bg" id="bg2" style="background:radial-gradient(ellipse 80% 60% at 50% 40%,#ffd93d33 0%,transparent 70%)"></div>
+        <div class="v-topbar">
+          <button class="v-close" onclick="closeViewer('v2')">✕</button>
+          <span class="v-title">Gyarados</span>
+          <button class="shiny-pill on" id="sp2" onclick="toggleShiny(2)">✨ Shiny</button>
+        </div>
+        <div class="v-stage">
+          <div class="sp-wrap" id="spw2" style="display:block">
+            <span style="left:22%;top:20%;animation-delay:.2s">✨</span>
+            <span style="left:70%;top:24%;font-size:13px;animation-delay:.6s">✨</span>
+            <span style="left:14%;top:64%;font-size:14px;animation-delay:.4s">✨</span>
+            <span style="left:76%;top:70%;font-size:11px;animation-delay:.9s">✨</span>
+            <span style="left:48%;top:12%;font-size:12px;animation-delay:.7s">✨</span>
+          </div>
+          <img id="img2" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/130.png"/>
+        </div>
+        <button class="sound-btn" id="snd2" onclick="playSound(2,130)">🔊 Ascolta il verso</button>
+        <div class="v-modes">
+          <button class="v-mode active" id="m2h" onclick="setMode(2,'home')">🏠 HOME</button>
+          <button class="v-mode" id="m2a" onclick="setMode(2,'anim')">🎬 Animato</button>
+        </div>
+        <div class="v-bottom">
+          <div><div class="v-name">Gyarados</div><div class="v-num">#130</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="badge" style="background:#6890f0">Acqua</span>
+            <span class="badge" style="background:#a890f0">Volante</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">Opens with <b>Shiny ON</b> — blue Gyarados.<br/>Sparkles always visible · Try 🎬 Animato.</div>
+  </div>
+
+  <!-- ── PHONE 3: Animated + Shiny Pikachu ── -->
+  <div class="phone-wrap">
+    <div class="phone-label">Animato + Shiny</div>
+    <div class="phone" style="background:#f5f2eb">
+      <div class="detail-card">
+        <div class="handle"></div>
+        <div class="hero">
+          <div class="hero-bg" style="background:#f8d030"></div>
+          <button class="expand-btn" onclick="openViewer('v3');event.stopPropagation()">⤢</button>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"/>
+          <div class="d-name">Pikachu</div>
+          <div class="d-num">#025</div>
+          <div class="d-badges">
+            <span class="badge" style="background:#f8d030;color:#2d2d2d">Elettro</span>
+          </div>
+        </div>
+        <div class="d-content">
+          <div class="sec">Descrizione</div>
+          <div class="flavor">"Quando più Pikachu si radunano, la loro elettricità può accumularsi e causare fulmini."</div>
+          <div class="sec">Statistiche Base</div>
+          <div class="stat-row"><span class="sn">Velocità</span><div class="st"><div class="sf" style="width:50%;background:#f8d030"></div></div><span class="sv">90</span></div>
+          <div class="stat-row"><span class="sn">Att. Sp.</span><div class="st"><div class="sf" style="width:28%;background:#f8d030"></div></div><span class="sv">50</span></div>
+        </div>
+      </div>
+      <!-- Viewer 3 -->
+      <div class="viewer" id="v3" style="display:none">
+        <div class="v-bg" id="bg3" style="background:radial-gradient(ellipse 80% 60% at 50% 40%,#f8d03044 0%,transparent 70%)"></div>
+        <div class="v-topbar">
+          <button class="v-close" onclick="closeViewer('v3')">✕</button>
+          <span class="v-title">Pikachu</span>
+          <button class="shiny-pill" id="sp3" onclick="toggleShiny(3)">✨ Shiny</button>
+        </div>
+        <div class="v-stage">
+          <div class="sp-wrap" id="spw3">
+            <span style="left:24%;top:22%;animation-delay:.2s">✨</span>
+            <span style="left:69%;top:28%;font-size:13px;animation-delay:.5s">✨</span>
+            <span style="left:16%;top:63%;font-size:14px;animation-delay:.4s">✨</span>
+            <span style="left:74%;top:68%;font-size:11px;animation-delay:.8s">✨</span>
+          </div>
+          <img id="img3" class="pix" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif"/>
+        </div>
+        <button class="sound-btn" id="snd3" onclick="playSound(3,25)">🔊 Ascolta il verso</button>
+        <div class="v-modes">
+          <button class="v-mode" id="m3h" onclick="setMode(3,'home')">🏠 HOME</button>
+          <button class="v-mode active" id="m3a" onclick="setMode(3,'anim')">🎬 Animato</button>
+        </div>
+        <div class="v-bottom">
+          <div><div class="v-name">Pikachu</div><div class="v-num">#025</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="badge" style="background:#f8d030;color:#2d2d2d">Elettro</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="desc">Opens in <b>Animato</b> mode.<br/>Toggle Shiny to see the animated shiny GIF.</div>
+  </div>
+
+</div>
+
+<script>
+const SPRITES = {
+  6:   { home:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/6.png', homeS:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/6.png', anim:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/6.gif', animS:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/shiny/6.gif', tc:'#f08030' },
+  130: { home:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/130.png', homeS:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/130.png', anim:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/130.gif', animS:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/shiny/130.gif', tc:'#6890f0' },
+  25:  { home:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/25.png', homeS:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/25.png', anim:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif', animS:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/shiny/25.gif', tc:'#f8d030' },
+};
+const POKEMON = { 1:6, 2:130, 3:25 };
+const state = { 1:{mode:'home',shiny:false}, 2:{mode:'home',shiny:true}, 3:{mode:'anim',shiny:false} };
+
+function updateViewer(n) {
+  const s = state[n]; const pid = POKEMON[n]; const d = SPRITES[pid];
+  const img = document.getElementById('img'+n);
+  const spw = document.getElementById('spw'+n);
+  const bg = document.getElementById('bg'+n);
+  const pill = document.getElementById('sp'+n);
+
+  const src = s.mode==='home' ? (s.shiny?d.homeS:d.home) : (s.shiny?d.animS:d.anim);
+  img.style.opacity='0';
+  setTimeout(()=>{ img.src=src; img.style.opacity='1'; }, 150);
+  img.className = s.mode==='anim' ? 'pix' : '';
+
+  const glow = s.shiny ? '#ffd93d' : d.tc;
+  bg.style.background = `radial-gradient(ellipse 80% 60% at 50% 40%,${glow}44 0%,transparent 70%)`;
+  spw.style.display = s.shiny ? 'block' : 'none';
+  pill.classList.toggle('on', s.shiny);
+
+  document.getElementById('m'+n+'h').classList.toggle('active', s.mode==='home');
+  document.getElementById('m'+n+'a').classList.toggle('active', s.mode==='anim');
+}
+
+function toggleShiny(n) { state[n].shiny=!state[n].shiny; updateViewer(n); }
+function setMode(n, mode) { state[n].mode=mode; updateViewer(n); }
+
+function openViewer(id) {
+  const v = document.getElementById(id);
+  v.style.display='flex';
+  const n = id.replace('v','');
+  updateViewer(parseInt(n));
+}
+function closeViewer(id) {
+  event.stopPropagation();
+  document.getElementById(id).style.display='none';
+}
+
+// Sound
+let currentAudio = null;
+function playSound(viewerN, pokemonId) {
+  const btn = document.getElementById('snd'+viewerN);
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+  const url = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemonId}.ogg`;
+  const audio = new Audio(url);
+  currentAudio = audio;
+  btn.classList.add('playing');
+  btn.textContent = '🔊 …';
+
+  audio.play().then(() => {
+    audio.onended = () => {
+      btn.classList.remove('playing');
+      btn.textContent = '🔊 Ascolta il verso';
+      currentAudio = null;
+    };
+  }).catch(() => {
+    btn.classList.remove('playing');
+    btn.textContent = '🔊 Ascolta il verso';
+  });
+}
+</script>
+</body>
+</html>

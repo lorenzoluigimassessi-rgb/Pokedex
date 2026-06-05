@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Evo Section Options</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: #0a0a14; color: #fff; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 56px; }
+h1 { font-family: 'Fredoka One', sans-serif; font-size: 26px; }
+.subtitle { font-size: 13px; color: rgba(255,255,255,.4); font-weight: 700; margin-top: 4px; text-align: center; }
+
+/* phone */
+.phone {
+  width: 375px; height: 680px; background: #f5f2eb;
+  border-radius: 44px; overflow: hidden; position: relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.08);
+  flex-shrink: 0;
+}
+
+/* card inside phone */
+.card {
+  position: absolute; left: 0; right: 0; bottom: 0; top: 0;
+  background: #f5f2eb; display: flex; flex-direction: column; overflow: hidden; color: #2d2d2d;
+}
+.hero {
+  position: relative; padding: 14px 20px 0;
+  display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+  background: linear-gradient(180deg, #f0803018 0%, transparent 100%);
+}
+.hero img { width: 110px; height: 110px; object-fit: contain; filter: drop-shadow(0 6px 14px rgba(0,0,0,.18)); }
+.hero-name { font-family: 'Fredoka One', sans-serif; font-size: 26px; margin-top: 4px; text-transform: capitalize; }
+.hero-num { font-size: 11px; font-weight: 800; color: #8a8a99; }
+.badges { display: flex; gap: 6px; margin: 6px 0 12px; }
+.badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; color: #fff; }
+
+.content { flex: 1; overflow-y: auto; padding: 0 20px 24px; }
+.content::-webkit-scrollbar { display: none; }
+
+.sec-title {
+  font-size: 11px; font-weight: 800; color: #2d2d2d;
+  border-left: 3px solid #e23b3b; padding-left: 7px;
+  margin: 16px 0 10px; text-transform: uppercase; letter-spacing: .5px;
+}
+.flavor {
+  font-size: 12px; line-height: 1.6; color: #2d2d2d; font-style: italic;
+  background: rgba(0,0,0,.04); border-radius: 10px; padding: 10px 12px;
+  margin-bottom: 4px;
+}
+
+/* evo chain */
+.evo-chain { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: center; margin-bottom: 4px; }
+.evo-node { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.evo-circle {
+  width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(0,0,0,.05); border: 2px solid transparent;
+}
+.evo-circle.current { background: rgba(226,59,59,.1); border-color: #e23b3b; }
+.evo-circle img { width: 46px; height: 46px; object-fit: contain; image-rendering: pixelated; }
+.evo-label { font-size: 9px; font-weight: 800; color: #8a8a99; text-transform: capitalize; }
+.evo-label.current { color: #2d2d2d; }
+.evo-arrow { color: #8a8a99; font-size: 16px; margin: 0 2px; }
+
+/* form nodes */
+.form-nodes { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.form-nodes::-webkit-scrollbar { display: none; }
+.form-node { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; cursor: pointer; }
+.form-circle {
+  width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(0,0,0,.05); border: 2px solid transparent; transition: all .2s;
+}
+.form-circle:hover { background: rgba(226,59,59,.1); border-color: #e23b3b; }
+.form-circle img { width: 44px; height: 44px; object-fit: contain; image-rendering: pixelated; }
+.form-label { font-size: 8.5px; font-weight: 800; color: #8a8a99; text-align: center; line-height: 1.2; max-width: 60px; }
+
+/* ── OPTION A: tabs ── */
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.tab {
+  padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 800;
+  background: rgba(0,0,0,.06); color: #8a8a99; cursor: pointer; border: none;
+  transition: all .15s;
+}
+.tab.active { background: #e23b3b; color: #fff; }
+
+/* ── OPTION B: compact strip ── */
+.strip-group-label {
+  font-size: 9px; font-weight: 800; color: #8a8a99; letter-spacing: .5px;
+  text-transform: uppercase; margin-right: 6px; flex-shrink: 0; align-self: center;
+}
+.strip-row { display: flex; align-items: center; gap: 0; overflow-x: auto; margin-bottom: 8px; }
+.strip-row::-webkit-scrollbar { display: none; }
+.strip-divider { width: 1px; height: 48px; background: rgba(0,0,0,.1); margin: 0 10px; flex-shrink: 0; }
+
+.strip-node { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; cursor: pointer; margin-right: 8px; }
+.strip-circle {
+  width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(0,0,0,.05); transition: all .15s;
+}
+.strip-circle:hover { background: rgba(226,59,59,.08); }
+.strip-circle img { width: 38px; height: 38px; object-fit: contain; image-rendering: pixelated; }
+.strip-label { font-size: 7.5px; font-weight: 800; color: #8a8a99; text-align: center; max-width: 52px; line-height: 1.2; }
+
+/* ── OPTION C: branch expand ── */
+.evo-node-wrap { display: flex; flex-direction: column; align-items: center; }
+.branch-expand-btn {
+  margin-top: 4px; font-size: 9px; font-weight: 800; color: #e23b3b;
+  background: rgba(226,59,59,.1); border: none; border-radius: 999px;
+  padding: 2px 8px; cursor: pointer;
+}
+.branch-panel {
+  display: flex; gap: 6px; margin-top: 8px;
+  background: rgba(226,59,59,.05); border-radius: 12px; padding: 8px 10px;
+  border: 1px solid rgba(226,59,59,.15);
+}
+
+/* row layout */
+.row { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+.phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.phone-label { font-family: 'Fredoka One', sans-serif; font-size: 16px; color: rgba(255,255,255,.5); }
+.desc { max-width: 375px; text-align: center; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.35); line-height: 1.6; }
+.desc b { color: rgba(255,255,255,.75); }
+</style>
+</head>
+<body>
+
+<div style="text-align:center">
+  <h1>Evo Section Layout Options</h1>
+  <p class="subtitle">Charizard: has Mega X, Mega Y, Gigamax + no regional forms</p>
+</div>
+
+<div class="row">
+
+<!-- ── OPTION A: Tabs ── -->
+<div class="phone-wrap">
+  <div class="phone-label">Option A — Tabs</div>
+  <div class="phone">
+    <div class="card">
+      <div class="hero">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"/>
+        <div class="hero-name">Charizard</div>
+        <div class="hero-num">#006</div>
+        <div class="badges">
+          <span class="badge" style="background:#f08030">Fuoco</span>
+          <span class="badge" style="background:#a890f0">Volante</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="flavor">"Sputa fiamme abbastanza calde da sciogliere i massi."</div>
+        <div class="sec-title">Linea evolutiva</div>
+        <div class="evo-chain">
+          <div class="evo-node">
+            <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"/></div>
+            <span class="evo-label">Charmander</span>
+          </div>
+          <span class="evo-arrow">→</span>
+          <div class="evo-node">
+            <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"/></div>
+            <span class="evo-label">Charmeleon</span>
+          </div>
+          <span class="evo-arrow">→</span>
+          <div class="evo-node">
+            <div class="evo-circle current"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"/></div>
+            <span class="evo-label current">Charizard</span>
+          </div>
+        </div>
+        <!-- tabs -->
+        <div class="tabs" id="tabs-a">
+          <button class="tab active" onclick="switchTab('a','mega')">Mega</button>
+          <button class="tab" onclick="switchTab('a','regional')" style="opacity:.4;cursor:not-allowed">Regionale —</button>
+        </div>
+        <div id="panel-a-mega" class="form-nodes">
+          <div class="form-node">
+            <div class="form-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10034.png"/></div>
+            <span class="form-label">Mega X</span>
+          </div>
+          <div class="form-node">
+            <div class="form-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10035.png"/></div>
+            <span class="form-label">Mega Y</span>
+          </div>
+          <div class="form-node">
+            <div class="form-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10194.png"/></div>
+            <span class="form-label">Gigamax</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desc"><b>Tabs below the evo chain.</b><br/>Switch between Mega / Regionale.<br/>Grayed tab = not available for this Pokémon.<br/>Clean but adds interaction for kids.</div>
+</div>
+
+<!-- ── OPTION B: Compact strip ── -->
+<div class="phone-wrap">
+  <div class="phone-label">Option B — Compact strip</div>
+  <div class="phone">
+    <div class="card">
+      <div class="hero">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"/>
+        <div class="hero-name">Charizard</div>
+        <div class="hero-num">#006</div>
+        <div class="badges">
+          <span class="badge" style="background:#f08030">Fuoco</span>
+          <span class="badge" style="background:#a890f0">Volante</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="flavor">"Sputa fiamme abbastanza calde da sciogliere i massi."</div>
+        <div class="sec-title">Linea evolutiva</div>
+        <div class="evo-chain">
+          <div class="evo-node">
+            <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"/></div>
+            <span class="evo-label">Charmander</span>
+          </div>
+          <span class="evo-arrow">→</span>
+          <div class="evo-node">
+            <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"/></div>
+            <span class="evo-label">Charmeleon</span>
+          </div>
+          <span class="evo-arrow">→</span>
+          <div class="evo-node">
+            <div class="evo-circle current"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"/></div>
+            <span class="evo-label current">Charizard</span>
+          </div>
+        </div>
+        <!-- single section title -->
+        <div class="sec-title">Altre Forme</div>
+        <!-- one strip, groups labelled inline -->
+        <div class="strip-row">
+          <span class="strip-group-label">Mega</span>
+          <div class="strip-node">
+            <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10034.png"/></div>
+            <span class="strip-label">Mega X</span>
+          </div>
+          <div class="strip-node">
+            <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10035.png"/></div>
+            <span class="strip-label">Mega Y</span>
+          </div>
+          <div class="strip-node">
+            <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10194.png"/></div>
+            <span class="strip-label">Gigamax</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desc"><b>One section "Altre Forme"</b> with inline group labels.<br/>No stacking. Scrolls horizontally if many forms.<br/>Cleanest for Pokémon with only one form type.</div>
+</div>
+
+<!-- ── OPTION C: Branch expand on evo node ── -->
+<div class="phone-wrap">
+  <div class="phone-label">Option C — Branch on node</div>
+  <div class="phone">
+    <div class="card">
+      <div class="hero">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"/>
+        <div class="hero-name">Charizard</div>
+        <div class="hero-num">#006</div>
+        <div class="badges">
+          <span class="badge" style="background:#f08030">Fuoco</span>
+          <span class="badge" style="background:#a890f0">Volante</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="flavor">"Sputa fiamme abbastanza calde da sciogliere i massi."</div>
+        <div class="sec-title">Linea evolutiva</div>
+        <div class="evo-chain" style="align-items:flex-start">
+          <div class="evo-node">
+            <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"/></div>
+            <span class="evo-label">Charmander</span>
+          </div>
+          <span class="evo-arrow" style="margin-top:20px">→</span>
+          <div class="evo-node">
+            <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png"/></div>
+            <span class="evo-label">Charmeleon</span>
+          </div>
+          <span class="evo-arrow" style="margin-top:20px">→</span>
+          <div class="evo-node-wrap">
+            <div class="evo-node">
+              <div class="evo-circle current"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"/></div>
+              <span class="evo-label current">Charizard</span>
+            </div>
+            <button class="branch-expand-btn" onclick="toggleBranch()">✦ 3 forme</button>
+            <div class="branch-panel" id="branch-panel" style="display:none">
+              <div class="strip-node">
+                <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10034.png"/></div>
+                <span class="strip-label">Mega X</span>
+              </div>
+              <div class="strip-node">
+                <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10035.png"/></div>
+                <span class="strip-label">Mega Y</span>
+              </div>
+              <div class="strip-node">
+                <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10194.png"/></div>
+                <span class="strip-label">Gmax</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desc"><b>Forms attached to the node</b> they belong to.<br/>Tap "✦ 3 forme" to expand inline.<br/>Most elegant but complex — harder to discover.</div>
+</div>
+
+</div>
+
+<!-- ── SECOND ROW: Vulpix (has BOTH Mega and Regional) ── -->
+<div style="text-align:center;margin-top:8px">
+  <p class="subtitle" style="font-size:15px;color:rgba(255,255,255,.5)">Same options — Vulpix: has both Alola regional form AND stone evolution</p>
+</div>
+
+<div class="row">
+
+<!-- A with both -->
+<div class="phone-wrap">
+  <div class="phone-label">Option A — both types</div>
+  <div class="phone">
+    <div class="card">
+      <div class="hero" style="background:linear-gradient(180deg,#f0803018 0%,transparent 100%)">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/37.png"/>
+        <div class="hero-name">Vulpix</div>
+        <div class="hero-num">#037</div>
+        <div class="badges"><span class="badge" style="background:#f08030">Fuoco</span></div>
+      </div>
+      <div class="content">
+        <div class="flavor">"Da giovane ha sei splendide code."</div>
+        <div class="sec-title">Linea evolutiva</div>
+        <div class="evo-chain">
+          <div class="evo-node">
+            <div class="evo-circle current"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/37.png"/></div>
+            <span class="evo-label current">Vulpix</span>
+          </div>
+          <span class="evo-arrow">→</span>
+          <div class="evo-node">
+            <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/38.png"/></div>
+            <span class="evo-label">Ninetales</span>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab active">Regionale</button>
+          <button class="tab" style="opacity:.45">Mega —</button>
+        </div>
+        <div class="form-nodes">
+          <div class="form-node">
+            <div class="form-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10091.png"/></div>
+            <span class="form-label">Vulpix Alola</span>
+          </div>
+          <div class="form-node">
+            <div class="form-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10092.png"/></div>
+            <span class="form-label">Ninetales Alola</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- B with both -->
+<div class="phone-wrap">
+  <div class="phone-label">Option B — both types</div>
+  <div class="phone">
+    <div class="card">
+      <div class="hero">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/37.png"/>
+        <div class="hero-name">Vulpix</div>
+        <div class="hero-num">#037</div>
+        <div class="badges"><span class="badge" style="background:#f08030">Fuoco</span></div>
+      </div>
+      <div class="content">
+        <div class="flavor">"Da giovane ha sei splendide code."</div>
+        <div class="sec-title">Linea evolutiva</div>
+        <div class="evo-chain">
+          <div class="evo-node">
+            <div class="evo-circle current"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/37.png"/></div>
+            <span class="evo-label current">Vulpix</span>
+          </div>
+          <span class="evo-arrow">→</span>
+          <div class="evo-node">
+            <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/38.png"/></div>
+            <span class="evo-label">Ninetales</span>
+          </div>
+        </div>
+        <div class="sec-title">Altre Forme</div>
+        <div class="strip-row">
+          <span class="strip-group-label">Alola</span>
+          <div class="strip-node">
+            <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10091.png"/></div>
+            <span class="strip-label">Vulpix Alola</span>
+          </div>
+          <div class="strip-node">
+            <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10092.png"/></div>
+            <span class="strip-label">Ninetales Alola</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- C with both -->
+<div class="phone-wrap">
+  <div class="phone-label">Option C — both types</div>
+  <div class="phone">
+    <div class="card">
+      <div class="hero">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/37.png"/>
+        <div class="hero-name">Vulpix</div>
+        <div class="hero-num">#037</div>
+        <div class="badges"><span class="badge" style="background:#f08030">Fuoco</span></div>
+      </div>
+      <div class="content">
+        <div class="flavor">"Da giovane ha sei splendide code."</div>
+        <div class="sec-title">Linea evolutiva</div>
+        <div class="evo-chain" style="align-items:flex-start">
+          <div class="evo-node-wrap">
+            <div class="evo-node">
+              <div class="evo-circle current"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/37.png"/></div>
+              <span class="evo-label current">Vulpix</span>
+            </div>
+            <button class="branch-expand-btn" onclick="toggleBranch2()" style="background:rgba(100,144,240,.15);color:#6890f0;border-color:rgba(100,144,240,.3)">🌏 2 forme</button>
+            <div class="branch-panel" id="branch-panel2" style="display:none;border-color:rgba(100,144,240,.2);background:rgba(100,144,240,.05)">
+              <div class="strip-node">
+                <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10091.png"/></div>
+                <span class="strip-label">Alola</span>
+              </div>
+            </div>
+          </div>
+          <span class="evo-arrow" style="margin-top:20px">→</span>
+          <div class="evo-node-wrap">
+            <div class="evo-node">
+              <div class="evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/38.png"/></div>
+              <span class="evo-label">Ninetales</span>
+            </div>
+            <button class="branch-expand-btn" onclick="toggleBranch3()" style="background:rgba(100,144,240,.15);color:#6890f0">🌏 1 forma</button>
+            <div class="branch-panel" id="branch-panel3" style="display:none;border-color:rgba(100,144,240,.2);background:rgba(100,144,240,.05)">
+              <div class="strip-node">
+                <div class="strip-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10092.png"/></div>
+                <span class="strip-label">Alola</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function switchTab(opt, tab) {
+  document.querySelectorAll(`#tabs-${opt} .tab`).forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function toggleBranch() {
+  const p = document.getElementById('branch-panel');
+  p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+}
+function toggleBranch2() {
+  const p = document.getElementById('branch-panel2');
+  p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+}
+function toggleBranch3() {
+  const p = document.getElementById('branch-panel3');
+  p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+}
+</script>
+</body>
+</html>

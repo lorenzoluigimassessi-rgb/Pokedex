@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>iPad Card Options</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: #0a0a14; color: #fff; padding: 40px; }
+
+h1 { font-family: 'Fredoka One', sans-serif; font-size: 28px; margin-bottom: 8px; color: #fff; }
+.subtitle { font-size: 14px; color: rgba(255,255,255,.4); margin-bottom: 48px; font-weight: 700; }
+
+.option-label {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.option-label span {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,.4);
+}
+.option-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,.45);
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  max-width: 700px;
+}
+.option-wrap {
+  margin-bottom: 64px;
+}
+
+/* ── iPad frame ── */
+.ipad-frame {
+  width: 768px;
+  height: 560px;
+  background: #f5f2eb;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08);
+}
+
+/* ── Shared Pokédex shell ── */
+.pdx-header {
+  background: linear-gradient(160deg, #e23b3b, #9a0000);
+  padding: 14px 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 10;
+  position: relative;
+}
+.pdx-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.2); overflow: hidden; }
+.pdx-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pdx-trainer { font-family: 'Fredoka One', sans-serif; color: #fff; font-size: 18px; }
+.pdx-trainer small { display: block; font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 800; opacity: .6; letter-spacing: .5px; text-transform: uppercase; }
+.pdx-pdximg { height: 38px; margin-left: auto; opacity: .9; }
+
+.pdx-pills {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  background: #f5f2eb;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.pill {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(0,0,0,.06);
+  color: #8a8a99;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+}
+.pill.active { background: #e23b3b; color: #fff; }
+
+.pdx-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  padding: 12px;
+  overflow-y: auto;
+}
+.pdx-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 6px 4px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  box-shadow: 0 2px 8px rgba(40,30,20,.1);
+  cursor: pointer;
+  position: relative;
+}
+.pdx-card img { width: 44px; height: 44px; object-fit: contain; image-rendering: pixelated; }
+.pdx-card .num { font-size: 8px; font-weight: 800; color: #8a8a99; position: absolute; top: 4px; left: 5px; }
+.pdx-card .name { font-family: 'Fredoka One', sans-serif; font-size: 9px; color: #2d2d2d; }
+.pdx-card.active { outline: 2px solid #e23b3b; }
+
+/* ── TYPE COLORS ── */
+.type-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  display: inline-block;
+}
+
+/* ── Stat bar ── */
+.stat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.stat-name { width: 52px; font-size: 10px; font-weight: 800; color: #8a8a99; }
+.stat-val { width: 24px; font-size: 11px; font-weight: 800; color: #2d2d2d; text-align: right; }
+.stat-track { flex: 1; height: 5px; border-radius: 99px; background: rgba(0,0,0,.08); overflow: hidden; }
+.stat-fill { height: 100%; border-radius: 99px; background: #f08030; }
+
+/* ══════════════════════════════════════════
+   OPTION A — Split Panel
+══════════════════════════════════════════ */
+.option-a .ipad-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.option-a .pdx-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.option-a .pdx-left {
+  width: 55%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(0,0,0,.08);
+  overflow: hidden;
+}
+.option-a .pdx-right {
+  width: 45%;
+  background: #fff;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.option-a .detail-hero {
+  background: linear-gradient(180deg, #f0803028 0%, transparent 100%);
+  padding: 16px 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+.option-a .detail-hero-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(0,0,0,.12);
+  margin-bottom: 10px;
+}
+.option-a .detail-hero img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,.15));
+  position: relative;
+  z-index: 1;
+}
+.option-a .detail-hero-glow {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(#f0803055, transparent 70%);
+  filter: blur(10px);
+  top: 30px;
+}
+.option-a .detail-content {
+  padding: 12px 18px 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+.option-a .detail-num { font-size: 11px; font-weight: 800; color: #8a8a99; text-align: center; }
+.option-a .detail-name { font-family: 'Fredoka One', sans-serif; font-size: 24px; color: #2d2d2d; text-align: center; margin: 2px 0 8px; text-transform: capitalize; }
+.option-a .detail-badges { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
+.option-a .section-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #2d2d2d;
+  letter-spacing: .3px;
+  border-left: 3px solid #e23b3b;
+  padding-left: 7px;
+  margin: 14px 0 8px;
+}
+.option-a .flavor {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #2d2d2d;
+  font-style: italic;
+  background: rgba(0,0,0,.04);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.move-badge {
+  background: rgba(0,0,0,.06);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #2d2d2d;
+  display: inline-block;
+  margin: 2px;
+}
+
+/* ══════════════════════════════════════════
+   OPTION B — Wide modal (artwork left, content right)
+══════════════════════════════════════════ */
+.option-b .ipad-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.option-b .pdx-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.option-b .pdx-grid-wrap {
+  padding: 12px;
+  overflow-y: auto;
+  height: 100%;
+}
+/* modal overlay */
+.option-b .modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,8,20,.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 20;
+}
+.option-b .modal-card {
+  background: #fff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 680px;
+  height: 460px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+}
+.option-b .modal-left {
+  width: 42%;
+  background: linear-gradient(160deg, #f0803022, #f0803008);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  border-right: 1px solid rgba(0,0,0,.06);
+  flex-shrink: 0;
+}
+.option-b .modal-left-glow {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(#f0803044, transparent 70%);
+  filter: blur(20px);
+}
+.option-b .modal-left img {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,.2));
+  position: relative;
+  z-index: 1;
+}
+.option-b .modal-right {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+}
+.option-b .modal-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(0,0,0,.1);
+  align-self: center;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.option-b .modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #8a8a99;
+  cursor: pointer;
+  border: none;
+}
+.option-b .detail-num { font-size: 11px; font-weight: 800; color: #8a8a99; }
+.option-b .detail-name { font-family: 'Fredoka One', sans-serif; font-size: 28px; color: #2d2d2d; margin: 2px 0 10px; text-transform: capitalize; }
+.option-b .detail-badges { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.option-b .section-title {
+  font-size: 11px; font-weight: 800; color: #2d2d2d;
+  border-left: 3px solid #e23b3b; padding-left: 7px; margin: 12px 0 8px;
+}
+.option-b .flavor { font-size: 12px; line-height: 1.6; color: #2d2d2d; font-style: italic; background: rgba(0,0,0,.04); border-radius: 10px; padding: 10px 12px; }
+
+/* ══════════════════════════════════════════
+   OPTION C — Full screen
+══════════════════════════════════════════ */
+.option-c .ipad-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.option-c .pdx-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.option-c .full-detail {
+  position: absolute;
+  inset: 0;
+  background: #f5f2eb;
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+}
+.option-c .full-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  flex-shrink: 0;
+}
+.option-c .back-btn {
+  background: rgba(0,0,0,.06);
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #e23b3b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.option-c .full-topbar-name { font-family: 'Fredoka One', sans-serif; font-size: 20px; color: #2d2d2d; text-transform: capitalize; }
+.option-c .full-topbar-num { font-size: 12px; font-weight: 800; color: #8a8a99; margin-left: auto; }
+.option-c .full-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.option-c .full-hero {
+  width: 38%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #f0803018, transparent);
+  border-right: 1px solid rgba(0,0,0,.06);
+  padding: 24px;
+  position: relative;
+  flex-shrink: 0;
+}
+.option-c .full-hero-glow {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(#f0803044, transparent 70%);
+  filter: blur(24px);
+}
+.option-c .full-hero img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,.2));
+  position: relative;
+  z-index: 1;
+}
+.option-c .full-hero-name { font-family: 'Fredoka One', sans-serif; font-size: 26px; color: #2d2d2d; margin-top: 12px; text-transform: capitalize; }
+.option-c .full-hero-num { font-size: 12px; font-weight: 800; color: #8a8a99; margin-top: 2px; }
+.option-c .full-hero-badges { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+.option-c .full-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+.option-c .section-title {
+  font-size: 11px; font-weight: 800; color: #2d2d2d;
+  border-left: 3px solid #e23b3b; padding-left: 7px; margin: 14px 0 8px;
+}
+.option-c .flavor { font-size: 13px; line-height: 1.65; color: #2d2d2d; font-style: italic; background: rgba(0,0,0,.04); border-radius: 10px; padding: 12px 14px; }
+
+/* ── grid items shared ── */
+.pdx-card-silhouette { filter: brightness(0) saturate(0); opacity: .7; }
+</style>
+</head>
+<body>
+
+<h1>iPad Card Layout — 3 Options</h1>
+<p class="subtitle">768px viewport — tap to compare</p>
+
+<!-- ══ OPTION A ══ -->
+<div class="option-wrap option-a">
+  <div class="option-label">Option A — Split Panel <span>Grid stays visible, detail opens as right panel</span></div>
+  <div class="option-desc">The Pokédex grid remains on the left at all times. Selecting a Pokémon opens a persistent right panel — no overlay, no sheet. Feels native to iPad. Best use of screen real estate.</div>
+  <div class="ipad-frame">
+    <div class="ipad-inner">
+      <!-- header -->
+      <div class="pdx-header">
+        <div class="pdx-avatar"><img src="assets/avatars/Rosso.png" onerror="this.style.display='none'"/></div>
+        <div class="pdx-trainer"><small>Allenatore</small>Lorenzo</div>
+        <img src="assets/pokedex/Kanto Pokedex.png" class="pdx-pdximg" onerror="this.style.display='none'"/>
+      </div>
+      <div class="pdx-body">
+        <!-- left: grid -->
+        <div class="pdx-left">
+          <div class="pdx-pills">
+            <button class="pill active">Kanto</button>
+            <button class="pill">Johto</button>
+            <button class="pill">Hoenn</button>
+            <button class="pill">✨ Speciali</button>
+          </div>
+          <div class="pdx-grid" style="flex:1;overflow-y:auto;">
+            <div class="pdx-card active"><span class="num">#006</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png"/><span class="name">Charizard</span></div>
+            <div class="pdx-card"><span class="num">#001</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"/><span class="name">Bulbasaur</span></div>
+            <div class="pdx-card"><span class="num">#004</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"/><span class="name">Charmander</span></div>
+            <div class="pdx-card"><span class="num">#007</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"/><span class="name">Squirtle</span></div>
+            <div class="pdx-card"><span class="num">#025</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"/><span class="name">Pikachu</span></div>
+            <div class="pdx-card"><span class="num">#133</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png"/><span class="name">Eevee</span></div>
+            <div class="pdx-card"><span class="num">#150</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png" class="pdx-card-silhouette"/><span class="name" style="color:#8a8a99;letter-spacing:1px">???</span></div>
+            <div class="pdx-card"><span class="num">#143</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png"/><span class="name">Snorlax</span></div>
+            <div class="pdx-card"><span class="num">#130</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png"/><span class="name">Gyarados</span></div>
+            <div class="pdx-card"><span class="num">#131</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/131.png"/><span class="name">Lapras</span></div>
+            <div class="pdx-card"><span class="num">#147</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/147.png"/><span class="name">Dratini</span></div>
+            <div class="pdx-card"><span class="num">#059</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/59.png"/><span class="name">Arcanine</span></div>
+          </div>
+        </div>
+        <!-- right: detail -->
+        <div class="pdx-right">
+          <div class="detail-hero">
+            <div class="detail-hero-handle"></div>
+            <div class="detail-hero-glow"></div>
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"/>
+          </div>
+          <div class="detail-content">
+            <div class="detail-num">#006</div>
+            <div class="detail-name">Charizard</div>
+            <div class="detail-badges">
+              <span class="type-badge" style="background:#f08030">Fuoco</span>
+              <span class="type-badge" style="background:#a890f0">Volante</span>
+            </div>
+            <div class="flavor">"Sputa fiamme abbastanza calde da sciogliere i massi. Può causare incendi boschivi soffiando fiamme."</div>
+            <div class="section-title">Statistiche Base</div>
+            <div class="stat-row"><span class="stat-name">PS</span><span class="stat-val">78</span><div class="stat-track"><div class="stat-fill" style="width:43%"></div></div></div>
+            <div class="stat-row"><span class="stat-name">Attacco</span><span class="stat-val">84</span><div class="stat-track"><div class="stat-fill" style="width:47%"></div></div></div>
+            <div class="stat-row"><span class="stat-name">Difesa</span><span class="stat-val">78</span><div class="stat-track"><div class="stat-fill" style="width:43%"></div></div></div>
+            <div class="stat-row"><span class="stat-name">Velocità</span><span class="stat-val">100</span><div class="stat-track"><div class="stat-fill" style="width:56%"></div></div></div>
+            <div class="section-title">Mosse Principali</div>
+            <div><span class="move-badge">Lanciafiamme</span><span class="move-badge">Volo</span><span class="move-badge">Sfida</span><span class="move-badge">Abrasione</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OPTION B ══ -->
+<div class="option-wrap option-b">
+  <div class="option-label">Option B — Wide Modal <span>Artwork left, content right inside a floating card</span></div>
+  <div class="option-desc">Sheet slides up as a wide centered modal with a two-column interior. Artwork on the left with type glow, all content on the right. Background blurred. Familiar sheet pattern, just much wider.</div>
+  <div class="ipad-frame">
+    <div class="ipad-inner">
+      <div class="pdx-header">
+        <div class="pdx-avatar"><img src="assets/avatars/Rosso.png" onerror="this.style.display='none'"/></div>
+        <div class="pdx-trainer"><small>Allenatore</small>Lorenzo</div>
+        <img src="assets/pokedex/Kanto Pokedex.png" class="pdx-pdximg" onerror="this.style.display='none'"/>
+      </div>
+      <div class="pdx-pills">
+        <button class="pill active">Kanto</button>
+        <button class="pill">Johto</button>
+        <button class="pill">Hoenn</button>
+        <button class="pill">✨ Speciali</button>
+      </div>
+      <div class="pdx-body">
+        <div class="pdx-grid-wrap">
+          <div class="pdx-grid" style="grid-template-columns:repeat(6,1fr)">
+            <div class="pdx-card"><span class="num">#001</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"/><span class="name">Bulbasaur</span></div>
+            <div class="pdx-card"><span class="num">#004</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"/><span class="name">Charmander</span></div>
+            <div class="pdx-card"><span class="num">#007</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"/><span class="name">Squirtle</span></div>
+            <div class="pdx-card"><span class="num">#025</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"/><span class="name">Pikachu</span></div>
+            <div class="pdx-card"><span class="num">#133</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png"/><span class="name">Eevee</span></div>
+            <div class="pdx-card"><span class="num">#143</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png"/><span class="name">Snorlax</span></div>
+          </div>
+        </div>
+        <!-- wide modal -->
+        <div class="modal-overlay">
+          <div class="modal-card">
+            <div class="modal-left">
+              <div class="modal-left-glow"></div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"/>
+            </div>
+            <div class="modal-right">
+              <div class="modal-handle"></div>
+              <button class="modal-close">✕</button>
+              <div class="detail-num">#006</div>
+              <div class="detail-name">Charizard</div>
+              <div class="detail-badges">
+                <span class="type-badge" style="background:#f08030">Fuoco</span>
+                <span class="type-badge" style="background:#a890f0">Volante</span>
+              </div>
+              <div class="flavor">"Sputa fiamme abbastanza calde da sciogliere i massi. Può causare incendi boschivi soffiando fiamme."</div>
+              <div class="section-title">Statistiche Base</div>
+              <div class="stat-row"><span class="stat-name">PS</span><span class="stat-val">78</span><div class="stat-track"><div class="stat-fill" style="width:43%"></div></div></div>
+              <div class="stat-row"><span class="stat-name">Attacco</span><span class="stat-val">84</span><div class="stat-track"><div class="stat-fill" style="width:47%"></div></div></div>
+              <div class="stat-row"><span class="stat-name">Velocità</span><span class="stat-val">100</span><div class="stat-track"><div class="stat-fill" style="width:56%"></div></div></div>
+              <div class="section-title">Mosse Principali</div>
+              <div><span class="move-badge">Lanciafiamme</span><span class="move-badge">Volo</span><span class="move-badge">Sfida</span><span class="move-badge">Abrasione</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OPTION C ══ -->
+<div class="option-wrap option-c">
+  <div class="option-label">Option C — Full Screen <span>Artwork left panel, scrollable content right</span></div>
+  <div class="option-desc">Tapping a card fills the entire screen. Left panel has large artwork, type badges and name. Right panel has all the detail content, scrollable. Back button returns to the grid.</div>
+  <div class="ipad-frame">
+    <div class="ipad-inner">
+      <div class="pdx-header">
+        <div class="pdx-avatar"><img src="assets/avatars/Rosso.png" onerror="this.style.display='none'"/></div>
+        <div class="pdx-trainer"><small>Allenatore</small>Lorenzo</div>
+        <img src="assets/pokedex/Kanto Pokedex.png" class="pdx-pdximg" onerror="this.style.display='none'"/>
+      </div>
+      <div class="pdx-body">
+        <div class="pdx-grid-wrap">
+          <div class="pdx-grid" style="grid-template-columns:repeat(6,1fr);padding:12px">
+            <div class="pdx-card"><span class="num">#001</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"/><span class="name">Bulbasaur</span></div>
+            <div class="pdx-card"><span class="num">#004</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"/><span class="name">Charmander</span></div>
+            <div class="pdx-card"><span class="num">#007</span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"/><span class="name">Squirtle</span></div>
+          </div>
+        </div>
+        <!-- full screen detail -->
+        <div class="full-detail">
+          <div class="full-topbar">
+            <button class="back-btn">← Pokédex</button>
+            <span class="full-topbar-name">Charizard</span>
+            <span class="full-topbar-num">#006</span>
+          </div>
+          <div class="full-body">
+            <div class="full-hero">
+              <div class="full-hero-glow"></div>
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"/>
+              <div class="full-hero-num">#006</div>
+              <div class="full-hero-name">Charizard</div>
+              <div class="full-hero-badges">
+                <span class="type-badge" style="background:#f08030">Fuoco</span>
+                <span class="type-badge" style="background:#a890f0">Volante</span>
+              </div>
+            </div>
+            <div class="full-content">
+              <div class="flavor">"Sputa fiamme abbastanza calde da sciogliere i massi. Può causare incendi boschivi soffiando fiamme."</div>
+              <div class="section-title">Statistiche Base</div>
+              <div class="stat-row"><span class="stat-name">PS</span><span class="stat-val">78</span><div class="stat-track"><div class="stat-fill" style="width:43%"></div></div></div>
+              <div class="stat-row"><span class="stat-name">Attacco</span><span class="stat-val">84</span><div class="stat-track"><div class="stat-fill" style="width:47%"></div></div></div>
+              <div class="stat-row"><span class="stat-name">Difesa</span><span class="stat-val">78</span><div class="stat-track"><div class="stat-fill" style="width:43%"></div></div></div>
+              <div class="stat-row"><span class="stat-name">Att. Sp.</span><span class="stat-val">109</span><div class="stat-track"><div class="stat-fill" style="width:60%"></div></div></div>
+              <div class="stat-row"><span class="stat-name">Dif. Sp.</span><span class="stat-val">85</span><div class="stat-track"><div class="stat-fill" style="width:47%"></div></div></div>
+              <div class="stat-row"><span class="stat-name">Velocità</span><span class="stat-val">100</span><div class="stat-track"><div class="stat-fill" style="width:56%"></div></div></div>
+              <div class="section-title">Mosse Principali</div>
+              <div><span class="move-badge">Lanciafiamme</span><span class="move-badge">Volo</span><span class="move-badge">Sfida</span><span class="move-badge">Abrasione</span></div>
+              <div class="section-title">Evoluzione</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                  <div style="width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.05);display:grid;place-items:center"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" style="width:40px;height:40px;object-fit:contain;image-rendering:pixelated"/></div>
+                  <span style="font-size:9px;font-weight:800;color:#8a8a99">Charmander</span>
+                </div>
+                <span style="color:#8a8a99;font-size:16px">→</span>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                  <div style="width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.05);display:grid;place-items:center"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png" style="width:40px;height:40px;object-fit:contain;image-rendering:pixelated"/></div>
+                  <span style="font-size:9px;font-weight:800;color:#8a8a99">Charmeleon</span>
+                </div>
+                <span style="color:#8a8a99;font-size:16px">→</span>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                  <div style="width:52px;height:52px;border-radius:50%;background:rgba(226,59,59,.1);border:2px solid #e23b3b;display:grid;place-items:center;box-shadow:0 0 0 3px rgba(226,59,59,.1)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png" style="width:40px;height:40px;object-fit:contain;image-rendering:pixelated"/></div>
+                  <span style="font-size:9px;font-weight:800;color:#2d2d2d">Charizard</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

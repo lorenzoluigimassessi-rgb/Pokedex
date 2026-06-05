@@ -90,7 +90,7 @@ export async function renderPokedexView(el) {
             <span class="pdx-header-label">Pokédex di</span>
             <h1 class="fredoka">${trainer.name || 'Allenatore'}</h1>
           </div>
-          <img src="${REGION_PDX_IMG[currentRegion]}" alt="pokédex" class="pdx-header-pdx-img" id="pdx-header-pdx-img" ${pdxImgStyle(currentRegion)}>
+          <img src="${currentRegion !== 'special' ? REGION_PDX_IMG[currentRegion] : ''}" alt="pokédex" class="pdx-header-pdx-img" id="pdx-header-pdx-img" style="visibility:${currentRegion === 'special' ? 'hidden' : 'visible'}" ${pdxImgStyle(currentRegion)}>
         </div>
         <div class="pdx-progress">
           <div class="pdx-progress-bar"><div class="pdx-progress-fill" id="pdx-fill"></div></div>
@@ -354,8 +354,22 @@ function onRegionChange(region) {
     btn.classList.toggle('active', btn.dataset.region === region);
   });
   const pdxImg = document.getElementById('pdx-header-pdx-img');
-  if (pdxImg && region !== 'special') {
-    pdxImg.src = REGION_PDX_IMG[region] || REGION_PDX_IMG['kanto'];
+  if (pdxImg) {
+    if (region === 'special') {
+      pdxImg.style.visibility = 'hidden';
+    } else {
+      pdxImg.style.visibility = 'visible';
+      pdxImg.src = REGION_PDX_IMG[region] || REGION_PDX_IMG['kanto'];
+      if (PDX_IMG_HAS_BG[region]) {
+        pdxImg.style.borderRadius = '8px';
+        pdxImg.style.background = 'rgba(0,0,0,.25)';
+        pdxImg.style.padding = '3px';
+      } else {
+        pdxImg.style.borderRadius = '';
+        pdxImg.style.background = '';
+        pdxImg.style.padding = '';
+      }
+    }
   }
   loadEntries();
 }

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FTE Name Input</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: #0a0a14; color: #fff; padding: 40px 20px 64px; display: flex; flex-direction: column; align-items: center; gap: 48px; }
+h1 { font-family: 'Fredoka One'; font-size: 22px; text-align:center; }
+.sub { font-size: 12px; color: rgba(255,255,255,.35); font-weight: 700; text-align: center; line-height: 1.7; max-width:560px; }
+.divider { width:100%; max-width:760px; height:1px; background:rgba(255,255,255,.07); }
+.lbl { font-family:'Fredoka One'; font-size:15px; color:rgba(255,255,255,.4); text-align:center; }
+
+/* phone shell */
+.phone {
+  width: 320px; height: 520px;
+  background: linear-gradient(160deg, #1a1a3a 0%, #0d0d20 100%);
+  border-radius: 44px; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.7);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 28px; gap: 20px;
+  position: relative;
+}
+/* stars */
+.stars { position:absolute; inset:0; pointer-events:none; }
+.star { position:absolute; width:2px; height:2px; border-radius:50%; background:#fff; opacity:.3; }
+
+.fte-title { font-family:'Fredoka One'; font-size:26px; text-align:center; color:#fff; }
+.fte-sub { font-size:13px; font-weight:700; color:rgba(255,255,255,.5); text-align:center; line-height:1.6; }
+
+/* ── OPTION A: current (box, centred) ── */
+.input-box {
+  width: 100%;
+  background: rgba(255,255,255,.08);
+  border: 2px solid rgba(255,255,255,.15);
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px; font-weight: 800;
+  color: #fff; text-align: center;
+  outline: none;
+}
+.input-box::placeholder { color: rgba(255,255,255,.3); }
+.input-box:focus { border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.11); }
+
+/* ── OPTION B: underline only, centred ── */
+.input-underline {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid rgba(255,255,255,.3);
+  padding: 10px 4px 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: #fff; text-align: center;
+  outline: none;
+  transition: border-color .2s;
+}
+.input-underline::placeholder { color: rgba(255,255,255,.25); font-size:18px; font-weight:700; }
+.input-underline:focus { border-color: rgba(255,255,255,.7); }
+
+/* ── OPTION C: left-aligned in centred block ── */
+.input-left-wrap {
+  width: 100%;
+  background: rgba(255,255,255,.08);
+  border: 2px solid rgba(255,255,255,.15);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.input-left-wrap span { font-size:18px; }
+.input-left {
+  flex: 1;
+  background: transparent; border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px; font-weight: 800;
+  color: #fff; text-align: left;
+  outline: none;
+}
+.input-left::placeholder { color: rgba(255,255,255,.3); }
+
+/* shared button */
+.btn {
+  width: 100%; height: 52px; border-radius: 999px;
+  background: linear-gradient(135deg, #e23b3b, #f5822a);
+  border: none; color: #fff;
+  font-family: 'Fredoka One'; font-size: 18px;
+  cursor: pointer; margin-top: 8px;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<h1>FTE — Stile Input Nome</h1>
+<p class="sub">Tre approcci. Clicca sul campo per vedere il cursore.</p>
+
+<!-- A: current box centred -->
+<div class="divider"></div>
+<div class="lbl">A — attuale (box centrato)</div>
+<div class="phone">
+  <div class="stars">
+    <span class="star" style="left:12%;top:8%"></span><span class="star" style="left:78%;top:14%"></span>
+    <span class="star" style="left:45%;top:5%"></span><span class="star" style="left:88%;top:42%"></span>
+    <span class="star" style="left:6%;top:55%"></span><span class="star" style="left:92%;top:72%"></span>
+    <span class="star" style="left:33%;top:88%"></span><span class="star" style="left:65%;top:93%"></span>
+  </div>
+  <div class="fte-title">Come ti chiami,<br>Allenatore?</div>
+  <div class="fte-sub">Registreremo il tuo nome nel Pokédex.</div>
+  <input class="input-box" placeholder="Il tuo nome" maxlength="14" id="a-input"/>
+  <button class="btn" id="a-btn" disabled>Continua</button>
+  <script>
+    document.getElementById('a-input').addEventListener('input', e => {
+      document.getElementById('a-btn').disabled = e.target.value.trim().length < 2;
+    });
+  </script>
+</div>
+
+<!-- B: underline centred -->
+<div class="divider"></div>
+<div class="lbl">B — solo sottolineatura (centrato)</div>
+<div class="phone">
+  <div class="stars">
+    <span class="star" style="left:12%;top:8%"></span><span class="star" style="left:78%;top:14%"></span>
+    <span class="star" style="left:45%;top:5%"></span><span class="star" style="left:88%;top:42%"></span>
+    <span class="star" style="left:6%;top:55%"></span><span class="star" style="left:92%;top:72%"></span>
+    <span class="star" style="left:33%;top:88%"></span><span class="star" style="left:65%;top:93%"></span>
+  </div>
+  <div class="fte-title">Come ti chiami,<br>Allenatore?</div>
+  <div class="fte-sub">Registreremo il tuo nome nel Pokédex.</div>
+  <input class="input-underline" placeholder="Il tuo nome" maxlength="14" id="b-input"/>
+  <button class="btn" id="b-btn" disabled>Continua</button>
+  <script>
+    document.getElementById('b-input').addEventListener('input', e => {
+      document.getElementById('b-btn').disabled = e.target.value.trim().length < 2;
+    });
+  </script>
+</div>
+
+<!-- C: left-aligned with icon -->
+<div class="divider"></div>
+<div class="lbl">C — allineato a sinistra (box)</div>
+<div class="phone">
+  <div class="stars">
+    <span class="star" style="left:12%;top:8%"></span><span class="star" style="left:78%;top:14%"></span>
+    <span class="star" style="left:45%;top:5%"></span><span class="star" style="left:88%;top:42%"></span>
+    <span class="star" style="left:6%;top:55%"></span><span class="star" style="left:92%;top:72%"></span>
+    <span class="star" style="left:33%;top:88%"></span><span class="star" style="left:65%;top:93%"></span>
+  </div>
+  <div class="fte-title">Come ti chiami,<br>Allenatore?</div>
+  <div class="fte-sub">Registreremo il tuo nome nel Pokédex.</div>
+  <div class="input-left-wrap">
+    <span>🏷️</span>
+    <input class="input-left" placeholder="Il tuo nome" maxlength="14" id="c-input"/>
+  </div>
+  <button class="btn" id="c-btn" disabled>Continua</button>
+  <script>
+    document.getElementById('c-input').addEventListener('input', e => {
+      document.getElementById('c-btn').disabled = e.target.value.trim().length < 2;
+    });
+  </script>
+</div>
+
+</body>
+</html>
