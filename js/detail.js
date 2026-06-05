@@ -175,57 +175,84 @@ function renderDetail(overlay, data, caught) {
     );
 
     if (isRegional) {
-      // Regional form: fetch species by SLUG to get the regional evo chain
-      api.getSpecies(data._slug).then(species => {
-        if (species && species.evolutionChainUrl) {
-          loadEvoChain({ ...data, evolutionChainUrl: species.evolutionChainUrl }, overlay);
-        } else {
-          const chainEl = document.getElementById('detail-evo-chain');
-          if (chainEl) chainEl.innerHTML = `<div class="pdx-evo-line"><div class="pdx-evo-node current" data-id="${data.id}"><div class="pdx-evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${data.id}.png"></div><span class="pdx-evo-label">${data.name}</span></div></div>`;
-        }
-      });
-      // Forme Regionali section: show Kanto base forms (baseId counterparts)
       const baseId = parseInt(Object.keys(REGIONAL_BY_BASE).find(bid =>
         (REGIONAL_BY_BASE[bid] || []).some(f => f.slug === data._slug)
       ));
+      const currentMechanic = REGIONAL_BY_BASE[baseId]?.find(f => f.slug === data._slug)?.mechanic;
+
+      // Build a map: kantoId -> regional slug for this region
+      const kantoToRegional = {};
+      if (currentMechanic) {
+        Object.entries(REGIONAL_BY_BASE).forEach(([bid, forms]) => {
+          const match = forms.find(f => f.mechanic === currentMechanic);
+          if (match) kantoToRegional[parseInt(bid)] = match;
+        });
+      }
+
+      // Fetch Kanto base species evo chain, then remap IDs to regional
       if (baseId) {
-        // Show Kanto base pokemon as a regional node
-        const regionalSection = document.getElementById('detail-forms-section');
-        const regionalCol = document.getElementById('detail-regional-col');
-        const regionalChain = document.getElementById('detail-regional-chain');
-        if (regionalCol && regionalChain) {
-          regionalSection.style.display = 'block';
-          regionalCol.style.display = 'block';
-          // Kanto base node
-          const kantoNode = document.createElement('div');
-          kantoNode.className = 'pdx-evo-node pdx-regional-node';
-          kantoNode.style.cursor = 'pointer';
-          kantoNode.innerHTML = `<div class="pdx-evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png"></div><span class="pdx-evo-label" id="kanto-base-label-${baseId}">...</span>`;
-          api.getSpecies(baseId).then(sp => {
-            const lbl = document.getElementById(`kanto-base-label-${baseId}`);
-            if (lbl) lbl.textContent = sp?.name || String(baseId);
-          });
-          kantoNode.addEventListener('click', () => {
-            closeDetail(overlay);
-            setTimeout(() => showDetail(overlay.parentElement, baseId), 320);
-          });
-          regionalChain.appendChild(kantoNode);
-          // Also show other regional siblings (different region)
-          const allRegional = REGIONAL_BY_BASE[baseId] || [];
-          allRegional.filter(f => f.slug !== data._slug).forEach(form => {
-            const node = document.createElement('div');
-            node.className = 'pdx-evo-node pdx-regional-node';
-            node.style.cursor = 'pointer';
-            const fallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png`;
-            node.innerHTML = `<div class="pdx-evo-circle"><img src="${fallback}"></div><span class="pdx-evo-label">${form.name}</span>`;
-            api.getFormSprite(form.slug).then(url => { if (url) { const img = node.querySelector('img'); if (img) img.src = url; } });
-            node.addEventListener('click', () => {
-              closeDetail(overlay);
-              setTimeout(() => showDetail(overlay.parentElement, form.slug), 320);
+        api.getSpecies(baseId).then(species => {
+          if (!species?.evolutionChainUrl) return;
+          const chainId = parseInt(species.evolutionChainUrl.split('/').filter(Boolean).pop());
+          api.getEvolutionChain(chainId).then(chain => {
+            // Remap chain nodes: replace Kanto ID/name with regional counterpart where available
+            function remapChain(node) {
+              const regional = kantoToRegional[node.id];
+              return {
+                ...node,
+                id: regional ? regional.baseId + 10000 : node.id, // use form sprite
+                name: regional ? regional.name : node.name,
+                _regionalSlug: regional ? regional.slug : null,
+                evolvesTo: (node.evolvesTo || []).map(remapChain),
+              };
+            }
+            const remapped = remapChain(chain);
+            const chainEl = document.getElementById('detail-evo-chain');
+            if (!chainEl) return;
+            const collection = storage.getCollection();
+            chainEl.innerHTML = renderEvoChainRemapped(remapped, data._slug);
+            // wire clicks
+            chainEl.querySelectorAll('.pdx-evo-node[data-slug]').forEach(node => {
+              const slug = node.dataset.slug;
+              if (slug === data._slug) return;
+              node.style.cursor = 'pointer';
+              node.addEventListener('click', () => {
+                closeDetail(overlay);
+                setTimeout(() => showDetail(overlay.parentElement, slug), 320);
+              });
             });
-            regionalChain.appendChild(node);
           });
-        }
+        });
+      }
+
+      // Forme Regionali: show Kanto base + other regional siblings
+      const regionalSection = document.getElementById('detail-forms-section');
+      const regionalCol = document.getElementById('detail-regional-col');
+      const regionalChain = document.getElementById('detail-regional-chain');
+      if (regionalCol && regionalChain && baseId) {
+        regionalSection.style.display = 'block';
+        regionalCol.style.display = 'block';
+        // Kanto base
+        const kantoNode = document.createElement('div');
+        kantoNode.className = 'pdx-evo-node pdx-regional-node';
+        kantoNode.style.cursor = 'pointer';
+        kantoNode.innerHTML = `<div class="pdx-evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png"></div><span class="pdx-evo-label" id="kanto-label-${baseId}">...</span>`;
+        api.getSpecies(baseId).then(sp => {
+          const lbl = document.getElementById(`kanto-label-${baseId}`);
+          if (lbl) lbl.textContent = sp?.name || String(baseId);
+        });
+        kantoNode.addEventListener('click', () => { closeDetail(overlay); setTimeout(() => showDetail(overlay.parentElement, baseId), 320); });
+        regionalChain.appendChild(kantoNode);
+        // Other regional siblings
+        (REGIONAL_BY_BASE[baseId] || []).filter(f => f.slug !== data._slug).forEach(form => {
+          const node = document.createElement('div');
+          node.className = 'pdx-evo-node pdx-regional-node';
+          node.style.cursor = 'pointer';
+          node.innerHTML = `<div class="pdx-evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png"></div><span class="pdx-evo-label">${form.name}</span>`;
+          api.getFormSprite(form.slug).then(url => { if (url) { const img = node.querySelector('img'); if (img) img.src = url; } });
+          node.addEventListener('click', () => { closeDetail(overlay); setTimeout(() => showDetail(overlay.parentElement, form.slug), 320); });
+          regionalChain.appendChild(node);
+        });
       }
     } else {
       // Special form: load base Pokémon's evo chain
@@ -246,6 +273,50 @@ function renderDetail(overlay, data, caught) {
     loadSpecialForms(data, overlay, tc);
     loadRegionalForms(data, overlay);
   }
+}
+
+function renderEvoChainRemapped(node, currentSlug) {
+  const lines = [];
+  function walk(n, path) {
+    const p = [...path, n];
+    if (!n.evolvesTo || n.evolvesTo.length === 0) lines.push(p);
+    else n.evolvesTo.forEach(c => walk(c, p));
+  }
+  walk(node, []);
+  if (lines.length === 0) return '';
+
+  function nodeHtml(entry) {
+    const isCurrent = entry._regionalSlug === currentSlug;
+    const slug = entry._regionalSlug || entry.id;
+    const spriteUrl = entry._regionalSlug
+      ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry._regionalSlug}.png`
+      : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
+    // load form sprite async if it's a regional slug
+    const imgId = `reg-img-${slug}`;
+    if (entry._regionalSlug) {
+      setTimeout(() => api.getFormSprite(entry._regionalSlug).then(url => {
+        if (url) { const img = document.getElementById(imgId); if (img) img.src = url; }
+      }), 0);
+    }
+    return `<div class="pdx-evo-node ${isCurrent ? 'current' : ''}" data-slug="${slug}">
+      <div class="pdx-evo-circle"><img id="${imgId}" src="${spriteUrl}" alt="${entry.name}"></div>
+      <span class="pdx-evo-label">${entry.name}</span>
+    </div>`;
+  }
+
+  if (lines.length === 1) {
+    return `<div class="pdx-evo-line">${lines[0].map((e,i) => (i>0?'<span class="pdx-evo-arrow">→</span>':'')+nodeHtml(e)).join('')}</div>`;
+  }
+  const base = lines[0][0];
+  const branches = lines.map(l => l.slice(1));
+  const branchRows = branches.map(branch =>
+    `<div class="pdx-evo-branch-row">${branch.map((e,i)=>(i>0?'<span class="pdx-evo-arrow">→</span>':'')+nodeHtml(e)).join('')}</div>`
+  ).join('');
+  return `<div class="pdx-evo-fork">
+    <div class="pdx-evo-line pdx-evo-line--base">${nodeHtml(base)}</div>
+    <div class="pdx-evo-fork-arrows"><span>→</span><span>→</span></div>
+    <div class="pdx-evo-fork-branches">${branchRows}</div>
+  </div>`;
 }
 
 async function loadEvoChain(data, overlay) {
