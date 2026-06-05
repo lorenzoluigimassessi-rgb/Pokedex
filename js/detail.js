@@ -226,7 +226,8 @@ function renderDetail(overlay, data, caught) {
             regionalChain.appendChild(node);
           });
         }
-      } else {
+      }
+    } else {
       // Special form: load base Pokémon's evo chain
       const baseId = Object.keys(FORMS_BY_BASE).find(bid =>
         (FORMS_BY_BASE[bid] || []).some(f => f.slug === data._slug)
