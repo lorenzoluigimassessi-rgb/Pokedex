@@ -865,9 +865,9 @@
   background: color-mix(in srgb, var(--special-tc, var(--skin)) 10%, transparent);
   border: 1.5px solid color-mix(in srgb, var(--special-tc, var(--skin)) 35%, transparent);
   border-radius: 16px;
-  padding: 8px 10px 9px;
+  padding: 8px 6px 9px;
   transition: all .15s; flex-shrink: 0;
-  min-width: 72px;
+  width: 76px;
 }
 .pdx-special-pill:hover {
   background: color-mix(in srgb, var(--special-tc, var(--skin)) 18%, transparent);
