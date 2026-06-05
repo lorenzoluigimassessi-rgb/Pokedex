@@ -80,7 +80,7 @@ function showName() {
       <div class="fte-stars">${renderStars()}</div>
       <div class="fte-name-step">
         <button class="fte-back" id="fte-back">←</button>
-        <h2 class="fredoka">Come ti chiami,<br>Allenatore?</h2>
+        <h2 class="fredoka">Come ti chiami,<br>allenatore?</h2>
         <p>Registreremo il tuo nome nel Pokédex.</p>
         <input type="text" id="fte-name-input" class="fte-input" placeholder="Il tuo nome" maxlength="14" autocomplete="off">
         <div style="flex:1"></div>
@@ -107,7 +107,7 @@ function showAvatar() {
       <div class="fte-stars">${renderStars()}</div>
       <div class="fte-avatar-step">
         <button class="fte-back" id="fte-back">←</button>
-        <h2 class="fredoka">Scegli il tuo Allenatore</h2>
+        <h2 class="fredoka">Scegli il tuo avatar</h2>
         <p>Scorri per vedere tutti.</p>
         <div class="fte-carousel" id="fte-carousel">
           ${AVATARS.map((a, i) => `
