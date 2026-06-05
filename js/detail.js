@@ -211,14 +211,16 @@ function renderDetail(overlay, data, caught) {
             if (!chainEl) return;
             const collection = storage.getCollection();
             chainEl.innerHTML = renderEvoChainRemapped(remapped, data._slug);
-            // wire clicks
+            // wire clicks — slug is either a regional slug string or a numeric id string
             chainEl.querySelectorAll('.pdx-evo-node[data-slug]').forEach(node => {
-              const slug = node.dataset.slug;
-              if (slug === data._slug) return;
+              const rawSlug = node.dataset.slug;
+              if (rawSlug === data._slug || rawSlug === String(data.id)) return;
+              const target = isNaN(rawSlug) ? rawSlug : parseInt(rawSlug);
               node.style.cursor = 'pointer';
               node.addEventListener('click', () => {
+                const container = overlay.parentElement;
                 closeDetail(overlay);
-                setTimeout(() => showDetail(overlay.parentElement, slug), 320);
+                setTimeout(() => showDetail(container, target), 320);
               });
             });
           });
@@ -241,7 +243,7 @@ function renderDetail(overlay, data, caught) {
           const lbl = document.getElementById(`kanto-label-${baseId}`);
           if (lbl) lbl.textContent = sp?.name || String(baseId);
         });
-        kantoNode.addEventListener('click', () => { closeDetail(overlay); setTimeout(() => showDetail(overlay.parentElement, baseId), 320); });
+        kantoNode.addEventListener('click', () => { const c = overlay.parentElement; closeDetail(overlay); setTimeout(() => showDetail(c, baseId), 320); });
         regionalChain.appendChild(kantoNode);
         // Other regional siblings
         (REGIONAL_BY_BASE[baseId] || []).filter(f => f.slug !== data._slug).forEach(form => {
@@ -250,7 +252,7 @@ function renderDetail(overlay, data, caught) {
           node.style.cursor = 'pointer';
           node.innerHTML = `<div class="pdx-evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseId}.png"></div><span class="pdx-evo-label">${form.name}</span>`;
           api.getFormSprite(form.slug).then(url => { if (url) { const img = node.querySelector('img'); if (img) img.src = url; } });
-          node.addEventListener('click', () => { closeDetail(overlay); setTimeout(() => showDetail(overlay.parentElement, form.slug), 320); });
+          node.addEventListener('click', () => { const c = overlay.parentElement; closeDetail(overlay); setTimeout(() => showDetail(c, form.slug), 320); });
           regionalChain.appendChild(node);
         });
       }
