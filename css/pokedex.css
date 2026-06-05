@@ -875,6 +875,9 @@
 .pdx-regional-node .pdx-evo-circle { background: rgba(0,0,0,.05); border-color: transparent; }
 .pdx-regional-node .pdx-evo-label { color: var(--text-muted); }
 
+/* Regional chain — extra gap so labels don't touch */
+#detail-regional-chain { gap: 8px; }
+
 .pdx-evo-node {
   display: flex;
   flex-direction: column;

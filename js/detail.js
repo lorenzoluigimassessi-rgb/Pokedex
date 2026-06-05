@@ -170,19 +170,39 @@ function renderDetail(overlay, data, caught) {
 
   render();
   if (data.isForm) {
-    let baseId = Object.keys(FORMS_BY_BASE).find(bid =>
-      (FORMS_BY_BASE[bid] || []).some(f => f.slug === data._slug)
-    );
-    if (!baseId) baseId = Object.keys(REGIONAL_BY_BASE).find(bid =>
+    const isRegional = Object.keys(REGIONAL_BY_BASE).some(bid =>
       (REGIONAL_BY_BASE[bid] || []).some(f => f.slug === data._slug)
     );
-    if (baseId) {
-      api.getSpecies(parseInt(baseId)).then(species => {
+
+    if (isRegional) {
+      // Regional form: fetch its OWN species for evo chain (regional line)
+      api.getSpecies(data.id).then(species => {
         if (species && species.evolutionChainUrl) {
-          loadEvoChain({ ...data, id: parseInt(baseId), evolutionChainUrl: species.evolutionChainUrl }, overlay);
+          loadEvoChain({ ...data, evolutionChainUrl: species.evolutionChainUrl }, overlay);
+        } else {
+          // no evo chain — just show itself
+          const chainEl = document.getElementById('detail-evo-chain');
+          if (chainEl) chainEl.innerHTML = `<div class="pdx-evo-line"><div class="pdx-evo-node current" data-id="${data.id}"><div class="pdx-evo-circle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${data.id}.png"></div><span class="pdx-evo-label">${data.name}</span></div></div>`;
         }
       });
-      loadSiblingForms(data, overlay, tc);
+      // show Kanto base's regional siblings in the Forme Regionali section
+      const baseId = Object.keys(REGIONAL_BY_BASE).find(bid =>
+        (REGIONAL_BY_BASE[bid] || []).some(f => f.slug === data._slug)
+      );
+      if (baseId) loadSiblingForms(data, overlay, tc);
+    } else {
+      // Special form: load base Pokémon's evo chain
+      const baseId = Object.keys(FORMS_BY_BASE).find(bid =>
+        (FORMS_BY_BASE[bid] || []).some(f => f.slug === data._slug)
+      );
+      if (baseId) {
+        api.getSpecies(parseInt(baseId)).then(species => {
+          if (species && species.evolutionChainUrl) {
+            loadEvoChain({ ...data, id: parseInt(baseId), evolutionChainUrl: species.evolutionChainUrl }, overlay);
+          }
+        });
+        loadSiblingForms(data, overlay, tc);
+      }
     }
   } else {
     loadEvoChain(data, overlay);
@@ -278,13 +298,12 @@ function renderEvoLine(line, collection, currentId) {
 }
 
 function renderEvoNode(entry, collection, currentId) {
-  const isCaught = !!(collection[entry.id] || collection[String(entry.id)]);
   const isCurrent = entry.id === currentId;
-  const cls = isCurrent ? 'current' : (!isCaught ? 'uncaught' : '');
+  const cls = isCurrent ? 'current' : '';
   const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${entry.id}.png`;
   return `<div class="pdx-evo-node ${cls}" data-id="${entry.id}">
     <div class="pdx-evo-circle"><img src="${spriteUrl}" alt="${entry.name}"></div>
-    <span class="pdx-evo-label">${isCaught || isCurrent ? entry.name : '?'}</span>
+    <span class="pdx-evo-label">${entry.name}</span>
   </div>`;
 }
 
