@@ -80,7 +80,7 @@ function showName() {
       <div class="fte-stars">${renderStars()}</div>
       <div class="fte-name-step">
         <button class="fte-back" id="fte-back">←</button>
-        <h2 class="fredoka">Come ti chiami,<br>allenatore?</h2>
+        <h2 class="fredoka">Come ti chiami, allenatore?</h2>
         <p>Registreremo il tuo nome nel Pokédex.</p>
         <input type="text" id="fte-name-input" class="fte-input" placeholder="Il tuo nome" maxlength="14" autocomplete="off">
         <div style="flex:1"></div>
